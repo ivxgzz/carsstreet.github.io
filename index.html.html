@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CARS STREET | Compra y venta de vehículos en Colombia</title>
+<meta name="description" content="Encuentra vehículos nuevos y usados en Colombia. Compra, vende y consulta vehículos de forma fácil y rápida con CARS STREET.">
+<style>
+:root{--bg:#070809;--panel:#101214;--panel2:#17191c;--text:#f5f5f5;--muted:#a7adb4;--accent:#ff2b2b;--line:#292d31;--success:#25d366}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}a{text-decoration:none;color:inherit}button,input,select,textarea{font:inherit}button{cursor:pointer;border:0}
+.container{width:min(1180px,92%);margin:auto}.nav{position:fixed;top:0;z-index:50;width:100%;background:rgba(7,8,9,.86);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.08)}.nav-inner{height:74px;display:flex;align-items:center;justify-content:space-between}.logo{font-size:1.3rem;font-weight:900;letter-spacing:.08em}.logo span{color:var(--accent)}.links{display:flex;gap:28px;color:#c8ccd0;font-size:.92rem}.links a:hover{color:#fff}.nav-actions{display:flex;align-items:center;gap:10px}.wa{background:var(--success);color:#061006;padding:11px 17px;border-radius:12px;font-weight:800}.menu{display:none;background:none;color:#fff;font-size:28px}
+.hero{min-height:760px;padding:150px 0 100px;display:flex;align-items:center;position:relative;overflow:hidden;perspective:1200px}.hero-bg{position:absolute;inset:-40px;z-index:0;background:linear-gradient(90deg,rgba(0,0,0,.94) 0%,rgba(0,0,0,.67) 46%,rgba(0,0,0,.35) 100%),url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=2000&q=85') center/cover;transform:translate3d(0,0,0) scale(1.08);will-change:transform;transition:transform .6s cubic-bezier(.16,.8,.24,1)}.hero-particles{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}.hero-particle{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,43,43,.55),rgba(255,43,43,0) 70%);filter:blur(1px);opacity:.55;will-change:transform;animation:heroFloat 9s ease-in-out infinite}.hero-particle.p1{width:180px;height:180px;top:14%;left:8%;animation-duration:11s}.hero-particle.p2{width:110px;height:110px;top:60%;left:22%;animation-duration:8s;animation-delay:-2s;background:radial-gradient(circle,rgba(255,255,255,.28),rgba(255,255,255,0) 70%)}.hero-particle.p3{width:230px;height:230px;top:5%;right:10%;animation-duration:13s;animation-delay:-4s}.hero-particle.p4{width:90px;height:90px;bottom:12%;right:24%;animation-duration:7s;animation-delay:-1s;background:radial-gradient(circle,rgba(255,255,255,.22),rgba(255,255,255,0) 70%)}@keyframes heroFloat{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-22px,0)}}.hero:after{content:"";position:absolute;inset:auto 0 0;height:160px;background:linear-gradient(transparent,var(--bg));z-index:1}.hero-content{position:relative;z-index:2;max-width:700px;will-change:transform}.hero-content>*{will-change:transform}.eyebrow{color:var(--accent);font-weight:800;letter-spacing:.15em;text-transform:uppercase;font-size:.78rem}.hero h1{font-size:clamp(3rem,8vw,7rem);line-height:.9;margin:18px 0 24px;letter-spacing:-.06em}.hero h1 span{color:var(--accent)}.hero p{color:#d1d4d8;font-size:1.12rem;max-width:620px}.buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.btn{position:relative;overflow:hidden;padding:14px 20px;border-radius:12px;font-weight:850;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease,border-color .25s ease}.btn-primary{background:var(--accent);color:#090a0a}.btn-secondary{border:1px solid #444;background:rgba(255,255,255,.06);color:#fff}.btn:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.35) 48%,rgba(255,255,255,.05) 60%,transparent 75%);transform:translateX(-120%);transition:transform .6s ease}.btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(255,43,43,.22)}.btn-secondary:hover{border-color:#777;box-shadow:0 10px 26px rgba(0,0,0,.35)}.btn:hover:before{transform:translateX(120%)}.btn:active{transform:translateY(0) scale(.97)}.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.hero-bg,.hero-content,.hero-content>*,.hero-particle,.btn,.card,.reveal{animation:none!important;transition:none!important}}
+section{padding:90px 0}.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:30px}.section-head h2{font-size:clamp(2rem,4vw,3.2rem);letter-spacing:-.04em}.section-head p{color:var(--muted);max-width:560px}
+.search-box{background:linear-gradient(145deg,#171a1d,#0e1012);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.25)}.filters{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.field label{display:block;color:#aeb3b9;font-size:.76rem;font-weight:700;margin-bottom:7px}.field select,.field input,.field textarea{width:100%;background:#080a0c;border:1px solid #30353a;color:#fff;padding:13px;border-radius:10px;outline:none}.field select:focus,.field input:focus{border-color:var(--accent)}.filter-actions{display:flex;gap:10px;margin-top:15px}.counter{color:var(--muted);margin-top:15px;font-size:.9rem}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden;position:relative;transform-style:preserve-3d;will-change:transform;transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s ease,border-color .3s ease;box-shadow:0 0 0 rgba(0,0,0,0)}.card.tilting{transition:box-shadow .2s ease,border-color .3s ease}.card:hover{border-color:#555;box-shadow:0 30px 60px -20px rgba(0,0,0,.55)}.card:before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;border-radius:inherit;background:radial-gradient(500px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.14),transparent 42%);transition:opacity .35s ease;backdrop-filter:blur(0)}.card:hover:before{opacity:1}.card-img{height:230px;position:relative;background:#222;overflow:hidden}.card-img img{width:100%;height:100%;object-fit:cover;transform:translateZ(0) scale(1.001);transition:transform .5s cubic-bezier(.2,.8,.2,1)}.card:hover .card-img img{transform:scale(1.06)}.card-body{transform:translateZ(24px)}.badge{position:absolute;top:13px;left:13px;background:var(--accent);color:#111;padding:6px 9px;border-radius:7px;font-size:.7rem;font-weight:900}.card-body{padding:18px}.card-brand{font-size:.75rem;color:var(--accent);font-weight:800;text-transform:uppercase}.card h3{font-size:1.35rem;margin:4px 0}.price{font-size:1.35rem;font-weight:900;margin:12px 0}.meta{display:flex;gap:8px;flex-wrap:wrap;color:#aeb4ba;font-size:.8rem}.meta span{background:#1a1d20;padding:5px 8px;border-radius:7px}.card-actions{display:flex;gap:8px;margin-top:16px}.card-actions .btn{flex:1;text-align:center;padding:11px 8px;font-size:.82rem}
+.sell{background:linear-gradient(135deg,#111417,#0a0b0d);border:1px solid var(--line);border-radius:24px;padding:45px}.sell-layout{display:grid;grid-template-columns:.8fr 1.2fr;gap:45px}.sell h2{font-size:clamp(2rem,5vw,4rem);line-height:1}.sell p{color:var(--muted);margin-top:16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.info-card{padding:30px;background:var(--panel);border:1px solid var(--line);border-radius:18px}.info-card h3{margin-bottom:8px}.info-card p{color:var(--muted)}
+.contact{border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}.contact h2{font-size:clamp(2rem,5vw,4.5rem);line-height:1}.contact p{color:var(--muted);margin:16px auto;max-width:600px}.contact-links{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:25px}.footer{padding:35px 0;color:#858b92;font-size:.85rem;display:flex;justify-content:space-between;gap:15px}.empty{padding:50px;text-align:center;border:1px dashed #3b4045;border-radius:18px;color:var(--muted);grid-column:1/-1}.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-box{width:min(900px,100%);max-height:90vh;overflow:auto;background:#101214;border:1px solid #333;border-radius:20px;padding:25px}.modal-close{float:right;background:#222;color:#fff;border-radius:8px;padding:8px 12px}.detail-img{width:100%;height:380px;object-fit:cover;border-radius:14px;margin:15px 0}.specs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}.spec{background:#181b1e;padding:12px;border-radius:9px}.spec small{display:block;color:#888}.toast{position:fixed;right:20px;bottom:20px;background:#fff;color:#111;padding:15px 18px;border-radius:12px;display:none;z-index:200;font-weight:700}
+@media(max-width:850px){.links,.nav-actions{display:none}.menu{display:block}.grid{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:repeat(2,1fr)}.sell-layout,.about-grid{grid-template-columns:1fr}.hero{min-height:680px}}
+@media(max-width:560px){section{padding:65px 0}.grid,.filters,.form-grid{grid-template-columns:1fr}.hero{padding-top:120px}.hero h1{font-size:4rem}.sell{padding:25px}.footer{flex-direction:column}.specs{grid-template-columns:1fr 1fr}}
+
+/* ===== Reveal al hacer scroll ===== */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in-view{opacity:1;transform:translateY(0)}
+.reveal.reveal-scale{transform:translateY(26px) scale(.97)}
+.reveal.reveal-scale.in-view{transform:translateY(0) scale(1)}
+.search-box{transition:box-shadow .3s ease,transform .3s ease}
+.search-box:hover{box-shadow:0 30px 80px rgba(0,0,0,.32)}
+.info-card{transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .3s ease,box-shadow .3s ease}
+.info-card:hover{transform:translateY(-6px);border-color:#4a4f54;box-shadow:0 20px 45px rgba(0,0,0,.35)}
+@media(hover:none),(pointer:coarse){.hero-bg{animation:heroAutoPan 16s ease-in-out infinite}.card:hover{box-shadow:none}}
+@keyframes heroAutoPan{0%,100%{transform:translate3d(0,0,0) scale(1.08)}50%{transform:translate3d(-1.2%,-1%,0) scale(1.1)}}
+
+/* ===== PANEL DE ADMINISTRACIÓN ===== */
+.admin-trigger{position:fixed;right:18px;bottom:18px;z-index:80;background:#ff2b2b;color:#fff;border:1px solid #ff5555;border-radius:14px;padding:12px 15px;font-weight:900;box-shadow:0 10px 35px rgba(0,0,0,.35)}
+.admin-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:120;align-items:center;justify-content:center;padding:16px}
+.admin-panel.open{display:flex}
+.admin-box{width:min(1050px,100%);max-height:94vh;overflow:auto;background:#0f1113;border:1px solid #353a40;border-radius:22px;padding:24px;box-shadow:0 30px 100px rgba(0,0,0,.55)}
+.admin-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
+.admin-head h2{font-size:clamp(1.5rem,4vw,2.5rem)}
+.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.admin-tab{background:#1b1e22;color:#fff;padding:10px 14px;border-radius:10px;font-weight:800}
+.admin-tab.active{background:var(--accent)}
+.admin-section{display:none}
+.admin-section.active{display:block}
+.admin-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:15px}
+.admin-item{background:#171a1d;border:1px solid #2c3136;border-radius:14px;padding:13px;display:flex;gap:12px;align-items:center}
+.admin-item img{width:82px;height:62px;object-fit:cover;border-radius:9px;background:#222}
+.admin-item-info{flex:1;min-width:0}
+.admin-item-info strong{display:block}
+.admin-item-info small{color:#9299a1}
+.admin-item-actions{display:flex;gap:6px;flex-wrap:wrap}
+.admin-small{padding:8px 10px;border-radius:8px;background:#272b30;color:#fff;font-weight:800}
+.admin-small.danger{background:#7e2020}
+.profile-preview{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid #444;background:#202328}
+.profile-row{display:flex;gap:20px;align-items:center;margin-bottom:18px}
+.admin-note{color:#9299a1;font-size:.85rem;margin-top:8px}
+@media(max-width:700px){.admin-list{grid-template-columns:1fr}.admin-box{padding:17px}.admin-item{align-items:flex-start}.admin-item-actions{flex-direction:column}}
+
+
+.photo-manager{margin-top:10px;background:#15181b;border:1px solid #2c3136;border-radius:14px;padding:14px}
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.photo-thumb{position:relative;border-radius:10px;overflow:hidden;background:#222;aspect-ratio:4/3;border:1px solid #343a40}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-thumb button{position:absolute;right:6px;top:6px;background:rgba(0,0,0,.75);color:#fff;border-radius:7px;padding:5px 7px;font-weight:900}
+.photo-thumb.main{border:2px solid var(--accent)}
+.photo-label{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.78);color:#fff;padding:4px 6px;border-radius:6px;font-size:.7rem;font-weight:800}
+@media(max-width:700px){.photo-grid{grid-template-columns:repeat(2,1fr)}}
+
+
+.admin-login{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:150;align-items:center;justify-content:center;padding:20px}
+.admin-login.open{display:flex}
+.admin-login-box{width:min(430px,100%);background:#101214;border:1px solid #353a40;border-radius:20px;padding:28px;box-shadow:0 30px 100px rgba(0,0,0,.7)}
+.admin-login-box h2{font-size:2rem;margin:8px 0}
+.admin-login-box p{color:#9299a1;margin-bottom:20px}
+.admin-login-box input{width:100%;background:#080a0c;border:1px solid #30353a;color:#fff;padding:14px;border-radius:10px;outline:none}
+.admin-login-box input:focus{border-color:var(--accent)}
+
+
+/* Buscadores desplegables de modelo y versión */
+.searchable-field{position:relative}.search-select{position:relative}.search-select>input{padding-right:45px;cursor:pointer}.search-select>input:disabled{cursor:not-allowed;opacity:.55}.search-select-arrow{position:absolute;right:8px;top:7px;width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer}.search-menu{display:none;position:absolute;z-index:80;left:0;right:0;top:calc(100% + 7px);padding:10px;background:#101214;border:1px solid #3a4046;border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.55)}.search-select.open .search-menu{display:block}.search-menu-input{width:100%!important;background:#080a0c!important;border:1px solid #454b52!important;color:#fff!important;padding:12px 13px!important;border-radius:9px!important;outline:none!important;margin-bottom:8px}.search-menu-input:focus{border-color:var(--accent)!important}.search-results{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:3px}.search-result{width:100%;border:0;background:transparent;color:#e9ecef;text-align:left;padding:10px 11px;border-radius:8px;cursor:pointer;font-size:.94rem}.search-result:hover,.search-result.active{background:#20252a}.search-result small{display:block;color:#8f969d;font-size:.72rem;margin-top:2px}.search-empty{padding:12px;color:#8f969d;font-size:.85rem}.search-hint{padding:7px 10px 9px;color:#737b83;font-size:.72rem;border-bottom:1px solid #252a2f;margin-bottom:3px}
+</style>
+<!-- ===== FIREBASE (para que las publicaciones se vean para TODOS los visitantes) =====
+     Ver instrucciones de configuración dentro de <script>, buscar "FIREBASE_CONFIG". -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+</head>
+<body>
+<header class="nav"><div class="container nav-inner">
+<a class="logo" href="#inicio">CARS <span>STREET</span></a>
+<nav class="links"><a href="#inicio">Inicio</a><a href="#vehiculos">Vehículos</a><a href="#vende">Vende tu carro</a><a href="#nosotros">Nosotros</a><a href="#contacto">Contacto</a></nav>
+<div class="nav-actions"><div id="navProfile" style="display:flex;align-items:center;gap:8px;font-weight:800"><img id="navProfileImg" src="" alt="Perfil" style="width:34px;height:34px;border-radius:50%;object-fit:cover;display:none"><span id="navProfileName">CARS STREET</span></div><a class="wa" target="_blank" href="https://wa.me/573116169801">WhatsApp</a></div>
+<button class="menu" onclick="toggleMenu()">☰</button>
+</div></header>
+
+<main>
+<section class="hero" id="inicio">
+<div class="hero-bg" id="heroBg" aria-hidden="true"></div>
+<div class="hero-particles" id="heroParticles" aria-hidden="true">
+  <span class="hero-particle p1"></span>
+  <span class="hero-particle p2"></span>
+  <span class="hero-particle p3"></span>
+  <span class="hero-particle p4"></span>
+</div>
+<div class="container hero-content" id="heroContent">
+<div class="eyebrow" data-depth="0.35">Compra · Venta · Confianza</div><h1 data-depth="0.5">CARS <span>STREET</span></h1>
+<p data-depth="0.22">Encuentra tu próximo vehículo. Nosotros te ayudamos a hacerlo realidad.</p>
+<p style="margin-top:10px" data-depth="0.22">Compra y vende vehículos nuevos y usados de forma fácil, rápida y confiable en Colombia.</p>
+<div class="buttons" data-depth="0.15"><a class="btn btn-primary" href="#vehiculos">VER VEHÍCULOS</a><a class="btn btn-secondary" target="_blank" href="https://wa.me/573116169801?text=Hola%2C%20estoy%20interesado%20en%20conocer%20los%20veh%C3%ADculos%20disponibles%20en%20CARS%20STREET.">CONTACTAR POR WHATSAPP</a></div>
+</div></section>
+
+<section id="buscador"><div class="container">
+<div class="section-head reveal"><div><div class="eyebrow">Inventario</div><h2>Encuentra tu vehículo</h2></div><p>Filtra por marca, modelo, año, precio, tipo, combustible y transmisión.</p></div>
+<div class="search-box reveal reveal-scale"><div class="filters">
+<div class="field"><label>MARCA</label><select id="brand"><option value="">Todas las marcas</option></select></div>
+<div class="field searchable-field"><label>MODELO</label><div class="search-select" id="modelPicker">
+  <input id="model" autocomplete="off" placeholder="Toca para buscar un modelo" readonly disabled>
+  <button type="button" class="search-select-arrow" aria-label="Abrir búsqueda">⌄</button>
+  <div class="search-menu"><input id="modelSearch" class="search-menu-input" type="search" placeholder="Buscar modelo..." autocomplete="off"><div id="modelResults" class="search-results"></div></div>
+</div></div>
+<div class="field"><label>AÑO</label><select id="year"><option value="">Todos los años</option></select></div>
+<div class="field"><label>PRECIO MÍNIMO</label><input id="minPrice" type="number" placeholder="Ej. 20.000.000"></div>
+<div class="field"><label>PRECIO MÁXIMO</label><input id="maxPrice" type="number" placeholder="Ej. 500.000.000"></div>
+<div class="field"><label>TIPO</label><select id="type"><option value="">Todos</option><option>SUV</option><option>Pickup</option><option>Sedán</option><option>Hatchback</option><option>Coupe</option><option>Camioneta</option></select></div>
+<div class="field"><label>COMBUSTIBLE</label><select id="fuel"><option value="">Todos</option><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option></select></div>
+<div class="field"><label>TRANSMISIÓN</label><select id="transmission"><option value="">Todas</option><option>Automática</option><option>Manual</option></select></div>
+</div><div class="filter-actions"><button class="btn btn-primary" onclick="applyFilters()">BUSCAR VEHÍCULO</button><button class="btn btn-secondary" onclick="clearFilters()">LIMPIAR</button></div><div class="counter" id="counter"></div></div>
+</div></section>
+
+<section id="vehiculos"><div class="container"><div class="section-head reveal"><div><div class="eyebrow">Disponible ahora</div><h2>Vehículos destacados</h2></div><p>Publicaciones disponibles para consulta y contacto directo por WhatsApp.</p></div><div class="grid" id="inventory"></div></div></section>
+
+<section id="vende"><div class="container"><div class="sell reveal reveal-scale"><div class="sell-layout"><div><div class="eyebrow">¿Quieres vender?</div><h2>VENDE<br>TU CARRO</h2><p>Cuéntanos sobre tu vehículo y te ayudaremos a conectarlo con nuevos compradores.</p></div>
+<form id="sellForm"><div class="form-grid">
+<div class="field"><label>NOMBRE COMPLETO</label><input required name="name"></div><div class="field"><label>TELÉFONO</label><input required name="phone"></div>
+<div class="field"><label>MARCA</label><select id="sellBrand" required></select></div><div class="field searchable-field"><label>MODELO</label><div class="search-select" id="sellModelPicker">
+  <input id="sellModel" name="model" autocomplete="off" placeholder="Toca para buscar un modelo" readonly required disabled>
+  <button type="button" class="search-select-arrow" aria-label="Abrir búsqueda">⌄</button>
+  <div class="search-menu"><input id="sellModelSearch" class="search-menu-input" type="search" placeholder="Buscar modelo..." autocomplete="off"><div id="sellModelResults" class="search-results"></div></div>
+</div></div><div class="field"><label>AÑO</label><select id="sellYear" required></select></div>
+<div class="field"><label>KILOMETRAJE</label><input required name="mileage" type="number"></div><div class="field"><label>PRECIO ESPERADO</label><input required name="price" type="number"></div>
+<div class="field full"><label>DESCRIPCIÓN</label><textarea name="description" rows="4"></textarea></div>
+<div class="field full"><label>FOTOGRAFÍAS</label><input type="file" accept="image/*" multiple></div>
+</div><button class="btn btn-primary" style="margin-top:15px;width:100%">ENVIAR INFORMACIÓN</button></form></div></div></div></section>
+
+<section id="nosotros"><div class="container"><div class="section-head reveal"><div><div class="eyebrow">CARS STREET</div><h2>Confianza en cada decisión.</h2></div></div><p style="color:#c8cdd1;max-width:800px;margin-bottom:25px">CARS STREET es tu espacio para encontrar vehículos y conectar con oportunidades de compra y venta en Colombia. Nuestro objetivo es ofrecer una experiencia clara, sencilla y confiable para quienes buscan su próximo vehículo.</p><div class="about-grid"><div class="info-card reveal"><h3>VEHÍCULOS PARA TODOS</h3><p>Encuentra diferentes tipos de vehículos en un solo lugar.</p></div><div class="info-card reveal"><h3>FÁCIL Y RÁPIDO</h3><p>Consulta información y contacta directamente desde la plataforma.</p></div><div class="info-card reveal"><h3>ATENCIÓN PERSONALIZADA</h3><p>Estamos disponibles para ayudarte durante tu proceso.</p></div></div></div></section>
+
+<section class="contact" id="contacto"><div class="container reveal">
+<div class="eyebrow">Contacto</div><h2>HABLEMOS DE TU<br>PRÓXIMO VEHÍCULO</h2><p>WhatsApp y teléfono: 311 616 9801 · Instagram: @ivx__gz</p><div class="contact-links"><a class="btn btn-primary" target="_blank" href="https://wa.me/573116169801">ESCRIBIR POR WHATSAPP</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a><a class="btn btn-secondary" target="_blank" href="https://www.instagram.com/ivx__gz/">VISITAR INSTAGRAM</a></div></div></section>
+</main>
+<footer class="container footer"><span>© <span id="footerYear"></span> CARS STREET</span><span>Compra y venta de vehículos en Colombia</span></footer>
+
+
+<button class="admin-trigger" id="adminTrigger" onclick="requestAdminAccess()" style="display:none">⚙ ADMIN</button>
+
+
+<div class="admin-login" id="adminLogin">
+  <div class="admin-login-box">
+    <div class="eyebrow">Acceso privado</div>
+    <h2>Panel de administración</h2>
+    <p>Esta sección está protegida. Ingresa tu clave para continuar.</p>
+    <form id="adminLoginForm">
+      <input id="adminPassword" type="password" autocomplete="current-password" placeholder="Contraseña" required>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px">ENTRAR</button>
+      <button type="button" class="btn btn-secondary" style="width:100%;margin-top:8px" onclick="closeAdminLogin()">CANCELAR</button>
+      <div id="adminLoginError" style="display:none;color:#ff6666;margin-top:10px;font-size:.85rem">Contraseña incorrecta.</div>
+    </form>
+  </div>
+</div>
+
+<div class="admin-panel" id="adminPanel">
+  <div class="admin-box">
+    <div class="admin-head">
+      <div><div class="eyebrow">Gestión del sitio</div><h2>Panel de administración</h2></div>
+      <div style="display:flex;gap:8px"><button class="admin-small" onclick="logoutAdmin()">Cerrar sesión</button><button class="modal-close" onclick="closeAdmin()">Cerrar</button></div>
+    </div>
+
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="adminTab('cars',this)">🚘 Publicaciones</button>
+      <button class="admin-tab" onclick="adminTab('profile',this)">👤 Perfil</button>
+    </div>
+
+    <div class="admin-section active" id="adminCars">
+      <div class="buttons" style="margin-top:0">
+        <button class="btn btn-primary" onclick="newCar()">+ AGREGAR AUTO</button>
+        <button class="btn btn-secondary" onclick="resetDemoCars()">RESTAURAR DEMO</button>
+      </div>
+      <p class="admin-note">Puedes crear, editar y eliminar publicaciones. Las imágenes seleccionadas desde tu computador se guardan en este navegador.</p>
+      <div class="admin-list" id="adminCarList"></div>
+    </div>
+
+    <div class="admin-section" id="adminProfile">
+      <div class="profile-row">
+        <img id="profilePreview" class="profile-preview" src="" alt="Foto de perfil">
+        <div>
+          <h3 id="profileNameHeading">CARS STREET</h3>
+          <p class="admin-note">Cambia el nombre y la foto de perfil que aparecen en el sitio.</p>
+        </div>
+      </div>
+      <form id="profileForm">
+        <div class="form-grid">
+          <div class="field full"><label>NOMBRE / MARCA</label><input id="profileNameInput" required></div>
+          <div class="field full"><label>FOTO DE PERFIL</label><input id="profilePhotoInput" type="file" accept="image/*"></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:15px">GUARDAR PERFIL</button>
+      </form>
+    </div>
+
+    <div class="admin-section" id="adminCarEditor">
+      <div class="admin-head" style="margin-top:10px"><h3 id="carEditorTitle">Agregar vehículo</h3><button class="admin-small" onclick="adminTab('cars')">← Volver</button></div>
+      <form id="carForm">
+        <input type="hidden" id="carId">
+        <div class="form-grid">
+          <div class="field"><label>MARCA</label><select id="carBrand" required></select></div>
+          <div class="field"><label>MODELO</label><input id="carModel" required placeholder="Ej. Mustang"></div>
+          <div class="field"><label>VERSIÓN</label><input id="carVersion" placeholder="Ej. GT"></div>
+          <div class="field"><label>AÑO</label><input id="carYear" type="number" required min="1900" max="2100"></div>
+          <div class="field"><label>PRECIO (COP)</label><input id="carPrice" type="number" required min="0"></div>
+          <div class="field"><label>KILOMETRAJE</label><input id="carMileage" type="number" min="0" value="0"></div>
+          <div class="field"><label>TIPO</label><select id="carType"><option>SUV</option><option>Pickup</option><option>Sedán</option><option>Hatchback</option><option>Coupe</option><option>Camioneta</option></select></div>
+          <div class="field"><label>COMBUSTIBLE</label><select id="carFuel"><option>Gasolina</option><option>Diésel</option><option>Híbrido</option><option>Eléctrico</option></select></div>
+          <div class="field"><label>TRANSMISIÓN</label><select id="carTransmission"><option>Automática</option><option>Manual</option></select></div>
+          <div class="field"><label>ESTADO</label><select id="carStatus"><option>Disponible</option><option>Vendido</option><option>Reservado</option></select></div>
+          <div class="field"><label>UBICACIÓN</label><input id="carLocation" value="Colombia"></div>
+          <div class="field"><label>ÚLTIMO DÍGITO DE PLACA</label><input id="carPlateDigit" type="number" min="0" max="9" placeholder="Ej. 8"></div>
+          <div class="field"><label>PERITAJE</label><select id="carInspection"><option value="">No especificado</option><option>Excelente</option><option>Bueno</option><option>Regular</option><option>Con peritaje</option><option>Sin peritaje</option></select></div>
+          <div class="field"><label>BLINDAJE</label><select id="carArmor"><option value="">No especificado</option><option>No blindado</option><option>Blindado</option><option>Nivel 1</option><option>Nivel 2</option><option>Nivel 3</option><option>Nivel 4</option><option>Nivel 5</option><option>Nivel 6</option></select></div>
+          <div class="field"><label>CILINDRAJE</label><input id="carEngine" placeholder="Ej. 2.0L / 1998 cc"></div>
+          <div class="field"><label>COLOR</label><input id="carColor" placeholder="Ej. Negro"></div>
+          <div class="field"><label>DESTACADO</label><select id="carFeatured"><option value="true">Sí</option><option value="false">No</option></select></div>
+          <div class="field full">
+  <label>FOTOS DE LA PUBLICACIÓN</label>
+  <input id="carImage" type="file" accept="image/*" multiple>
+  <div class="photo-manager">
+    <div id="carPhotoGrid" class="photo-grid"></div>
+    <p class="admin-note">Agrega varias fotos. Puedes eliminar fotos y elegir cuál será la foto principal.</p>
+  </div>
+</div>
+          <div class="field full"><label>DESCRIPCIÓN</label><textarea id="carDesc" rows="4" placeholder="Descripción del vehículo..."></textarea></div>
+        </div>
+        <div class="buttons">
+          <button class="btn btn-primary">GUARDAR PUBLICACIÓN</button>
+          <button type="button" class="btn btn-secondary" onclick="adminTab('cars')">CANCELAR</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="modal-box"><button class="modal-close" onclick="closeModal()">Cerrar</button><div id="modalContent"></div></div></div><div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================================
+   FIREBASE — para que TODOS los visitantes vean lo que publicas
+   ============================================================================
+   Esta página es un archivo HTML que corre en el navegador de cada visitante.
+   Por eso, sin una base de datos en la nube, cada quien tenía "su propia
+   copia" guardada solo en su navegador. Firebase (gratis) soluciona eso:
+   cuando publicas un vehículo, se guarda en internet y se sincroniza al
+   instante en el navegador de todas las personas que estén viendo la página.
+
+   CÓMO ACTIVARLO (una sola vez, no requiere programar):
+   1. Entra a https://console.firebase.google.com y crea un proyecto nuevo
+      (gratis). Ponle el nombre que quieras, por ejemplo "cars-street".
+   2. En el menú izquierdo: Compilación > Firestore Database > "Crear base
+      de datos". Elige el modo "producción" y la región más cercana.
+   3. En el menú izquierdo: Compilación > Storage > "Comenzar" (para las
+      fotos de los autos). Acepta las opciones por defecto.
+   4. En Firestore Database > pestaña "Reglas", reemplaza el contenido por:
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            match /{document=**} { allow read, write: if true; }
+          }
+        }
+      y presiona "Publicar". Repite lo mismo en Storage > pestaña "Reglas":
+        rules_version = '2';
+        service firebase.storage {
+          match /b/{bucket}/o {
+            match /{allPaths=**} { allow read, write: if true; }
+          }
+        }
+      NOTA DE SEGURIDAD: estas reglas dejan la base de datos abierta para que
+      esta página estática (sin servidor propio) pueda escribir en ella. En
+      teoría, alguien con conocimientos técnicos podría escribir datos
+      directamente sin pasar por la contraseña del panel admin. Es el mismo
+      nivel de protección que ya tenía el panel (la contraseña vive en este
+      mismo archivo). Si más adelante quieres reglas más estrictas con login
+      real, se puede agregar Firebase Authentication.
+   5. En el ícono de engranaje (arriba a la izquierda) > "Configuración del
+      proyecto" > baja hasta "Tus apps" > clic en el ícono </> (Web) > dale
+      un nombre y crea la app. Firebase te mostrará un bloque de código con
+      un objeto llamado firebaseConfig: cópialo completo.
+   6. Pega esos valores reemplazando el objeto FIREBASE_CONFIG aquí abajo
+      (las 6 líneas entre las llaves { }).
+   7. Guarda este archivo y súbelo donde tengas la página. Listo: desde ese
+      momento, lo que publiques en el panel admin lo verá cualquier visitante.
+
+   Mientras FIREBASE_CONFIG tenga los valores de ejemplo (sin configurar),
+   la página sigue funcionando exactamente igual que antes: guarda todo
+   localmente en el navegador de cada quien, sin compartir nada.
+*/
+const FIREBASE_CONFIG={
+  apiKey:"TU_API_KEY",
+  authDomain:"TU_PROYECTO.firebaseapp.com",
+  projectId:"TU_PROYECTO",
+  storageBucket:"TU_PROYECTO.appspot.com",
+  messagingSenderId:"TU_SENDER_ID",
+  appId:"TU_APP_ID"
+};
+let cloudEnabled=false;
+let cloudDb=null;
+let cloudStorage=null;
+try{
+  const configured=FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.apiKey!=="TU_API_KEY"&&FIREBASE_CONFIG.projectId&&FIREBASE_CONFIG.projectId!=="TU_PROYECTO";
+  if(configured&&window.firebase){
+    firebase.initializeApp(FIREBASE_CONFIG);
+    cloudDb=firebase.firestore();
+    cloudStorage=firebase.storage();
+    cloudEnabled=true;
+  }else if(configured&&!window.firebase){
+    console.error("Firebase está configurado pero el SDK no cargó (revisa tu conexión a internet).");
+  }
+}catch(e){
+  console.error("No se pudo inicializar Firebase, la página seguirá funcionando en modo local:",e);
+  cloudEnabled=false;
+}
+
+const brands=["Abarth","Acura","Alfa Romeo","Aston Martin","Audi","BAIC","Bentley","BMW","BYD","Buick","Cadillac","Changan","Chery","Chevrolet","Chrysler","Citroën","Cupra","Dacia","Dodge","Dongfeng","DS","FAW","Ferrari","Fiat","Ford","Foton","Geely","Genesis","GMC","Great Wall","Haval","Honda","Hyundai","Infiniti","Isuzu","JAC","Jaguar","Jeep","Jetour","Kia","Lamborghini","Land Rover","Lexus","Lincoln","Lotus","Maserati","Mazda","McLaren","Mercedes-Benz","MG","Mini","Mitsubishi","Nissan","Omoda","Peugeot","Porsche","RAM","Renault","Rolls-Royce","Seat","Skoda","Smart","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"];
+const catalog={"Abarth": {"500": [], "595": [], "695": [], "124 Spider": [], "Punto": [], "Grande Punto": [], "Punto Evo": [], "850 TC": [], "1000 TC": [], "1000 TCR": [], "1300 OT": [], "1600 OT": [], "2000 OT": [], "2400 Coupé": [], "850 Sport Spider": [], "1000 Berlina": [], "1000 Berlina Corsa": [], "2200 Coupé": [], "2200 Sport": [], "2400 Spider": [], "Simca 1000 Rallye": [], "A112 Abarth": [], "Ritmo Abarth 125 TC": [], "Ritmo Abarth 130 TC": [], "131 Abarth Rally": [], "Stilo Abarth": [], "Seicento Sporting Abarth": [], "Cinquecento Sporting Abarth": [], "Grande Punto Abarth": [], "Punto Evo Abarth": [], "500 Abarth": [], "500C Abarth": [], "500e": [], "695 Tributo Ferrari": [], "695 Competizione": [], "695 Biposto": [], "695 Rivale": [], "695 Yamaha XSR": [], "695 Esseesse": [], "595 Competizione": [], "595 Turismo": [], "595 Pista": [], "595 Monster Energy Yamaha": [], "595 Scorpioneoro": [], "595 F595": [], "695 70° Anniversario": [], "124 Spider GT": [], "124 Spider Elaborazione": [], "124 Spider Rally": []}, "Acura": {"Integra": [], "Integra Type S": [], "ADX": [], "RDX": [], "MDX": [], "MDX Type S": []}, "Alfa Romeo": {"Giulia": [], "Stelvio": [], "Tonale": [], "Junior": [], "33 Stradale": [], "4C": [], "4C Spider": [], "8C Competizione": [], "8C Spider": [], "Brera": [], "Spider": [], "GT": [], "GTV": [], "147": [], "156": [], "159": [], "164": [], "166": [], "75": [], "90": [], "33": [], "Alfasud": [], "Alfetta": [], "Giulietta": [], "MiTo": [], "Sprint": [], "SZ": [], "RZ": []}, "Aston Martin": {"Vantage": [], "Vantage Roadster": [], "DB12": [], "DB12 Volante": [], "Vanquish": [], "DBX": [], "DBX707": [], "Valhalla": []}, "Audi": {"50": [], "60": [], "75": [], "80": [], "90": [], "100": [], "200": [], "4000": [], "5000": [], "A1": [], "A2": [], "A3": [], "A4": [], "A5": [], "A6": [], "A7": [], "A8": [], "A6 allroad": [], "A4 allroad": [], "Cabriolet": [], "Coupé": [], "Coupé GT": [], "F103": [], "Fox": [], "Front": [], "Quattro": [], "Sport Quattro": [], "V8": [], "R8": [], "TT": [], "Q2": [], "Q3": [], "Q4 e-tron": [], "Q5": [], "Q5 e-tron": [], "Q6": [], "Q6 e-tron": [], "Q7": [], "Q8": [], "Q8 e-tron": [], "Q9": [], "e-tron": [], "e-tron GT": [], "S1": [], "S2": [], "S3": [], "S4": [], "S5": [], "S6": [], "S7": [], "S8": [], "SQ2": [], "SQ5": [], "SQ6": [], "SQ7": [], "SQ8": [], "RS2 Avant": [], "RS3": [], "RS4": [], "RS5": [], "RS6": [], "RS7": [], "RS Q3": [], "RS Q8": [], "RS e-tron GT": [], "R/RS 4": []}, "BAIC": {"B30": [], "B40": [], "B60": [], "BJ30": [], "BJ40": [], "BJ60": [], "X35": [], "X55": [], "X7": [], "U5 Plus": [], "EU5": []}, "Bentley": {"Bentayga": [], "Bentayga EWB": [], "Flying Spur": [], "Continental GT": [], "Continental GTC": []}, "BMW": {"M4": [], "Serie 1": [], "Serie 2": [], "Serie 3": [], "Serie 4": [], "Serie 5": [], "Serie 7": [], "Serie 8": [], "X1": [], "X2": [], "X3": [], "X4": [], "X5": [], "X6": [], "X7": [], "XM": [], "Z4": [], "i3": [], "i4": [], "i5": [], "i7": [], "iX": [], "M2": [], "M3": [], "M5": [], "M8": [], "X3 M": [], "X4 M": [], "X5 M": [], "X6 M": [], "iX1": [], "iX2": [], "iX3": []}, "BYD": {"Seagull": [], "Dolphin": [], "Yuan Up": [], "Yuan Plus LUX EV": [], "Sealion 7": [], "Tang": [], "Song Plus EV": [], "Song Plus DM-i": [], "Shark": []}, "Buick": {"Envista": [], "Encore GX": [], "Envision": [], "Enclave": []}, "Cadillac": {"Optiq": [], "Optiq-V": [], "Lyriq": [], "Lyriq-V": [], "Vistiq": [], "XT5": [], "Escalade": [], "Escalade ESV": [], "Escalade IQ": [], "Escalade IQL": [], "Celestiq": [], "CT4": [], "CT4-V": [], "CT4-V Blackwing": [], "CT5": [], "CT5-V": [], "CT5-V Blackwing": []}, "Changan": {"Alsvin": [], "Alsvin Plus": [], "CS15 Pro": [], "CS35 Plus Turbo": [], "CS55 Plus Turbo": [], "CS75 Plus": [], "X7 Plus": [], "UNI-T": [], "UNI-K": [], "Hunter": [], "Hunter REEV": [], "Lumin": [], "EM60": [], "Energy": [], "Van": [], "Nevo Q05": []}, "Chery": {"Tiggo 4 CSH": [], "Tiggo 7 Pro MHEV": [], "Tiggo 7 CSH": [], "Tiggo 8 CSH": [], "Tiggo 9 CSH": [], "E5": [], "iCAR 03": [], "iCAR 03T REEV": []}, "Chevrolet": {"Captiva Sport": [], "Onix": [], "Onix RS": [], "Joy": [], "Joy Black": [], "Tracker": [], "Tracker RS": [], "Tracker Premier": [], "Trailblazer": [], "Equinox": [], "Equinox EV": [], "Traverse": [], "Tahoe": [], "Suburban": [], "Colorado": [], "Silverado": [], "Silverado EV": [], "Blazer": [], "Blazer EV": [], "Captiva": [], "Montana": [], "Spark EUV": [], "N400": [], "N300": [], "Tornado Van": [], "Tornado Pickup": [], "Camaro ZL1": [], "Camaro SS": []}, "Chrysler": {"Pacifica": [], "Voyager": [], "300": []}, "Citroën": {"C3": [], "C3 Aircross": [], "C4": [], "C4 X": [], "C5 Aircross": [], "C5 X": [], "Berlingo": [], "SpaceTourer": [], "ë-C3": [], "ë-C3 Aircross": [], "ë-C4": [], "ë-C4 X": [], "ë-C5 Aircross": [], "Ami": []}, "Cupra": {"Formentor": [], "Ateca": [], "Leon": [], "Leon Sportstourer": [], "Born": [], "Tavascan": [], "Terramar": []}, "Dacia": {"Sandero": [], "Sandero Stepway": [], "Logan": [], "Duster": [], "Jogger": [], "Spring": [], "Bigster": []}, "Dodge": {"Charger": [], "Durango": [], "Hornet": [], "Attitude": [], "Journey": [], "Challenger": [], "Grand Caravan": [], "Caravan": [], "Nitro": []}, "Ferrari": {"296 GTB": [], "296 GTS": [], "12Cilindri": [], "12Cilindri Spider": [], "Purosangue": [], "Roma Spider": [], "SF90 Stradale": [], "SF90 Spider": [], "849 Testarossa": [], "849 Testarossa Spider": []}, "Fiat": {"500": [], "500e": [], "500X": [], "500L": [], "Panda": [], "Pandina": [], "Grande Panda": [], "Tipo": [], "Tipo Cross": [], "Tipo Station Wagon": [], "Doblo": [], "Fiorino": [], "Ducato": [], "Scudo": [], "Ulysse": [], "Toro": [], "Strada": [], "Fastback": [], "Pulse": [], "Cronos": [], "Argo": [], "Mobi": [], "Topolino": []}, "Foton": {"Tunland G7": [], "Tunland V9": [], "Tunland V7": [], "Tunland E5": [], "View CS2": [], "View CS2L": [], "View CS7": [], "Toano": [], "Gratour V3": [], "Gratour V5": [], "Gratour V7": [], "Aumark S": [], "Aumark TX": [], "Auman EST": [], "Auman GTL": [], "Auman Galaxy": [], "eAumark": [], "eToano": [], "iBlue": []}, "Genesis": {"GV60": [], "GV70": [], "Electrified GV70": [], "GV80": [], "GV80 Coupe": [], "G70": [], "G80": [], "Electrified G80": [], "G90": []}, "GMC": {"Canyon": [], "Sierra 1500": [], "Sierra HD": [], "Hummer EV Pickup": [], "Hummer EV SUV": [], "Terrain": [], "Acadia": [], "Yukon": [], "Yukon XL": [], "Savana": []}, "Great Wall": {"Poer": [], "Poer Plus": [], "Poer KingKong": [], "Poer Sahar": [], "Wingle 5": [], "Wingle 7": [], "Wingle 9": [], "Cannon": [], "Cannon Alpha": [], "Tank 300": [], "Tank 500": [], "Tank 700": [], "Ora 03": [], "Ora 07": []}, "Honda": {"Civic": [], "Civic Hybrid": [], "Civic Type R": [], "Accord": [], "City": [], "City Hatchback": [], "HR-V": [], "CR-V": [], "Pilot": [], "Passport": [], "Prologue": [], "Odyssey": [], "Ridgeline": [], "e:Ny1": [], "WR-V": [], "BR-V": [], "ZR-V": [], "Elevate": [], "Amaze": [], "Prelude": []}, "Hyundai": {"i10": [], "Grand i10": [], "i20": [], "i20 N": [], "i30": [], "i30 N": [], "Elantra": [], "Sonata": [], "Grandeur": [], "Accent": [], "Verna": [], "Aura": [], "Exter": [], "Bayon": [], "Venue": [], "Creta": [], "Kona": [], "Kona Electric": [], "Tucson": [], "Santa Fe": [], "Palisade": [], "Ioniq 5": [], "Ioniq 6": [], "Ioniq 9": [], "Nexo": [], "Staria": [], "Staria Load": [], "Santa Cruz": [], "Porter": [], "Mighty": [], "County": [], "Universe": []}, "Isuzu": {"D-Max": [], "MU-X": [], "MU-X 4x4": [], "X-Terrain": [], "ELF": [], "N-Series": [], "F-Series": [], "Forward": [], "Giga": [], "NLR": [], "NMR": [], "NPR": [], "NQR": [], "NPS": [], "NQR 4x4": [], "NPS 4x4": []}, "JAC": {"T8": [], "T8 Pro": [], "T9": [], "T9 EV": [], "JS2": [], "JS3": [], "JS4": [], "JS6": [], "JS7": [], "E10X": [], "E30X": [], "E40X": [], "E50A": [], "E-JS1": [], "E-JS4": [], "Sunray": [], "X200": [], "X250": [], "X350": [], "X450": [], "X500": []}, "Jaguar": {"F-Pace": [], "E-Pace": [], "I-Pace": [], "F-Type": []}, "Jeep": {"Avenger": [], "Renegade": [], "Compass": [], "Cherokee": [], "Grand Cherokee": [], "Wrangler": [], "Gladiator": [], "Wagoneer": [], "Grand Wagoneer": [], "Wagoneer S": []}, "Jetour": {"X50": [], "X70": [], "X70 Plus": [], "X70 Pro": [], "X70 C-DM": [], "X90 Plus": [], "X90 Pro": [], "X90 C-DM": [], "X90 Plus C-DM": [], "Dashing": [], "X1": [], "Traveller": [], "T2": [], "T2 i-DM": [], "Shanhai L9": [], "Shanhai L7": [], "Shanhai T1": [], "X200": [], "X500": []}, "Kia": {"Picanto": [], "K3": [], "K4": [], "K5": [], "K8": [], "K9": [], "Rio": [], "Forte": [], "Cerato": [], "Soluto": [], "Stonic": [], "Sonet": [], "Seltos": [], "Sportage": [], "Sorento": [], "Telluride": [], "Carnival": [], "Carens": [], "EV3": [], "EV4": [], "EV5": [], "EV6": [], "EV9": [], "Niro": [], "Niro EV": [], "Niro Plus": [], "Soul": [], "Soul EV": [], "Ray": [], "Ray EV": [], "Mohave": [], "Tasman": []}, "Lamborghini": {"Revuelto": [], "Temerario": [], "Urus": [], "Urus S": [], "Urus SE": [], "Urus Performante": [], "Huracán Sterrato": [], "Huracán Tecnica": [], "Huracán STO": [], "Huracán EVO": [], "Huracán EVO Spyder": []}, "Land Rover": {"Range Rover": [], "Range Rover Sport": [], "Range Rover Velar": [], "Range Rover Evoque": [], "Defender": [], "Discovery": [], "Discovery Sport": []}, "Lexus": {"UX": [], "UX 300h": [], "RZ": [], "NX": [], "NX 350h": [], "NX 450h+": [], "RX": [], "RX 350h": [], "RX 450h+": [], "RX 500h": [], "TX": [], "GX": [], "LX": [], "ES": [], "ES 300h": [], "LS": [], "LC": [], "LC 500h": [], "RC": [], "RC F": []}, "Lincoln": {"Navigator": [], "Navigator L": [], "Aviator": [], "Corsair": [], "Nautilus": [], "Corsair Grand Touring": []}, "Lotus": {"Emira": [], "Emeya": [], "Eletre": [], "Evija": []}, "Maserati": {"Grecale": [], "GranTurismo": [], "GranCabrio": [], "MC20": [], "MC20 Cielo": []}, "Mazda": {"Mazda2": [], "Mazda3": [], "Mazda6": [], "CX-3": [], "CX-30": [], "CX-5": [], "CX-50": [], "CX-60": [], "CX-70": [], "CX-80": [], "CX-90": [], "MX-5": [], "MX-30": [], "BT-50": []}, "McLaren": {"750S": [], "750S Spider": [], "Artura": [], "Artura Spider": [], "GTS": [], "W1": []}, "Mercedes-Benz": {"A-Class": [], "CLA": [], "C-Class": [], "E-Class": [], "S-Class": [], "GLA": [], "GLB": [], "GLC": [], "GLE": [], "GLS": [], "G-Class": [], "CLE": [], "SL": [], "AMG GT": [], "AMG GT 4-Door": [], "EQE": [], "EQE SUV": [], "EQS": [], "EQS SUV": [], "EQA": [], "EQB": [], "EQV": [], "V-Class": [], "Vito": [], "Sprinter": [], "Citan": [], "T-Class": [], "Marco Polo": []}, "MG": {"MG3": [], "MG4": [], "MG5": [], "MG6": [], "MG7": [], "ZS": [], "ZS EV": [], "ZS Hybrid+": [], "HS": [], "HS Hybrid+": [], "RX5": [], "RX8": [], "Marvel R": [], "Cyberster": [], "Whale": [], "One": [], "GT": [], "Extender": [], "5": []}, "Mini": {"Cooper 3 Door": [], "Cooper 5 Door": [], "Cooper Convertible": [], "Aceman": [], "Countryman": [], "John Cooper Works": [], "John Cooper Works Convertible": []}, "Mitsubishi": {"Colt": [], "Mirage": [], "Attrage": [], "ASX": [], "Eclipse Cross": [], "Outlander": [], "Outlander PHEV": [], "Xpander": [], "Xpander Cross": [], "Pajero Sport": [], "Triton": [], "L200": [], "Delica D:5": [], "Delica Mini": [], "eK X": [], "eK Space": [], "eK Wagon": []}, "Nissan": {"Micra": [], "Versa": [], "Sentra": [], "Altima": [], "Maxima": [], "Kicks": [], "Juke": [], "Qashqai": [], "X-Trail": [], "Pathfinder": [], "Armada": [], "Patrol": [], "Murano": [], "Rogue": [], "Ariya": [], "Leaf": [], "Z": [], "GT-R": [], "Navara": [], "Frontier": [], "Titan": [], "Terra": [], "Serena": [], "Urvan": [], "Caravan": [], "Townstar": [], "Interstar": [], "Magnite": [], "Livina": []}, "Peugeot": {"208": [], "2008": [], "308": [], "308 SW": [], "408": [], "508": [], "3008": [], "5008": [], "Rifter": [], "Partner": [], "Expert": [], "Boxer": []}, "Porsche": {"911": [], "718 Cayman": [], "718 Boxster": [], "Taycan": [], "Panamera": [], "Macan": [], "Macan Electric": [], "Cayenne": [], "Cayenne Coupé": [], "911 GT3": [], "911 GT3 RS": [], "911 GT2 RS": [], "911 Turbo": [], "911 Turbo S": [], "718 Spyder RS": [], "718 Cayman GT4 RS": []}, "RAM": {"1500": [], "1500 REV": [], "1500 Ramcharger": [], "2500": [], "3500": [], "ProMaster": [], "ProMaster EV": [], "Rampage": []}, "Renault": {"Clio": [], "Clio E-Tech": [], "Captur": [], "Arkana": [], "Austral": [], "Espace": [], "Rafale": [], "Symbioz": [], "Megane E-Tech": [], "Scenic E-Tech": [], "Twingo": [], "Zoe": [], "Kangoo": [], "Kangoo E-Tech": [], "Trafic": [], "Trafic E-Tech": [], "Master": [], "Master E-Tech": [], "Express": [], "Express Van": [], "Oroch": [], "Duster": [], "Kardian": [], "Koleos": [], "Kwid": []}, "Seat": {"Ibiza": [], "Ibiza FR": [], "Ibiza Xcellence": [], "León": [], "León Sportstourer": [], "Arona": [], "Ateca": [], "Tarraco": [], "Mii": [], "Alhambra": [], "Toledo": []}, "Skoda": {"Fabia": [], "Scala": [], "Octavia": [], "Superb": [], "Kamiq": [], "Karoq": [], "Kodiaq": [], "Enyaq": [], "Enyaq Coupé": [], "Elroq": [], "Kushaq": [], "Slavia": [], "Kylaq": [], "Rapid": [], "Roomster": [], "Yeti": [], "Citigo": [], "Scala Monte Carlo": [], "Octavia RS": [], "Kodiaq RS": []}, "Smart": {"Fortwo": [], "Forfour": [], "#1": [], "#3": [], "#5": []}, "Subaru": {"Impreza": [], "WRX": [], "BRZ": [], "Crosstrek": [], "Forester": [], "Outback": [], "Ascent": [], "Solterra": [], "Levorg": [], "Legacy": [], "Tribeca": [], "Baja": []}, "Suzuki": {"Swift": [], "Swift Sport": [], "Dzire": [], "Baleno": [], "Celerio": [], "Alto": [], "S-Presso": [], "Ignis": [], "Fronx": [], "Vitara": [], "Grand Vitara": [], "S-Cross": [], "Jimny": [], "Jimny 5-Door": [], "Ertiga": [], "XL6": [], "Invicto": [], "Brezza": [], "Wagon R": [], "Hustler": [], "Spacia": [], "Every": [], "Carry": []}, "Tesla": {"Model 3": [], "Model Y": [], "Model S": [], "Model X": [], "Cybertruck": [], "Semi": [], "Roadster": []}, "Toyota": {"Tundra": [], "Corolla": ["XEi", "SEG", "Hybrid", "GR"], "Yaris": [], "Camry": [], "Prius": [], "GR86": [], "Supra": [], "RAV4": [], "Fortuner": [], "4Runner": [], "Land Cruiser": [], "Hilux": [], "Tacoma": [], "Highlander": [], "Sequoia": [], "Avalon": [], "Rush": [], "Aygo X": [], "Yaris Cross": [], "Corolla Cross": [], "Crown": [], "Crown Sport": [], "C-HR": [], "bZ4X": [], "Urban Cruiser": [], "Grand Highlander": [], "Land Cruiser 250": [], "Land Cruiser 300": [], "Sienna": [], "Venza": [], "Innova": [], "Avanza": [], "Proace": [], "Proace City": [], "Proace Max": [], "Hiace": [], "Granvia": [], "Alphard": [], "Vellfire": []}, "Volkswagen": {"Golf": [], "Golf GTI": [], "Golf R": [], "Polo": [], "Polo GTI": [], "Virtus": [], "Jetta": [], "Passat": [], "Arteon": [], "Lamando": [], "Taigo": [], "T-Cross": [], "T-Roc": [], "Tiguan": [], "Touareg": [], "Atlas": [], "Atlas Cross Sport": [], "Teramont": [], "ID.3": [], "ID.4": [], "ID.5": [], "ID.7": [], "ID. Buzz": [], "ID. Buzz Cargo": [], "Taos": [], "Nivus": [], "Tera": [], "Amarok": [], "Saveiro": [], "Transporter": [], "Caddy": [], "Caddy Cargo": [], "Crafter": [], "Multivan": [], "California": [], "Caravelle": [], "Touran": [], "Sharan": [], "Gol": []}, "Volvo": {"EX30": [], "EX40": [], "EX90": [], "EC40": [], "XC40": [], "XC60": [], "XC90": [], "EM90": [], "ES90": [], "S60": [], "S90": [], "V60": [], "V90": [], "V60 Cross Country": [], "V90 Cross Country": []}};
+const defaultVehicles=[
+{id:1,brand:"Toyota",model:"Tundra",version:"",year:2024,price:340000000,mileage:0,transmission:"Automática",fuel:"Gasolina",type:"Pickup",location:"Colombia",featured:true,status:"Disponible",plateDigit:"",inspection:"",armor:"No blindado",engine:"",color:"",img:"https://images.unsplash.com/photo-1551830820-330a71b99659?auto=format&fit=crop&w=1000&q=85",desc:"Toyota Tundra 2024 disponible en Colombia."},
+{id:2,brand:"Chevrolet",model:"Captiva Sport",version:"",year:2011,price:25000000,mileage:0,transmission:"Automática",fuel:"Gasolina",type:"SUV",location:"Colombia",featured:false,status:"Disponible",plateDigit:"",inspection:"",armor:"No blindado",engine:"",color:"",img:"https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1000&q=85",desc:"Chevrolet Captiva Sport 2011 disponible en Colombia."}
+];
+function cloneDefaultVehicles(){
+  return JSON.parse(JSON.stringify(defaultVehicles));
+}
+/* ===== ALMACENAMIENTO DE PUBLICACIONES (IndexedDB + respaldo en localStorage) =====
+   Sistema de guardado con dos capas:
+   1) IndexedDB (IDB_VEHICLES_KEY): almacenamiento principal, soporta muchos
+      más datos que localStorage (necesario porque las fotos pesan varios
+      cientos de KB cada una).
+   2) localStorage (VEHICLES_BACKUP_KEY): respaldo automático que se escribe
+      cada vez que se guarda algo en IndexedDB. Si IndexedDB falla, no está
+      disponible (por ejemplo en algunos modos de navegación privada) o se
+      corrompe, la página recupera los datos desde este respaldo en vez de
+      mostrar los autos de ejemplo.
+
+   IMPORTANTE (anti-reinicio): un array vacío ([]) es un estado VÁLIDO y
+   guardado a propósito (el administrador eliminó todas las publicaciones).
+   Antes, el código comprobaba "stored.length" y trataba un array vacío como
+   "no hay datos", así que la página volvía a mostrar los 2 autos demo cada
+   vez que se recargaba después de borrar todo. Ahora se distingue
+   explícitamente entre "nunca se guardó nada" (undefined/null) y "se guardó
+   una lista vacía" (array de longitud 0), y solo se cargan los datos demo
+   en el primer caso.
+*/
+const IDB_NAME="carsStreetDB";
+const IDB_STORE="kv";
+const IDB_VEHICLES_KEY="vehicles";
+const VEHICLES_BACKUP_KEY="carsStreetVehiclesBackup";
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    if(!window.indexedDB){reject(new Error("IndexedDB no disponible"));return}
+    const req=indexedDB.open(IDB_NAME,1);
+    req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(IDB_STORE))req.result.createObjectStore(IDB_STORE)};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+    req.onblocked=()=>reject(new Error("IndexedDB bloqueado"));
+  });
+}
+async function idbGet(key){
+  const db=await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(IDB_STORE,"readonly");
+    const req=tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+async function idbSet(key,value){
+  const db=await idbOpen();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(IDB_STORE,"readwrite");
+    tx.objectStore(IDB_STORE).put(value,key);
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+function normalizeVehicleList(list){
+  return (list||[]).map(v=>({...v,images:Array.isArray(v.images)&&v.images.length?v.images:[v.img],plateDigit:v.plateDigit||"",inspection:v.inspection||"",armor:v.armor||"No blindado",engine:v.engine||"",color:v.color||""}));
+}
+// Valida que lo recuperado sea realmente una lista de vehículos utilizable,
+// para evitar que datos corruptos (JSON inválido, tipo incorrecto, etc.)
+// tumben la página o se guarden por encima de datos buenos.
+function isValidVehicleList(list){
+  return Array.isArray(list)&&list.every(v=>v&&typeof v==="object"&&"id"in v&&"brand"in v&&"model"in v);
+}
+// Guarda un respaldo en localStorage cada vez que se guarda en IndexedDB.
+// Si localStorage está lleno (por muchas fotos pesadas) se falla en
+// silencio: IndexedDB sigue siendo la copia principal y válida.
+function backupVehiclesToLocalStorage(list){
+  try{
+    localStorage.setItem(VEHICLES_BACKUP_KEY,JSON.stringify(list));
+  }catch(e){
+    console.error("No se pudo escribir el respaldo en localStorage:",e);
+  }
+}
+let vehicles=cloneDefaultVehicles();
+
+/* ===== SINCRONIZACIÓN EN LA NUBE (Firestore + Storage) =====
+   Cuando Firebase está configurado (ver arriba), los vehículos se guardan
+   en la colección "vehicles" de Firestore y las fotos en Firebase Storage
+   (Firestore no permite documentos de más de 1MB, y varias fotos juntas
+   pesan más que eso). Un "listener" en tiempo real (onSnapshot) hace que,
+   apenas el admin publica o borra algo, TODOS los navegadores conectados
+   reciban el cambio al instante, sin recargar la página.
+   Si Firebase no está configurado o falla, todo sigue funcionando igual
+   que antes (solo local, en IndexedDB + localStorage).
+*/
+const CLOUD_VEHICLES_COLLECTION="vehicles";
+const CLOUD_META_DOC="site/meta";
+
+async function uploadVehicleImage(dataUrl,vehicleId,index){
+  if(!cloudEnabled)return dataUrl;
+  try{
+    const res=await fetch(dataUrl);
+    const blob=await res.blob();
+    const path=`vehicles/${vehicleId}/foto_${index}_${Date.now()}.jpg`;
+    const ref=cloudStorage.ref().child(path);
+    await ref.put(blob);
+    return await ref.getDownloadURL();
+  }catch(e){
+    console.error("No se pudo subir una foto a Firebase Storage:",e);
+    return null;
+  }
+}
+
+// Sube a Storage solo las fotos nuevas (las que llegan como base64 "data:...");
+// las que ya son una URL de Storage (por ejemplo al editar sin cambiar fotos) se conservan tal cual.
+async function uploadVehicleImages(vehicle){
+  const uploaded=[];
+  for(let i=0;i<vehicle.images.length;i++){
+    const im=vehicle.images[i];
+    if(typeof im==="string"&&im.startsWith("data:")){
+      const url=await uploadVehicleImage(im,vehicle.id,i);
+      uploaded.push(url||im);
+    }else{
+      uploaded.push(im);
+    }
+  }
+  return uploaded;
+}
+
+async function saveVehicleToCloud(vehicle){
+  if(!cloudEnabled)return null;
+  try{
+    const images=await uploadVehicleImages(vehicle);
+    const toSave={...vehicle,images,img:images[0]||vehicle.img};
+    await cloudDb.collection(CLOUD_VEHICLES_COLLECTION).doc(String(vehicle.id)).set(toSave);
+    return toSave;
+  }catch(e){
+    console.error("No se pudo guardar el vehículo en Firebase:",e);
+    return null;
+  }
+}
+
+async function deleteVehicleFromCloud(id){
+  if(!cloudEnabled)return false;
+  try{
+    await cloudDb.collection(CLOUD_VEHICLES_COLLECTION).doc(String(id)).delete();
+    return true;
+  }catch(e){
+    console.error("No se pudo eliminar el vehículo en Firebase:",e);
+    return false;
+  }
+}
+
+async function replaceAllCloudVehicles(list){
+  if(!cloudEnabled)return false;
+  try{
+    const existing=await cloudDb.collection(CLOUD_VEHICLES_COLLECTION).get();
+    const batch=cloudDb.batch();
+    existing.forEach(doc=>batch.delete(doc.ref));
+    list.forEach(v=>batch.set(cloudDb.collection(CLOUD_VEHICLES_COLLECTION).doc(String(v.id)),v));
+    await batch.commit();
+    return true;
+  }catch(e){
+    console.error("No se pudo reemplazar la lista de vehículos en Firebase:",e);
+    return false;
+  }
+}
+
+// La primera vez que alguien conecta con la nube ya configurada y la
+// colección está totalmente vacía (proyecto de Firebase recién creado),
+// se siembra con los 2 vehículos de ejemplo, una sola vez. Un documento
+// de control ("site/meta") evita volver a sembrarlos si luego el admin
+// borra todos los autos a propósito.
+async function ensureCloudSeeded(){
+  if(!cloudEnabled)return;
+  try{
+    const metaRef=cloudDb.doc(CLOUD_META_DOC);
+    const metaSnap=await metaRef.get();
+    if(metaSnap.exists&&metaSnap.data()&&metaSnap.data().vehiclesSeeded)return;
+    const existing=await cloudDb.collection(CLOUD_VEHICLES_COLLECTION).limit(1).get();
+    if(existing.empty){
+      const batch=cloudDb.batch();
+      cloneDefaultVehicles().forEach(v=>batch.set(cloudDb.collection(CLOUD_VEHICLES_COLLECTION).doc(String(v.id)),v));
+      await batch.commit();
+    }
+    await metaRef.set({vehiclesSeeded:true},{merge:true});
+  }catch(e){
+    console.error("No se pudo verificar/sembrar los datos iniciales en Firebase:",e);
+  }
+}
+
+// Escucha cambios en tiempo real: apenas cualquier persona (u otro
+// dispositivo del admin) publica, edita o borra un vehículo, esta función
+// se dispara automáticamente en TODOS los navegadores abiertos en la
+// página y actualiza lo que se ve, sin recargar.
+function listenToCloudVehicles(){
+  if(!cloudEnabled)return;
+  cloudDb.collection(CLOUD_VEHICLES_COLLECTION).onSnapshot(snapshot=>{
+    const list=[];
+    snapshot.forEach(doc=>list.push(doc.data()));
+    vehicles=normalizeVehicleList(list);
+    idbSet(IDB_VEHICLES_KEY,vehicles).catch(e=>console.error(e));
+    backupVehiclesToLocalStorage(vehicles);
+    render();
+    renderAdminCars();
+  },err=>{
+    console.error("Se perdió la conexión en tiempo real con Firebase (se sigue usando la copia local):",err);
+  });
+}
+
+async function loadVehicles(){
+  let stored;
+  let idbFailed=false;
+  try{
+    stored=await idbGet(IDB_VEHICLES_KEY);
+  }catch(e){
+    console.error("IndexedDB no disponible, se intentará el respaldo de localStorage:",e);
+    idbFailed=true;
+  }
+
+  // "undefined" = nunca se guardó nada todavía (primera visita).
+  // Un array (incluso vacío) = ya existen datos guardados y deben respetarse.
+  if(stored===undefined||stored===null){
+    // Migración única desde el antiguo almacenamiento en localStorage (versión previa del sitio).
+    const legacy=localStorage.getItem("carsStreetVehicles");
+    if(legacy){
+      try{
+        const parsedLegacy=JSON.parse(legacy);
+        if(isValidVehicleList(parsedLegacy)){
+          stored=parsedLegacy;
+          if(!idbFailed){try{await idbSet(IDB_VEHICLES_KEY,stored)}catch(e){console.error(e)}}
+          backupVehiclesToLocalStorage(stored);
+          localStorage.removeItem("carsStreetVehicles");
+        }
+      }catch(e){/* si la migración falla, seguimos buscando datos válidos */}
+    }
+  }
+
+  // Si IndexedDB no tenía nada (o falló), se recurre al respaldo de localStorage.
+  if(stored===undefined||stored===null){
+    try{
+      const backup=localStorage.getItem(VEHICLES_BACKUP_KEY);
+      if(backup){
+        const parsedBackup=JSON.parse(backup);
+        if(isValidVehicleList(parsedBackup)){
+          stored=parsedBackup;
+          // Si IndexedDB sí funciona pero estaba vacío, se restaura desde el respaldo.
+          if(!idbFailed){try{await idbSet(IDB_VEHICLES_KEY,stored)}catch(e){console.error(e)}}
+        }
+      }
+    }catch(e){
+      console.error("El respaldo de localStorage estaba corrupto:",e);
+    }
+  }
+
+  // Solo si de verdad no existe ningún dato guardado (ni en IndexedDB ni en
+  // el respaldo) se cargan los vehículos de ejemplo.
+  if(stored===undefined||stored===null||!isValidVehicleList(stored)){
+    return cloneDefaultVehicles();
+  }
+  return normalizeVehicleList(stored);
+}
+async function saveVehicles(){
+  vehicles=vehicles.map(normalizeVehiclePhotos);
+  render();renderAdminCars();
+  let idbOk=true;
+  try{
+    await idbSet(IDB_VEHICLES_KEY,vehicles);
+  }catch(e){
+    console.error(e);
+    idbOk=false;
+  }
+  // El respaldo en localStorage se guarda siempre, sea cual sea el resultado de IndexedDB.
+  backupVehiclesToLocalStorage(vehicles);
+  if(!idbOk){
+    showToast("Se guardó en el respaldo local. Revisa el espacio de almacenamiento del navegador.");
+  }
+}
+
+const $=id=>document.getElementById(id);
+function money(n){return "$"+n.toLocaleString("es-CO")+" COP"}
+function populateBrands(select,all=true){select.innerHTML=(all?'<option value="">Todas las marcas</option>': '<option value="">Selecciona una marca</option>')+brands.map(b=>`<option>${b}</option>`).join("")}
+function populateYears(select){const current=new Date().getFullYear();select.innerHTML='<option value="">Todos los años</option>'+Array.from({length:current-1900+2},(_,i)=>current+1-i).map(y=>`<option>${y}</option>`).join("")}
+populateBrands($("brand"));populateBrands($("sellBrand"),false);populateYears($("year"));populateYears($("sellYear"));$("footerYear").textContent=new Date().getFullYear();
+
+function normalizeSearchText(value){
+  return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("es").trim();
+}
+function editDistance(a,b){
+  a=normalizeSearchText(a); b=normalizeSearchText(b);
+  if(a===b)return 0;
+  if(!a)return b.length; if(!b)return a.length;
+  const prev=Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const cur=[i];
+    for(let j=1;j<=b.length;j++) cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    for(let j=0;j<cur.length;j++) prev[j]=cur[j];
+  }
+  return prev[b.length];
+}
+function similarityScore(query,value){
+  const q=normalizeSearchText(query), v=normalizeSearchText(value);
+  if(!q)return 1; if(v===q)return 1000;
+  let score=0;
+  if(v.startsWith(q))score+=500;
+  if(v.includes(q))score+=300;
+  const tokens=q.split(/\s+/).filter(Boolean);
+  tokens.forEach(t=>{if(v.startsWith(t))score+=80; else if(v.includes(t))score+=45;});
+  const d=editDistance(q,v);
+  const max=Math.max(q.length,v.length,1);
+  score+=Math.max(0,120*(1-d/max));
+  return score;
+}
+function uniqueSorted(values){
+  return [...new Set(values.filter(Boolean))].sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base",numeric:true}));
+}
+function getAvailableModels(brand){
+  if(!brand)return [];
+  const fromCatalog=catalog[brand]?Object.keys(catalog[brand]):[];
+  const fromInventory=vehicles.filter(v=>v.brand===brand).map(v=>v.model);
+  return uniqueSorted(brand==="Ford"?[...getFordModels(),...fromInventory]:[...fromCatalog,...fromInventory]);
+}
+function getAvailableVersions(brand,model){
+  if(!brand||!model)return [];
+  let versions=brand==="Ford"?getFordVersions(model):((catalog[brand]&&catalog[brand][model])||[]);
+  versions=[...versions,...vehicles.filter(v=>v.brand===brand&&normalizeSearchText(v.model)===normalizeSearchText(model)).map(v=>v.version)];
+  return uniqueSorted(versions);
+}
+function setupSearchPicker({pickerId,inputId,searchId,resultsId,getOptions,onSelect}){
+  const picker=$(pickerId), input=$(inputId), search=$(searchId), results=$(resultsId);
+  if(!picker||!input||!search||!results)return null;
+  let options=[];
+  function renderResults(query=""){
+    const ranked=options.map(value=>({value,score:similarityScore(query,value)})).sort((a,b)=>b.score-a.score||a.value.localeCompare(b.value,"es",{sensitivity:"base"}));
+    const shown=query?ranked.filter(x=>x.score>25).slice(0,12):ranked.slice(0,12);
+    results.innerHTML=(query?"":'<div class="search-hint">Escribe para encontrar la opción más parecida</div>')+(shown.length?shown.map((x,i)=>`<button type="button" class="search-result${i===0&&query?" active":""}" data-value="${x.value.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">${x.value}${query&&i===0?'<small>Mejor coincidencia</small>':''}</button>`).join(""):'<div class="search-empty">No encontramos coincidencias. Prueba con otra palabra.</div>');
+  }
+  function open(){
+    if(input.disabled)return;
+    options=getOptions()||[];
+    picker.classList.add("open");
+    search.value="";
+    renderResults("");
+    setTimeout(()=>search.focus(),0);
+  }
+  function close(){picker.classList.remove("open");}
+  function setOptions(nextOptions){
+    options=uniqueSorted(nextOptions||[]);
+    if(!options.some(v=>normalizeSearchText(v)===normalizeSearchText(input.value))) input.value="";
+    input.disabled=!options.length;
+  }
+  input.addEventListener("click",open);
+  input.addEventListener("focus",open);
+  picker.querySelector(".search-select-arrow").addEventListener("click",open);
+  search.addEventListener("input",()=>renderResults(search.value));
+  search.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){e.preventDefault();const first=results.querySelector(".search-result");if(first)first.click();}
+    if(e.key==="Escape"){e.preventDefault();close();input.focus();}
+  });
+  results.addEventListener("click",e=>{
+    const btn=e.target.closest(".search-result"); if(!btn)return;
+    input.value=btn.dataset.value; onSelect&&onSelect(input.value); close();
+  });
+  document.addEventListener("click",e=>{if(!picker.contains(e.target))close()});
+  return {setOptions,open,close};
+}
+
+let modelPicker,sellModelPicker;
+function fillModels(brand, modelInput){
+  modelInput.value="";
+  if(!brand){modelInput.disabled=true; modelPicker&&modelPicker.close(); sellModelPicker&&sellModelPicker.close(); return}
+  const options=getAvailableModels(brand);
+  const target=modelInput.id==="model"?modelPicker:sellModelPicker;
+  target&&target.setOptions(options);
+}
+modelPicker=setupSearchPicker({pickerId:"modelPicker",inputId:"model",searchId:"modelSearch",resultsId:"modelResults",getOptions:()=>getAvailableModels($("brand").value)});
+sellModelPicker=setupSearchPicker({pickerId:"sellModelPicker",inputId:"sellModel",searchId:"sellModelSearch",resultsId:"sellModelResults",getOptions:()=>getAvailableModels($("sellBrand").value)});
+
+$("brand").onchange=()=>{fillModels($("brand").value,$("model"));};
+$("sellBrand").onchange=()=>fillModels($("sellBrand").value,$("sellModel"));
+
+
+
+let editingPhotos=[];
+function normalizeVehiclePhotos(v){
+  if(!v.images||!Array.isArray(v.images)||!v.images.length) v.images=[v.img];
+  if(!v.img) v.img=v.images[0];
+  return v;
+}
+vehicles=vehicles.map(normalizeVehiclePhotos);
+function renderCarPhotos(){
+  const box=$("carPhotoGrid"); if(!box)return;
+  box.innerHTML=editingPhotos.length?editingPhotos.map((im,i)=>`
+    <div class="photo-thumb ${i===0?"main":""}">
+      <img src="${im}" alt="Foto ${i+1}">
+      <span class="photo-label">${i===0?"PRINCIPAL":"FOTO "+(i+1)}</span>
+      <button type="button" onclick="removeCarPhoto(${i})">×</button>
+    </div>`).join(""):`<div class="admin-note">No hay fotos. Selecciona imágenes arriba.</div>`;
+}
+function removeCarPhoto(i){editingPhotos.splice(i,1);renderCarPhotos()}
+async function addCarPhotos(files){
+  for(const file of Array.from(files||[])){const im=await readImage(file);if(im)editingPhotos.push(im)}
+  renderCarPhotos();
+}
+
+
+/* ===== COMPRESIÓN AUTOMÁTICA DE FOTOS =====
+   Permite seleccionar fotos grandes (JPG/PNG/WEBP/HEIC si el navegador lo soporta)
+   y las convierte a JPEG optimizado antes de guardarlas.
+*/
+const MAX_IMAGE_SIDE=1800;
+const IMAGE_QUALITY=.82;
+const MAX_IMAGE_BYTES=900*1024;
+
+function loadImageElement(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file);
+    const img=new Image();
+    img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Formato de imagen no compatible"))};
+    img.src=url;
+  });
+}
+
+function canvasToDataURL(canvas,quality){
+  return canvas.toDataURL("image/jpeg",quality);
+}
+
+async function compressImage(file){
+  // Ya está optimizada: aun así se procesa para mantener un tamaño uniforme.
+  const img=await loadImageElement(file);
+  let w=img.naturalWidth||img.width;
+  let h=img.naturalHeight||img.height;
+
+  const scale=Math.min(1,MAX_IMAGE_SIDE/Math.max(w,h));
+  w=Math.max(1,Math.round(w*scale));
+  h=Math.max(1,Math.round(h*scale));
+
+  const canvas=document.createElement("canvas");
+  canvas.width=w;
+  canvas.height=h;
+  const ctx=canvas.getContext("2d",{alpha:false});
+  ctx.drawImage(img,0,0,w,h);
+
+  let quality=IMAGE_QUALITY;
+  let data=canvasToDataURL(canvas,quality);
+
+  // Reduce progresivamente si todavía queda muy pesada.
+  while(data.length*0.75>MAX_IMAGE_BYTES && quality>.45){
+    quality-=.07;
+    data=canvasToDataURL(canvas,quality);
+  }
+
+  return data;
+}
+
+async function readImage(file){
+  if(!file)return "";
+  try{
+    return await compressImage(file);
+  }catch(err){
+    console.error(err);
+    // Fallback: lectura normal para formatos que el canvas no pueda procesar.
+    return await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=reject;
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+async function addCarPhotos(files){
+  const selected=Array.from(files||[]);
+  if(!selected.length)return;
+
+  const oldText=$("carPhotoGrid").innerHTML;
+  $("carPhotoGrid").innerHTML='<div class="admin-note">⏳ Procesando y comprimiendo fotos... espera un momento.</div>';
+
+  try{
+    for(const file of selected){
+      const im=await compressImage(file);
+      if(im)editingPhotos.push(im);
+    }
+    renderCarPhotos();
+    showToast(`${selected.length} foto(s) listas para guardar`);
+  }catch(err){
+    console.error(err);
+    renderCarPhotos();
+    showToast("Una foto no pudo procesarse. Usa JPG, PNG o WEBP.");
+  }
+}
+
+function readImage(file){
+  return new Promise((resolve,reject)=>{
+    if(!file){resolve("");return}
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+// ===== Perfil del negocio en la nube (nombre + foto) =====
+// Igual que con los vehículos: si Firebase está configurado, el nombre y
+// la foto del perfil se guardan en Firestore ("site/profile") y se
+// escuchan en tiempo real, para que el cambio se vea en cualquier
+// navegador que tenga la página abierta.
+async function saveProfileToCloud(profile){
+  if(!cloudEnabled)return null;
+  try{
+    let photo=profile.photo;
+    if(photo&&typeof photo==="string"&&photo.startsWith("data:")){
+      const res=await fetch(photo);
+      const blob=await res.blob();
+      const ref=cloudStorage.ref().child(`site/perfil_${Date.now()}.jpg`);
+      await ref.put(blob);
+      photo=await ref.getDownloadURL();
+    }
+    const toSave={name:profile.name||"",photo:photo||""};
+    await cloudDb.doc("site/profile").set(toSave,{merge:true});
+    return toSave;
+  }catch(e){
+    console.error("No se pudo guardar el perfil en Firebase:",e);
+    return null;
+  }
+}
+function listenToCloudProfile(){
+  if(!cloudEnabled)return;
+  cloudDb.doc("site/profile").onSnapshot(doc=>{
+    if(!doc.exists)return;
+    const p=doc.data()||{};
+    if(p.name)localStorage.setItem("carsStreetProfileName",p.name);
+    if(p.photo)localStorage.setItem("carsStreetProfilePhoto",p.photo);
+    applyProfile();
+  },err=>console.error("Se perdió la conexión en tiempo real del perfil con Firebase:",err));
+}
+function getProfile(){
+  return {name:localStorage.getItem("carsStreetProfileName")||"CARS STREET",photo:localStorage.getItem("carsStreetProfilePhoto")||""};
+}
+function applyProfile(){
+  const p=getProfile();
+  $("profileNameInput").value=p.name;
+  $("profileNameHeading").textContent=p.name;
+  $("navProfileName").textContent=p.name;
+  if(p.photo){
+    $("profilePreview").src=p.photo;
+    $("navProfileImg").src=p.photo;
+    $("navProfileImg").style.display="block";
+  }else{
+    $("profilePreview").src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80";
+    $("navProfileImg").style.display="none";
+  }
+}
+
+/* ===== ACCESO PRIVADO DEL ADMIN =====
+   IMPORTANTE: esta protección es para una página HTML estática.
+   Para seguridad real contra usuarios que inspeccionen el código se necesita
+   autenticación en un servidor (Firebase/Supabase/backend).
+   CAMBIA ADMIN_PASSWORD_HASH antes de publicar.
+*/
+const ADMIN_PASSWORD_HASH="bd354d0df32aa920f52168146d94aa762722ea3303e12ac62f9fb6a4050c6fce";
+let adminAuthenticated=sessionStorage.getItem("carsStreetAdminAuth")==="1";
+
+async function sha256(text){
+  const data=new TextEncoder().encode(text);
+  const hash=await crypto.subtle.digest("SHA-256",data);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function requestAdminAccess(){
+  if(adminAuthenticated){openAdmin();return}
+  $("adminLogin").classList.add("open");
+  $("adminPassword").value="";
+  $("adminLoginError").style.display="none";
+  setTimeout(()=>$("adminPassword").focus(),80);
+}
+function closeAdminLogin(){$("adminLogin").classList.remove("open")}
+function logoutAdmin(){
+  sessionStorage.removeItem("carsStreetAdminAuth");
+  adminAuthenticated=false;
+  closeAdmin();
+  showToast("Sesión de administrador cerrada");
+}
+$("adminLoginForm").onsubmit=async e=>{
+  e.preventDefault();
+  const hash=await sha256($("adminPassword").value);
+  if(hash===ADMIN_PASSWORD_HASH){
+    sessionStorage.setItem("carsStreetAdminAuth","1");
+    adminAuthenticated=true;
+    closeAdminLogin();
+    openAdmin();
+  }else{
+    $("adminLoginError").style.display="block";
+    $("adminPassword").value="";
+    $("adminPassword").focus();
+  }
+};
+
+// El administrador entra con Ctrl + Shift + A.
+// El botón nunca aparece para los visitantes.
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==="a"){
+    e.preventDefault();
+    requestAdminAccess();
+  }
+});
+
+function openAdmin(){if(!adminAuthenticated){requestAdminAccess();return}applyProfile();renderAdminCars();$("adminPanel").classList.add("open")}
+function closeAdmin(){$("adminPanel").classList.remove("open")}
+function adminTab(tab,btn){
+  document.querySelectorAll(".admin-section").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));
+  if(tab==="cars"){$("adminCars").classList.add("active"); if(btn)btn.classList.add("active");renderAdminCars()}
+  if(tab==="profile"){$("adminProfile").classList.add("active"); if(btn)btn.classList.add("active");applyProfile()}
+  if(tab==="editor"){$("adminCarEditor").classList.add("active")}
+}
+function renderAdminCars(){
+  const box=$("adminCarList"); if(!box)return;
+  box.innerHTML=vehicles.length?vehicles.map(v=>`
+    <div class="admin-item">
+      <img src="${v.img}" alt="">
+      <div class="admin-item-info">
+        <strong>${v.brand} ${v.model}${v.version?" · "+v.version:""} (${v.year})</strong>
+        <small>${money(v.price)} · ${v.status}</small>
+      </div>
+      <div class="admin-item-actions">
+        <button class="admin-small" onclick="editCar(${v.id})">Editar</button>
+        <button class="admin-small danger" onclick="deleteCar(${v.id})">Eliminar</button>
+      </div>
+    </div>`).join(""):`<div class="empty">No hay publicaciones. Agrega tu primer auto.</div>`;
+}
+function setupCarBrands(){
+  $("carBrand").innerHTML=brands.map(b=>`<option>${b}</option>`).join("");
+}
+function newCar(){
+  $("carForm").reset(); $("carId").value="";
+  $("carYear").value=new Date().getFullYear(); $("carMileage").value=0; $("carLocation").value="Colombia";
+  $("carPlateDigit").value=""; $("carInspection").value=""; $("carArmor").value=""; $("carEngine").value=""; $("carColor").value="";
+  $("carEditorTitle").textContent="Agregar vehículo";
+  editingPhotos=[]; renderCarPhotos(); setupCarBrands(); adminTab("editor");
+}
+function editCar(id){
+  const v=vehicles.find(x=>x.id===id); if(!v)return;
+  $("carId").value=v.id;$("carBrand").value=v.brand;$("carModel").value=v.model;$("carVersion").value=v.version||"";
+  $("carYear").value=v.year;$("carPrice").value=v.price;$("carMileage").value=v.mileage||0;$("carType").value=v.type;
+  $("carFuel").value=v.fuel;$("carTransmission").value=v.transmission;$("carStatus").value=v.status;$("carLocation").value=v.location||"Colombia";
+  $("carFeatured").value=String(!!v.featured);
+  $("carPlateDigit").value=v.plateDigit||"";$("carInspection").value=v.inspection||"";$("carArmor").value=v.armor||"";
+  $("carEngine").value=v.engine||"";$("carColor").value=v.color||"";
+  $("carDesc").value=v.desc||"";$("carImage").value="";
+  editingPhotos=[...(v.images||[v.img]).filter(Boolean)]; renderCarPhotos();
+  $("carEditorTitle").textContent="Editar vehículo";setupCarBrands();$("carBrand").value=v.brand;adminTab("editor");
+}
+async function saveCar(e){
+  e.preventDefault();
+  try{
+    const id=$("carId").value;
+    const old=id?vehicles.find(x=>x.id==id):null;
+    const fallback="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=85";
+    const photos=editingPhotos.length?[...editingPhotos]:[old?.img||fallback];
+
+    const data={
+      id:id?Number(id):Date.now(),
+      brand:$("carBrand").value,
+      model:$("carModel").value.trim(),
+      version:$("carVersion").value.trim(),
+      year:Number($("carYear").value),
+      price:Number($("carPrice").value),
+      mileage:Number($("carMileage").value)||0,
+      type:$("carType").value,
+      fuel:$("carFuel").value,
+      transmission:$("carTransmission").value,
+      status:$("carStatus").value,
+      location:$("carLocation").value.trim()||"Colombia",
+      plateDigit:$("carPlateDigit").value.trim(),
+      inspection:$("carInspection").value,
+      armor:$("carArmor").value,
+      engine:$("carEngine").value.trim(),
+      color:$("carColor").value.trim(),
+      featured:$("carFeatured").value==="true",
+      img:photos[0],
+      images:photos,
+      desc:$("carDesc").value.trim()||`${$("carBrand").value} ${$("carModel").value} disponible en Colombia.`
+    };
+
+    if(!data.model||!data.year||Number.isNaN(data.price)){
+      showToast("Completa marca, modelo, año y precio.");
+      return;
+    }
+
+    let finalData=data;
+    let savedToCloud=false;
+
+    if(cloudEnabled){
+      const cloudResult=await saveVehicleToCloud(data);
+      if(cloudResult){
+        finalData=cloudResult;
+        savedToCloud=true;
+        // No hace falta actualizar "vehicles" ni volver a pintar aquí: el
+        // listener en tiempo real (listenToCloudVehicles) recibirá este
+        // mismo cambio en un instante y actualizará la página para todos,
+        // incluido este navegador.
+      }
+    }
+
+    if(old) vehicles=vehicles.map(x=>x.id===old.id?finalData:x);
+    else vehicles.push(finalData);
+
+    let idbOk=true;
+    try{
+      await idbSet(IDB_VEHICLES_KEY,vehicles);
+    }catch(storageError){
+      console.error(storageError);
+      idbOk=false;
+    }
+    // Intento de respaldo en localStorage, aunque IndexedDB haya fallado.
+    let backupOk=true;
+    try{
+      localStorage.setItem(VEHICLES_BACKUP_KEY,JSON.stringify(vehicles));
+    }catch(backupError){
+      console.error(backupError);
+      backupOk=false;
+    }
+    if(!savedToCloud&&!idbOk&&!backupOk){
+      // No se pudo guardar en ningún lado: se revierte el cambio en memoria
+      // para no mostrar una publicación que en realidad no quedó guardada.
+      if(old) vehicles=vehicles.map(x=>x.id===old.id?old:x);
+      else vehicles.pop();
+      showToast("No se pudo guardar. El navegador alcanzó su límite de almacenamiento; reduce la cantidad o el peso de las fotos.");
+      return;
+    }
+    render();
+    renderAdminCars();
+    const successMsg=old?"Publicación actualizada correctamente":"¡Nuevo auto publicado correctamente!";
+    let statusNote="";
+    if(!cloudEnabled)statusNote=" (solo en este navegador: configura Firebase para que todos lo vean)";
+    else if(!savedToCloud)statusNote=" (no se pudo publicar en la nube; solo quedó guardado en este navegador)";
+    showToast(successMsg+statusNote);
+    $("carForm").reset();
+    editingPhotos=[];
+    renderCarPhotos();
+    adminTab("cars");
+  }catch(error){
+    console.error(error);
+    showToast("Ocurrió un error al guardar. Revisa los datos e inténtalo de nuevo.");
+  }
+}
+async function deleteCar(id){
+  const v=vehicles.find(x=>x.id===id);if(!v)return;
+  if(!confirm(`¿Eliminar la publicación de ${v.brand} ${v.model}?`))return;
+  vehicles=vehicles.filter(x=>x.id!==id);
+  if(cloudEnabled){
+    const ok=await deleteVehicleFromCloud(id);
+    // El listener en tiempo real actualizará "vehicles" para todos en un instante.
+    // Igual guardamos copia local por si se pierde la conexión después.
+    await saveVehicles();
+    showToast(ok?"Publicación eliminada para todos":"No se pudo eliminar en la nube; se quitó solo en este navegador");
+  }else{
+    await saveVehicles();
+    showToast("Publicación eliminada (solo en este navegador)");
+  }
+}
+async function resetDemoCars(){
+  if(!confirm("Esto reemplazará las publicaciones actuales por las 2 publicaciones demo. ¿Continuar?"))return;
+  vehicles=cloneDefaultVehicles();
+  if(cloudEnabled){
+    const ok=await replaceAllCloudVehicles(vehicles);
+    await saveVehicles();
+    showToast(ok?"Publicaciones demo restauradas para todos":"No se pudo restaurar en la nube; se cambió solo en este navegador");
+  }else{
+    await saveVehicles();
+    showToast("Publicaciones demo restauradas (solo en este navegador)");
+  }
+}
+
+
+function render(list=vehicles){$("inventory").innerHTML=list.length?list.map(v=>`<article class="card reveal reveal-scale"><div class="card-img"><img loading="lazy" src="${v.img}" alt="${v.brand} ${v.model} ${v.year}"><span class="badge">${v.featured?"DESTACADO":"DISPONIBLE"}</span></div><div class="card-body"><div class="card-brand">${v.brand}</div><h3>${v.model}${v.version?" · "+v.version:""} ${v.year}</h3><div class="price">${money(v.price)}</div><div class="meta"><span>${v.type}</span><span>${v.transmission}</span><span>${v.fuel}</span>${v.engine?`<span>${v.engine}</span>`:""}${v.color?`<span>${v.color}</span>`:""}<span>${v.location}</span></div><div class="card-actions"><button class="btn btn-secondary" onclick="detail(${v.id})">VER DETALLES</button><a class="btn btn-primary" target="_blank" href="${wa(v)}">WHATSAPP</a></div></div></article>`).join(""):`<div class="empty"><h3>No encontramos vehículos disponibles</h3><p>Prueba con otros filtros para encontrar opciones similares.</p><button class="btn btn-primary" style="margin-top:15px" onclick="clearFilters()">LIMPIAR FILTROS</button></div>`;$("counter").textContent=`${list.length} vehículo${list.length===1?"":"s"} encontrado${list.length===1?"":"s"}`;if(typeof observeReveal==="function")observeReveal();}
+function wa(v){const name=[v.brand,v.model,v.version,v.year].filter(Boolean).join(" ");return "https://wa.me/573116169801?text="+encodeURIComponent(`Hola, estoy interesado en el ${name} publicado en CARS STREET. ¿Sigue disponible?`)}
+function applyFilters(){
+  let list=vehicles.filter(v=>v.status==="Disponible");
+  const norm=x=>String(x||"").trim().toLocaleLowerCase("es");
+  const f={brand:$("brand").value,model:$("model").value,year:$("year").value,type:$("type").value,fuel:$("fuel").value,transmission:$("transmission").value,min:+$("minPrice").value||0,max:+$("maxPrice").value||Infinity};
+  list=list.filter(v=>(!f.brand||v.brand===f.brand)&&(!f.model||norm(v.model)===norm(f.model))&&(!f.year||v.year==f.year)&&(!f.type||v.type===f.type)&&(!f.fuel||v.fuel===f.fuel)&&(!f.transmission||v.transmission===f.transmission)&&v.price>=f.min&&v.price<=f.max);
+  render(list);$("vehiculos").scrollIntoView({behavior:"smooth"})
+}
+function clearFilters(){
+  ["brand","model","year","type","fuel","transmission"].forEach(id=>$(id).value="");
+  $("minPrice").value="";$("maxPrice").value="";
+  $("model").disabled=true;
+  $("model").value="";
+  modelPicker&&modelPicker.setOptions([]);
+  render();
+}
+function detail(id){const v=vehicles.find(x=>x.id===id);$("modalContent").innerHTML=`<div class="eyebrow">${v.brand}</div><h2>${v.model} ${v.year}</h2><img class="detail-img" src="${v.img}" alt="${v.brand} ${v.model}">
+${v.images&&v.images.length>1?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0">${v.images.map(im=>`<img src="${im}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="this.closest('.modal-box').querySelector('.detail-img').src=this.src">`).join("")}</div>`:""}
+<div class="price">${money(v.price)}</div><div class="specs"><div class="spec"><small>Tipo</small>${v.type}</div><div class="spec"><small>Transmisión</small>${v.transmission}</div><div class="spec"><small>Combustible</small>${v.fuel}</div><div class="spec"><small>Kilometraje</small>${v.mileage.toLocaleString("es-CO")} km</div><div class="spec"><small>Ubicación</small>${v.location}</div><div class="spec"><small>Estado</small>${v.status}</div>
+<div class="spec"><small>Último dígito placa</small>${v.plateDigit||"No especificado"}</div>
+<div class="spec"><small>Peritaje</small>${v.inspection||"No especificado"}</div>
+<div class="spec"><small>Blindaje</small>${v.armor||"No especificado"}</div>
+<div class="spec"><small>Cilindraje</small>${v.engine||"No especificado"}</div>
+<div class="spec"><small>Color</small>${v.color||"No especificado"}</div></div><p style="color:#b9bec4">${v.desc}</p><div class="buttons"><a class="btn btn-primary" target="_blank" href="${wa(v)}">CONTACTAR POR WHATSAPP</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a></div>`;$("modal").classList.add("open")}
+function closeModal(){$("modal").classList.remove("open")}
+function toggleMenu(){const nav=document.querySelector(".links");nav.style.display=nav.style.display==="flex"?"none":"flex";nav.style.position="absolute";nav.style.top="74px";nav.style.left="0";nav.style.right="0";nav.style.padding="20px";nav.style.background="#0b0c0e";nav.style.flexDirection="column"}
+
+/* ===== MODELOS Y VERSIONES FORD ===== */
+const fordModelGroups={"Autos / sedanes / hatchbacks / deportivos": ["Mustang", "Mustang Mach-E", "Fiesta", "Fiesta ST", "Focus", "Focus ST", "Focus RS", "Fusion", "Fusion Energi", "Taurus", "Taurus SHO", "Mondeo", "Contour", "Escort", "Aspire", "Probe", "Tempo", "Sierra", "Cortina", "Taunus", "Granada", "Scorpio", "Capri", "Consul", "Crown Victoria", "Crown Victoria Police Interceptor", "Five Hundred", "Freestyle", "GT", "GT40", "Shelby GT350", "Shelby GT350R", "Shelby GT500", "Thunderbird", "Cougar", "Maverick", "Fairlane", "Galaxie", "Galaxie 500", "LTD", "LTD Crown Victoria", "Torino", "Ranchero", "Falcon", "Anglia", "Zephyr", "Verona", "Ikon", "Ka", "Ka+", "Puma"], "SUV": ["Bronco", "Bronco Sport", "Bronco Raptor", "EcoSport", "Escape", "Escape Hybrid", "Escape PHEV", "Kuga", "Explorer", "Explorer ST", "Explorer Sport", "Expedition", "Expedition MAX", "Edge", "Edge ST", "Flex", "Everest", "Territory", "Equator Sport", "Equator", "Puma", "Puma Gen-E", "Mustang Mach-E", "Capri", "Freestyle", "Excursion", "EcoSport Storm"], "Pickups": ["F-1", "F-100", "F-150", "F-150 Lightning", "F-150 Raptor", "F-150 Raptor R", "F-250", "F-250 Super Duty", "F-350", "F-350 Super Duty", "F-450", "F-450 Super Duty", "F-550", "F-600", "F-650", "F-750", "Ranger", "Ranger Raptor", "Maverick", "Maverick Hybrid", "Maverick Lobo", "Courier", "Ranchero"], "Camiones": ["F-650", "F-750", "F-600", "F-550", "F-450", "F-MAX", "F-MAX Gen 2", "Cargo", "Cargo 1119", "Cargo 1723", "Cargo 2429", "Cargo 2631", "Cargo 2842", "Cargo 4532", "Super Duty Chassis Cab", "F-Series Chassis Cab", "E-Series Cutaway", "E-Series Stripped Chassis", "Transit Chassis Cab", "Transit Cutaway"]};
+const fordVersions={"Mustang": ["EcoBoost", "GT", "Mustang GT", "Dark Horse", "Mustang Dark Horse", "Mustang Dark Horse R", "Shelby GT350", "Shelby GT350R", "Shelby GT500", "Otra / personalizada", "No especificada"], "Mustang Mach-E": ["Select", "Premium", "California Route 1", "GT", "Mustang Mach-E GT", "Rally", "Mustang Mach-E Rally", "Otra / personalizada", "No especificada"], "Fiesta": ["S", "SE", "Titanium", "ST", "Fiesta ST", "Otra / personalizada", "No especificada"], "Fiesta ST": ["ST", "Otra / personalizada", "No especificada"], "Focus": ["S", "SE", "SEL", "Titanium", "ST", "Focus ST", "RS", "Focus RS", "Otra / personalizada", "No especificada"], "Focus ST": ["ST", "Otra / personalizada", "No especificada"], "Focus RS": ["RS", "Otra / personalizada", "No especificada"], "Fusion": ["S", "SE", "SEL", "Titanium", "Sport", "Hybrid SE", "Hybrid Titanium", "Otra / personalizada", "No especificada"], "Fusion Energi": ["SE", "Titanium", "Otra / personalizada", "No especificada"], "Taurus": ["SE", "SEL", "Limited", "SHO", "Taurus SHO", "Otra / personalizada", "No especificada"], "Taurus SHO": ["SHO", "Otra / personalizada", "No especificada"], "Mondeo": ["Trend", "Titanium", "Vignale", "ST-Line", "Otra / personalizada", "No especificada"], "Contour": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Escort": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Aspire": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Probe": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Tempo": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Sierra": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cortina": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Taunus": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Granada": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Scorpio": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Capri": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Consul": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Crown Victoria": ["LX", "LX Sport", "Police Interceptor", "Crown Victoria Police Interceptor", "Otra / personalizada", "No especificada"], "Crown Victoria Police Interceptor": ["Police Interceptor", "Otra / personalizada", "No especificada"], "Five Hundred": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Freestyle": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "GT": ["GT", "Otra / personalizada", "No especificada"], "GT40": ["GT40", "Otra / personalizada", "No especificada"], "Shelby GT350": ["GT350", "Otra / personalizada", "No especificada"], "Shelby GT350R": ["GT350R", "Otra / personalizada", "No especificada"], "Shelby GT500": ["GT500", "Otra / personalizada", "No especificada"], "Thunderbird": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cougar": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Maverick": ["XL", "XLT", "Lariat", "Tremor", "Maverick Lobo", "Otra / personalizada", "No especificada"], "Fairlane": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Galaxie": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Galaxie 500": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "LTD": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "LTD Crown Victoria": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Torino": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Ranchero": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Falcon": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Anglia": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Zephyr": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Verona": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Ikon": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Ka": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Ka+": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Puma": ["Titanium", "ST-Line", "ST", "Otra / personalizada", "No especificada"], "Bronco": ["Base", "Big Bend", "Black Diamond", "Outer Banks", "Badlands", "Wildtrak", "Raptor", "Bronco Raptor", "Heritage", "Everglades", "Otra / personalizada", "No especificada"], "Bronco Sport": ["Base", "Big Bend", "Heritage", "Outer Banks", "Badlands", "Otra / personalizada", "No especificada"], "Bronco Raptor": ["Raptor", "Bronco Raptor", "Otra / personalizada", "No especificada"], "EcoSport": ["S", "SE", "SES", "Titanium", "Storm", "EcoSport Storm", "Otra / personalizada", "No especificada"], "Escape": ["S", "SE", "SEL", "Titanium", "ST-Line", "Platinum", "Otra / personalizada", "No especificada"], "Escape Hybrid": ["SE Hybrid", "SEL Hybrid", "Titanium Hybrid", "Otra / personalizada", "No especificada"], "Escape PHEV": ["SE PHEV", "SEL PHEV", "Otra / personalizada", "No especificada"], "Kuga": ["Trend", "Titanium", "ST-Line", "Vignale", "Otra / personalizada", "No especificada"], "Explorer": ["Base", "XLT", "ST-Line", "Timberline", "Limited", "ST", "Explorer ST", "King Ranch", "Platinum", "Otra / personalizada", "No especificada"], "Explorer ST": ["ST", "Explorer ST", "Otra / personalizada", "No especificada"], "Explorer Sport": ["Sport", "Otra / personalizada", "No especificada"], "Expedition": ["XL STX", "XLT", "Timberline", "Limited", "King Ranch", "Platinum", "Otra / personalizada", "No especificada"], "Expedition MAX": ["XLT", "Limited", "King Ranch", "Platinum", "Otra / personalizada", "No especificada"], "Edge": ["SE", "SEL", "ST-Line", "Titanium", "ST", "Edge ST", "Otra / personalizada", "No especificada"], "Edge ST": ["ST", "Edge ST", "Otra / personalizada", "No especificada"], "Flex": ["SE", "SEL", "Limited", "Otra / personalizada", "No especificada"], "Everest": ["Trend", "Sport", "Titanium", "Platinum", "Otra / personalizada", "No especificada"], "Territory": ["Trend", "Titanium", "Otra / personalizada", "No especificada"], "Equator Sport": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Equator": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Puma Gen-E": ["Select", "Premium", "Otra / personalizada", "No especificada"], "Excursion": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "EcoSport Storm": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "F-1": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "F-100": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "F-150": ["XL", "STX", "XLT", "Lariat", "King Ranch", "Platinum", "Tremor", "Raptor", "F-150 Raptor", "Raptor R", "F-150 Raptor R", "Otra / personalizada", "No especificada"], "F-150 Lightning": ["Pro", "XLT", "Flash", "Lariat", "Platinum", "Otra / personalizada", "No especificada"], "F-150 Raptor": ["Raptor", "F-150 Raptor", "Otra / personalizada", "No especificada"], "F-150 Raptor R": ["Raptor R", "F-150 Raptor R", "Otra / personalizada", "No especificada"], "F-250": ["XL", "XLT", "Lariat", "King Ranch", "Platinum", "Super Duty", "Otra / personalizada", "No especificada"], "F-250 Super Duty": ["XL", "XLT", "Lariat", "King Ranch", "Platinum", "Otra / personalizada", "No especificada"], "F-350": ["XL", "XLT", "Lariat", "King Ranch", "Platinum", "Super Duty", "Otra / personalizada", "No especificada"], "F-350 Super Duty": ["XL", "XLT", "Lariat", "King Ranch", "Platinum", "Otra / personalizada", "No especificada"], "F-450": ["XL", "XLT", "Lariat", "King Ranch", "Platinum", "Super Duty", "Otra / personalizada", "No especificada"], "F-450 Super Duty": ["XL", "XLT", "Lariat", "King Ranch", "Platinum", "Otra / personalizada", "No especificada"], "F-550": ["XL", "XLT", "Lariat", "Otra / personalizada", "No especificada"], "F-600": ["XL", "XLT", "Lariat", "Otra / personalizada", "No especificada"], "F-650": ["XL", "XLT", "Lariat", "Otra / personalizada", "No especificada"], "F-750": ["XL", "XLT", "Lariat", "Otra / personalizada", "No especificada"], "Ranger": ["XL", "XLT", "Lariat", "Tremor", "Wildtrak", "Raptor", "Ranger Raptor", "Otra / personalizada", "No especificada"], "Ranger Raptor": ["Raptor", "Ranger Raptor", "Otra / personalizada", "No especificada"], "Maverick Hybrid": ["XL Hybrid", "XLT Hybrid", "Lariat Hybrid", "Otra / personalizada", "No especificada"], "Maverick Lobo": ["Lobo", "Maverick Lobo", "Otra / personalizada", "No especificada"], "Courier": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "F-MAX": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "F-MAX Gen 2": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cargo": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cargo 1119": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cargo 1723": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cargo 2429": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cargo 2631": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cargo 2842": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Cargo 4532": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Super Duty Chassis Cab": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "F-Series Chassis Cab": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "E-Series Cutaway": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "E-Series Stripped Chassis": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Transit Chassis Cab": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"], "Transit Cutaway": ["Base", "XL", "S", "SE", "SEL", "ST-Line", "Titanium", "Limited", "Platinum", "Otra / personalizada", "No especificada"]};
+const fordSportVersions=["Mustang GT", "Mustang Dark Horse", "Mustang Dark Horse R", "Shelby GT350", "Shelby GT350R", "Shelby GT500", "GT", "GT40", "Bronco Raptor", "Ranger Raptor", "F-150 Raptor", "F-150 Raptor R", "Explorer ST", "Edge ST", "Focus RS", "Focus ST", "Fiesta ST", "Mustang Mach-E GT", "Mustang Mach-E Rally"];
+function getFordVersions(model){ return fordVersions[model] || ["Otra / personalizada","No especificada"]; }
+function getFordModels(){
+  return Object.values(fordModelGroups).flat().filter((v,i,a)=>a.indexOf(v)===i);
+}
+catalog.Ford=Object.fromEntries(getFordModels().map(model=>[model,getFordVersions(model)]));
+
+
+function showToast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",4500)}
+
+$("carForm").onsubmit=saveCar;
+$("carImage").onchange=async e=>{await addCarPhotos(e.target.files);e.target.value="";};
+$("profileForm").onsubmit=async e=>{
+  e.preventDefault();
+  const name=$("profileNameInput").value.trim();
+  if(name)localStorage.setItem("carsStreetProfileName",name);
+  const uploadedPhoto=await readImage($("profilePhotoInput").files[0]);
+  if(uploadedPhoto)localStorage.setItem("carsStreetProfilePhoto",uploadedPhoto);
+  applyProfile();
+  if(cloudEnabled){
+    const cloudResult=await saveProfileToCloud(getProfile());
+    showToast(cloudResult?"Perfil actualizado para todos":"Perfil actualizado (no se pudo sincronizar con la nube)");
+  }else{
+    showToast("Perfil actualizado (solo en este navegador)");
+  }
+};
+applyProfile();
+
+render();
+
+// Carga las publicaciones. Primero se pinta rápido con la última copia local
+// (IndexedDB/localStorage) para que la página no se vea vacía mientras
+// carga; si Firebase está configurado, se sincroniza con la nube enseguida
+// y activa el "listener" en tiempo real para que los cambios de cualquier
+// persona se reflejen al instante, sin recargar la página.
+(async()=>{
+  vehicles=await loadVehicles();
+  vehicles=vehicles.map(normalizeVehiclePhotos);
+  render();
+  renderAdminCars();
+  if(cloudEnabled){
+    await ensureCloudSeeded();
+    listenToCloudVehicles();
+    listenToCloudProfile();
+  }
+})();
+
+$("sellForm").onsubmit=async e=>{
+  e.preventDefault();
+  const form=e.currentTarget;
+  const fd=new FormData(form);
+  const val=n=>fd.get(n)||"";
+  const brand=$("sellBrand")?.value||"";
+  const model=$("sellModel")?.value||"";
+  const files=form.querySelector('input[type="file"]')?.files||[];
+  const photoNames=Array.from(files).map(f=>f.name).join(", ")||"No adjuntó fotografías";
+
+  const message=[
+    "🚗 *NUEVA INFORMACIÓN - VENTA DE VEHÍCULO*",
+    "",
+    `👤 *Nombre:* ${val("name")}`,
+    `📱 *Teléfono:* ${val("phone")}`,
+    `🏷️ *Marca:* ${brand}`,
+    `🚘 *Modelo:* ${model}`,
+    `📅 *Año:* ${val("year")}`,
+    `🛣️ *Kilometraje:* ${val("mileage")}`,
+    `💰 *Precio esperado:* $${Number(val("price")||0).toLocaleString("es-CO")}`,
+    `📝 *Descripción:* ${val("description")||"Sin descripción"}`,
+    `📸 *Fotografías seleccionadas:* ${photoNames}`,
+    "",
+    "📌 *Nota:* Las fotografías no pueden enviarse automáticamente dentro de WhatsApp desde una página web. El mensaje incluye los nombres de los archivos seleccionados; el cliente deberá adjuntarlas en el chat si es necesario."
+  ].join("\n");
+
+  const wa="573116169801";
+  window.open(`https://wa.me/${wa}?text=${encodeURIComponent(message)}`,"_blank");
+  showToast("WhatsApp está listo con toda la información del vehículo.");
+};
+
+/* ================================================================
+   ANIMACIÓN DE FONDO 3D (Hero) + TILT 3D EN TARJETAS + SCROLL REVEAL
+   ================================================================ */
+(function(){
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const finePointer = window.matchMedia && window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+
+  /* ---------- 1) Parallax 3D del Hero, siguiendo el mouse ---------- */
+  const hero = document.getElementById("inicio");
+  const heroBg = document.getElementById("heroBg");
+  const heroContent = document.getElementById("heroContent");
+  const heroParticles = document.getElementById("heroParticles");
+
+  if(hero && heroBg && heroContent && !reduceMotion && finePointer){
+    let targetX=0,targetY=0,curX=0,curY=0,rafId=null,idleTimer=null;
+    const depthEls = heroContent.querySelectorAll("[data-depth]");
+    const particleEls = heroParticles ? heroParticles.querySelectorAll(".hero-particle") : [];
+
+    function loop(){
+      curX += (targetX-curX)*0.07;
+      curY += (targetY-curY)*0.07;
+
+      heroBg.style.transform = `translate3d(${(-curX*22).toFixed(2)}px, ${(-curY*16).toFixed(2)}px, 0) scale(1.08)`;
+
+      depthEls.forEach(el=>{
+        const depth = parseFloat(el.getAttribute("data-depth"))||0.2;
+        el.style.transform = `translate3d(${(curX*14*depth).toFixed(2)}px, ${(curY*10*depth).toFixed(2)}px, 0)`;
+      });
+
+      particleEls.forEach((el,i)=>{
+        const depth = 0.4 + i*0.15;
+        el.style.transform += ` translate3d(${(curX*20*depth).toFixed(2)}px, ${(curY*14*depth).toFixed(2)}px, 0)`;
+      });
+
+      if(Math.abs(targetX-curX)>0.001 || Math.abs(targetY-curY)>0.001){
+        rafId = requestAnimationFrame(loop);
+      }else{
+        rafId = null;
+      }
+    }
+
+    function requestLoop(){
+      if(!rafId) rafId = requestAnimationFrame(loop);
+    }
+
+    function resetTarget(){
+      targetX = 0; targetY = 0;
+      requestLoop();
+    }
+
+    hero.addEventListener("mousemove", e=>{
+      const rect = hero.getBoundingClientRect();
+      targetX = ((e.clientX-rect.left)/rect.width - 0.5) * 2;
+      targetY = ((e.clientY-rect.top)/rect.height - 0.5) * 2;
+      requestLoop();
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(resetTarget, 1200);
+    }, {passive:true});
+
+    hero.addEventListener("mouseleave", ()=>{
+      clearTimeout(idleTimer);
+      resetTarget();
+    }, {passive:true});
+  }else if(heroBg){
+    // Sin mouse (móvil/táctil) o accesibilidad: la animación ambiental suave la maneja el CSS (heroAutoPan),
+    // salvo que el usuario prefiera movimiento reducido.
+    if(reduceMotion) heroBg.style.animation = "none";
+  }
+
+  /* ---------- 2) Tilt 3D + brillo en las tarjetas de vehículos ---------- */
+  const inventory = document.getElementById("inventory");
+  if(inventory && !reduceMotion && finePointer){
+    let activeCard=null;
+
+    inventory.addEventListener("mousemove", e=>{
+      const card = e.target.closest(".card");
+      if(!card){ return; }
+      if(activeCard && activeCard!==card){
+        activeCard.classList.remove("tilting");
+        activeCard.style.transform = "";
+      }
+      activeCard = card;
+      card.classList.add("tilting");
+
+      const rect = card.getBoundingClientRect();
+      const px = (e.clientX-rect.left)/rect.width;
+      const py = (e.clientY-rect.top)/rect.height;
+      const rotateY = (px-0.5) * 12;
+      const rotateX = (0.5-py) * 12;
+
+      card.style.transform = `perspective(900px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-5px) translateZ(6px)`;
+      card.style.setProperty("--mx", `${(px*100).toFixed(1)}%`);
+      card.style.setProperty("--my", `${(py*100).toFixed(1)}%`);
+    }, {passive:true});
+
+    inventory.addEventListener("mouseleave", e=>{
+      const card = e.target.closest ? e.target.closest(".card") : null;
+      if(activeCard){
+        activeCard.classList.remove("tilting");
+        activeCard.style.transform = "";
+        activeCard = null;
+      }
+    }, {passive:true, capture:true});
+
+    inventory.addEventListener("mouseout", e=>{
+      if(!e.relatedTarget || !inventory.contains(e.relatedTarget)){
+        if(activeCard){
+          activeCard.classList.remove("tilting");
+          activeCard.style.transform = "";
+          activeCard = null;
+        }
+      }
+    }, {passive:true});
+  }
+
+  /* ---------- 3) Animaciones al hacer scroll (fade-in / slide-up) ---------- */
+  if("IntersectionObserver" in window){
+    const revealObserver = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add("in-view");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.12, rootMargin:"0px 0px -40px 0px"});
+
+    window.observeReveal = function(){
+      document.querySelectorAll(".reveal:not(.in-view)").forEach(el=>{
+        if(!el.dataset.revealObserved){
+          el.dataset.revealObserved = "1";
+          revealObserver.observe(el);
+        }
+      });
+    };
+    window.observeReveal();
+  }else{
+    // Sin soporte de IntersectionObserver: mostrar todo directamente.
+    document.querySelectorAll(".reveal").forEach(el=>el.classList.add("in-view"));
+    window.observeReveal = function(){};
+  }
+})();
+
+</script>
+</body>
+</html>
