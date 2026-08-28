@@ -301,22 +301,27 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
    localmente en el navegador de cada quien, sin compartir nada.
 */
 const FIREBASE_CONFIG={
-  apiKey:"TU_API_KEY",
-  authDomain:"TU_PROYECTO.firebaseapp.com",
-  projectId:"TU_PROYECTO",
-  storageBucket:"TU_PROYECTO.appspot.com",
-  messagingSenderId:"TU_SENDER_ID",
-  appId:"TU_APP_ID"
+  apiKey:"AIzaSyDN374zI4igeEldbijRFBoing6bMMIfys0",
+  authDomain:"cars-street.firebaseapp.com",
+  projectId:"cars-street",
+  storageBucket:"cars-street.firebasestorage.app",
+  messagingSenderId:"453882088231",
+  appId:"1:453882088231:web:25c55c4a2fae6c17e7f702"
 };
+// ===== SUBIDA DE FOTOS (Cloudinary) =====
+// Firebase Storage requiere una tarjeta (plan Blaze) para activarse, así
+// que las fotos de los vehículos se suben a Cloudinary (gratis, sin
+// tarjeta) usando un "upload preset" sin firmar. Los datos de los
+// vehículos (marca, precio, etc.) siguen guardándose en Firestore normal.
+const CLOUDINARY_CLOUD_NAME="exbw83cp";
+const CLOUDINARY_UPLOAD_PRESET="cars_street_uploads";
 let cloudEnabled=false;
 let cloudDb=null;
-let cloudStorage=null;
 try{
   const configured=FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.apiKey!=="TU_API_KEY"&&FIREBASE_CONFIG.projectId&&FIREBASE_CONFIG.projectId!=="TU_PROYECTO";
   if(configured&&window.firebase){
     firebase.initializeApp(FIREBASE_CONFIG);
     cloudDb=firebase.firestore();
-    cloudStorage=firebase.storage();
     cloudEnabled=true;
   }else if(configured&&!window.firebase){
     console.error("Firebase está configurado pero el SDK no cargó (revisa tu conexión a internet).");
@@ -421,17 +426,25 @@ let vehicles=cloneDefaultVehicles();
 const CLOUD_VEHICLES_COLLECTION="vehicles";
 const CLOUD_META_DOC="site/meta";
 
+async function uploadImageToCloudinary(dataUrl){
+  const res=await fetch(dataUrl);
+  const blob=await res.blob();
+  const formData=new FormData();
+  formData.append("file",blob);
+  formData.append("upload_preset",CLOUDINARY_UPLOAD_PRESET);
+  const uploadRes=await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,{method:"POST",body:formData});
+  const data=await uploadRes.json();
+  if(!uploadRes.ok||!data.secure_url){
+    throw new Error(data?.error?.message||"Cloudinary no devolvió una URL de imagen");
+  }
+  return data.secure_url;
+}
 async function uploadVehicleImage(dataUrl,vehicleId,index){
   if(!cloudEnabled)return dataUrl;
   try{
-    const res=await fetch(dataUrl);
-    const blob=await res.blob();
-    const path=`vehicles/${vehicleId}/foto_${index}_${Date.now()}.jpg`;
-    const ref=cloudStorage.ref().child(path);
-    await ref.put(blob);
-    return await ref.getDownloadURL();
+    return await uploadImageToCloudinary(dataUrl);
   }catch(e){
-    console.error("No se pudo subir una foto a Firebase Storage:",e);
+    console.error("No se pudo subir una foto a Cloudinary:",e);
     return null;
   }
 }
@@ -835,11 +848,7 @@ async function saveProfileToCloud(profile){
   try{
     let photo=profile.photo;
     if(photo&&typeof photo==="string"&&photo.startsWith("data:")){
-      const res=await fetch(photo);
-      const blob=await res.blob();
-      const ref=cloudStorage.ref().child(`site/perfil_${Date.now()}.jpg`);
-      await ref.put(blob);
-      photo=await ref.getDownloadURL();
+      photo=await uploadImageToCloudinary(photo);
     }
     const toSave={name:profile.name||"",photo:photo||""};
     await cloudDb.doc("site/profile").set(toSave,{merge:true});
