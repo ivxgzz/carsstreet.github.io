@@ -52,6 +52,9 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 .admin-item-actions{display:flex;gap:6px;flex-wrap:wrap}
 .admin-small{padding:8px 10px;border-radius:8px;background:#272b30;color:#fff;font-weight:800}
 .admin-small.danger{background:#7e2020}
+.admin-small:disabled{opacity:.35;cursor:not-allowed}
+.admin-order-actions{display:flex;gap:6px}
+.admin-order-actions .admin-small{padding:8px 11px;line-height:1}
 .profile-preview{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid #444;background:#202328}
 .profile-row{display:flex;gap:20px;align-items:center;margin-bottom:18px}
 .admin-note{color:#9299a1;font-size:.85rem;margin-top:8px}
@@ -416,6 +419,29 @@ function fallbackCreatedAt(v){
 function sortVehiclesByDate(list){
   return [...(list||[])].sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
 }
+/* ===== ORDEN MANUAL DE LAS TARJETAS (panel de administración) =====
+   Cada vehículo guarda un número "order": las tarjetas se muestran de
+   menor a mayor. El admin puede subir/bajar cada publicación con las
+   flechas del panel; eso reasigna "order" (0,1,2...) según la nueva
+   posición. Los vehículos que todavía no tengan "order" (publicaciones
+   antiguas o recién sincronizadas) reciben uno automáticamente la primera
+   vez, respetando el orden por fecha que tenían antes, para que ninguna
+   tarjeta "salte" de posición sola.
+*/
+function ensureVehicleOrder(list){
+  const arr=sortVehiclesByDate(list);
+  let maxOrder=arr.reduce((m,v)=>Number.isFinite(v.order)?Math.max(m,v.order):m,-1);
+  return arr.map(v=>Number.isFinite(v.order)?v:{...v,order:(maxOrder+=1)});
+}
+function sortVehiclesByOrder(list){
+  return [...(list||[])].sort((a,b)=>(Number(a.order)||0)-(Number(b.order)||0));
+}
+// Calcula el "order" que debe tener una publicación nueva para que aparezca
+// primero (arriba de todas las demás), sin depender de su fecha de creación.
+function nextTopOrder(){
+  const orders=vehicles.map(v=>Number(v.order)||0);
+  return orders.length?Math.min(...orders)-1:0;
+}
 function normalizeVehicleList(list){
   return (list||[]).map(v=>({...v,images:Array.isArray(v.images)&&v.images.length?v.images:[v.img],plateDigit:v.plateDigit||"",inspection:v.inspection||"",armor:v.armor||"No blindado",engine:v.engine||"",color:v.color||"",createdAt:Number(v.createdAt)||fallbackCreatedAt(v)}));
 }
@@ -435,7 +461,7 @@ function backupVehiclesToLocalStorage(list){
     console.error("No se pudo escribir el respaldo en localStorage:",e);
   }
 }
-let vehicles=sortVehiclesByDate(normalizeVehicleList(cloneDefaultVehicles()));
+let vehicles=sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(cloneDefaultVehicles())));
 
 /* ===== SINCRONIZACIÓN EN LA NUBE (Firestore + Storage) =====
    Cuando Firebase está configurado (ver arriba), los vehículos se guardan
@@ -560,7 +586,7 @@ function listenToCloudVehicles(){
   cloudDb.collection(CLOUD_VEHICLES_COLLECTION).onSnapshot(snapshot=>{
     const list=[];
     snapshot.forEach(doc=>list.push(doc.data()));
-    vehicles=sortVehiclesByDate(normalizeVehicleList(list));
+    vehicles=sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(list)));
     idbSet(IDB_VEHICLES_KEY,vehicles).catch(e=>console.error(e));
     backupVehiclesToLocalStorage(vehicles);
     render();
@@ -618,9 +644,9 @@ async function loadVehicles(){
   // Solo si de verdad no existe ningún dato guardado (ni en IndexedDB ni en
   // el respaldo) se cargan los vehículos de ejemplo.
   if(stored===undefined||stored===null||!isValidVehicleList(stored)){
-    return sortVehiclesByDate(normalizeVehicleList(cloneDefaultVehicles()));
+    return sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(cloneDefaultVehicles())));
   }
-  return sortVehiclesByDate(normalizeVehicleList(stored));
+  return sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(stored)));
 }
 async function saveVehicles(){
   vehicles=vehicles.map(normalizeVehiclePhotos);
@@ -1005,7 +1031,7 @@ function adminTab(tab,btn){
 }
 function renderAdminCars(){
   const box=$("adminCarList"); if(!box)return;
-  box.innerHTML=vehicles.length?vehicles.map(v=>`
+  box.innerHTML=vehicles.length?vehicles.map((v,i)=>`
     <div class="admin-item">
       <img src="${v.img}" alt="">
       <div class="admin-item-info">
@@ -1013,10 +1039,35 @@ function renderAdminCars(){
         <small>${money(v.price)} · ${v.status}</small>
       </div>
       <div class="admin-item-actions">
+        <div class="admin-order-actions">
+          <button class="admin-small" onclick="moveCar(${v.id},-1)" ${i===0?"disabled":""} title="Subir" aria-label="Subir posición">&#9650;</button>
+          <button class="admin-small" onclick="moveCar(${v.id},1)" ${i===vehicles.length-1?"disabled":""} title="Bajar" aria-label="Bajar posición">&#9660;</button>
+        </div>
         <button class="admin-small" onclick="editCar(${v.id})">Editar</button>
         <button class="admin-small danger" onclick="deleteCar(${v.id})">Eliminar</button>
       </div>
     </div>`).join(""):`<div class="empty">No hay publicaciones. Agrega tu primer auto.</div>`;
+}
+// Sube o baja una publicación una posición (dir=-1 sube, dir=1 baja) y
+// reasigna "order" (0,1,2...) según la nueva posición de todo el arreglo,
+// para que el orden manual quede guardado y sincronizado.
+async function moveCar(id,dir){
+  const idx=vehicles.findIndex(x=>x.id===id);
+  if(idx===-1)return;
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=vehicles.length)return;
+  const arr=[...vehicles];
+  [arr[idx],arr[newIdx]]=[arr[newIdx],arr[idx]];
+  arr.forEach((v,i)=>{v.order=i;});
+  vehicles=arr;
+  if(cloudEnabled){
+    const ok=await replaceAllCloudVehicles(vehicles);
+    // El listener en tiempo real actualizará "vehicles" para todos en un instante.
+    await saveVehicles();
+    if(!ok)showToast("No se pudo guardar el nuevo orden en la nube; se cambió solo en este navegador");
+  }else{
+    await saveVehicles();
+  }
 }
 function setupCarBrands(){
   $("carBrand").innerHTML=brands.map(b=>`<option>${b}</option>`).join("");
@@ -1073,7 +1124,11 @@ async function saveCar(e){
       // La fecha de creación NUNCA se reinicia al editar: si ya existía una
       // publicación, se conserva su createdAt original; solo se asigna
       // Date.now() cuando es una publicación nueva.
-      createdAt:old?(Number(old.createdAt)||fallbackCreatedAt(old)):Date.now()
+      createdAt:old?(Number(old.createdAt)||fallbackCreatedAt(old)):Date.now(),
+      // El orden manual se conserva al editar; una publicación nueva se
+      // agrega arriba de todo (igual que antes), pero desde "order" y no
+      // desde la fecha, para no pisar el orden que el admin ya definió.
+      order:old?(Number.isFinite(old.order)?old.order:nextTopOrder()):nextTopOrder()
     };
 
     if(!data.model||!data.year||Number.isNaN(data.price)){
@@ -1098,9 +1153,10 @@ async function saveCar(e){
 
     if(old) vehicles=vehicles.map(x=>x.id===old.id?finalData:x);
     else vehicles.push(finalData);
-    // Reordena de inmediato para que una publicación nueva aparezca arriba
-    // de todo, sin necesidad de recargar la página.
-    vehicles=sortVehiclesByDate(vehicles);
+    // Reordena de inmediato según el orden manual (una publicación nueva
+    // ya trae el "order" más bajo, así que aparece arriba de todo), sin
+    // necesidad de recargar la página.
+    vehicles=sortVehiclesByOrder(vehicles);
 
     let idbOk=true;
     try{
@@ -1158,7 +1214,7 @@ async function deleteCar(id){
 }
 async function resetDemoCars(){
   if(!confirm("Esto reemplazará las publicaciones actuales por las 2 publicaciones demo. ¿Continuar?"))return;
-  vehicles=sortVehiclesByDate(normalizeVehicleList(cloneDefaultVehicles()));
+  vehicles=sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(cloneDefaultVehicles())));
   if(cloudEnabled){
     const ok=await replaceAllCloudVehicles(vehicles);
     await saveVehicles();
