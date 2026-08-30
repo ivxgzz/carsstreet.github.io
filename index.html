@@ -82,6 +82,62 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 
 /* Buscadores desplegables de modelo y versión */
 .searchable-field{position:relative}.search-select{position:relative}.search-select>input{padding-right:45px;cursor:pointer}.search-select>input:disabled{cursor:not-allowed;opacity:.55}.search-select-arrow{position:absolute;right:8px;top:7px;width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer}.search-menu{display:none;position:absolute;z-index:80;left:0;right:0;top:calc(100% + 7px);padding:10px;background:#101214;border:1px solid #3a4046;border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.55)}.search-select.open .search-menu{display:block}.search-menu-input{width:100%!important;background:#080a0c!important;border:1px solid #454b52!important;color:#fff!important;padding:12px 13px!important;border-radius:9px!important;outline:none!important;margin-bottom:8px}.search-menu-input:focus{border-color:var(--accent)!important}.search-results{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:3px}.search-result{width:100%;border:0;background:transparent;color:#e9ecef;text-align:left;padding:10px 11px;border-radius:8px;cursor:pointer;font-size:.94rem}.search-result:hover,.search-result.active{background:#20252a}.search-result small{display:block;color:#8f969d;font-size:.72rem;margin-top:2px}.search-empty{padding:12px;color:#8f969d;font-size:.85rem}.search-hint{padding:7px 10px 9px;color:#737b83;font-size:.72rem;border-bottom:1px solid #252a2f;margin-bottom:3px}
+
+/* ===== CARS STREET IA (asistente de chat) ===== */
+.ai-fab{position:fixed;right:20px;bottom:20px;z-index:140;display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--accent),#ff6a3d);color:#fff;border:1px solid rgba(255,255,255,.25);padding:14px 18px;border-radius:999px;font-weight:900;font-size:.86rem;letter-spacing:.02em;box-shadow:0 14px 40px rgba(255,43,43,.35),0 4px 14px rgba(0,0,0,.35);animation:aiFabPulse 3.2s ease-in-out infinite;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease}
+.ai-fab:hover{transform:translateY(-3px);box-shadow:0 18px 46px rgba(255,43,43,.45),0 6px 16px rgba(0,0,0,.4)}
+.ai-fab .ai-fab-icon{font-size:1.05rem;filter:drop-shadow(0 0 6px rgba(255,255,255,.6))}
+.ai-fab.hidden{display:none}
+@keyframes aiFabPulse{0%,100%{box-shadow:0 14px 40px rgba(255,43,43,.35),0 4px 14px rgba(0,0,0,.35)}50%{box-shadow:0 14px 40px rgba(255,43,43,.6),0 4px 22px rgba(0,0,0,.4)}}
+@media(prefers-reduced-motion:reduce){.ai-fab{animation:none}}
+
+.ai-chat{position:fixed;right:20px;bottom:20px;z-index:150;width:min(400px,94vw);height:min(640px,82vh);background:linear-gradient(180deg,#121417,#0b0c0e);border:1px solid #2c3136;border-radius:22px;box-shadow:0 30px 90px rgba(0,0,0,.6);display:none;flex-direction:column;overflow:hidden}
+.ai-chat.open{display:flex}
+.ai-chat-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px;background:linear-gradient(120deg,#17191c,#0f1113);border-bottom:1px solid #2c3136;flex-shrink:0}
+.ai-chat-header-title{display:flex;flex-direction:column;gap:2px}
+.ai-chat-header-title strong{font-size:1.02rem;letter-spacing:.01em}
+.ai-chat-header-title strong span{color:var(--accent)}
+.ai-chat-header-title small{color:var(--muted);font-size:.74rem;font-weight:600}
+.ai-chat-close{background:rgba(255,255,255,.08);color:#fff;width:32px;height:32px;border-radius:50%;font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-chat-close:hover{background:rgba(255,255,255,.16)}
+.ai-chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.ai-msg{max-width:88%;padding:11px 13px;border-radius:14px;font-size:.87rem;line-height:1.45;white-space:pre-wrap}
+.ai-msg.bot{align-self:flex-start;background:#1a1d21;border:1px solid #2a2f34;border-bottom-left-radius:4px}
+.ai-msg.user{align-self:flex-end;background:var(--accent);color:#100000;font-weight:600;border-bottom-right-radius:4px}
+.ai-msg-note{color:var(--muted);font-size:.72rem;margin-top:6px;font-style:italic}
+.ai-typing{align-self:flex-start;display:flex;align-items:center;gap:4px;padding:12px 14px;background:#1a1d21;border:1px solid #2a2f34;border-radius:14px;border-bottom-left-radius:4px}
+.ai-typing-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:aiTypingBounce 1.1s infinite ease-in-out;display:inline-block}
+.ai-typing-dot:nth-of-type(2){animation-delay:.15s}.ai-typing-dot:nth-of-type(3){animation-delay:.3s}
+@keyframes aiTypingBounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+.ai-chat-suggestions{display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 12px;flex-shrink:0}
+.ai-chip{background:#1a1d21;border:1px solid #33383e;color:#e5e7ea;padding:8px 11px;border-radius:999px;font-size:.76rem;font-weight:700;white-space:nowrap}
+.ai-chip:hover{border-color:var(--accent);color:#fff}
+.ai-chat-inputrow{display:flex;gap:8px;padding:12px 14px;border-top:1px solid #2c3136;flex-shrink:0;background:#0e1012}
+.ai-chat-inputrow input{flex:1;background:#080a0c;border:1px solid #30353a;color:#fff;padding:12px 14px;border-radius:12px;outline:none;font-size:.88rem}
+.ai-chat-inputrow input:focus{border-color:var(--accent)}
+.ai-send{width:42px;height:42px;border-radius:12px;background:var(--accent);color:#100000;font-size:1.1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-send:hover{filter:brightness(1.08)}
+.ai-send:disabled{opacity:.4;cursor:not-allowed}
+.ai-vcards{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.ai-vcard{background:#101214;border:1px solid #2a2f34;border-radius:14px;overflow:hidden;display:flex;gap:0}
+.ai-vcard-img{width:108px;flex-shrink:0;background:#181a1d;aspect-ratio:4/3;overflow:hidden}
+.ai-vcard-img img{width:100%;height:100%;object-fit:cover}
+.ai-vcard-body{padding:10px 12px;flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.ai-vcard-brand{font-size:.66rem;color:var(--accent);font-weight:900;text-transform:uppercase}
+.ai-vcard-title{font-size:.86rem;font-weight:800;line-height:1.2}
+.ai-vcard-price{font-size:.92rem;font-weight:900}
+.ai-vcard-meta{display:flex;gap:4px;flex-wrap:wrap;color:#aeb4ba;font-size:.62rem}
+.ai-vcard-meta span{background:#1c2024;padding:2px 6px;border-radius:6px}
+.ai-vcard-actions{display:flex;gap:6px;margin-top:2px}
+.ai-vcard-actions button,.ai-vcard-actions a{flex:1;text-align:center;padding:7px 4px;font-size:.68rem;border-radius:8px;font-weight:800}
+.ai-vcard-actions .ai-view{background:#26292d;color:#fff}
+.ai-vcard-actions .ai-wa{background:var(--success);color:#061006}
+@media(max-width:560px){
+  .ai-fab{right:14px;bottom:14px;padding:13px 16px;font-size:.8rem}
+  .ai-fab .ai-fab-text{display:none}
+  .ai-chat{right:0;bottom:0;left:0;top:0;width:100%;height:100%;border-radius:0;max-width:none}
+  .ai-vcard-img{width:88px}
+}
 </style>
 <!-- ===== FIREBASE (para que las publicaciones se vean para TODOS los visitantes) =====
      Ver instrucciones de configuración dentro de <script>, buscar "FIREBASE_CONFIG". -->
@@ -251,6 +307,26 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 </div>
 
 <div class="modal" id="modal"><div class="modal-box"><button class="modal-close" onclick="closeModal()">Cerrar</button><div id="modalContent"></div></div></div><div class="lightbox" id="lightbox"><button type="button" class="lightbox-close" onclick="closeLightbox()" aria-label="Cerrar">&times;</button><button type="button" class="detail-arrow detail-arrow-left" onclick="lightboxNav(-1)" aria-label="Foto anterior">&#10094;</button><img id="lightboxImg" src="" alt="Foto del vehículo"><button type="button" class="detail-arrow detail-arrow-right" onclick="lightboxNav(1)" aria-label="Foto siguiente">&#10095;</button></div><div class="toast" id="toast"></div>
+
+<!-- ===== CARS STREET IA (widget de chat) ===== -->
+<button class="ai-fab" id="aiFab" onclick="toggleAIChat()" aria-label="Abrir CARS STREET IA">
+  <span class="ai-fab-icon">✨</span><span class="ai-fab-text">CARS STREET IA</span>
+</button>
+<div class="ai-chat" id="aiChat" role="dialog" aria-label="Asistente CARS STREET IA">
+  <div class="ai-chat-header">
+    <div class="ai-chat-header-title">
+      <strong>CARS <span>STREET</span> IA</strong>
+      <small>Tu asistente para encontrar el vehículo ideal</small>
+    </div>
+    <button class="ai-chat-close" onclick="toggleAIChat(false)" aria-label="Cerrar chat">×</button>
+  </div>
+  <div class="ai-chat-messages" id="aiMessages"></div>
+  <div class="ai-chat-suggestions" id="aiSuggestions"></div>
+  <div class="ai-chat-inputrow">
+    <input id="aiInput" type="text" placeholder="Ej: busco una SUV automática de 40 millones" autocomplete="off" maxlength="220">
+    <button class="ai-send" id="aiSendBtn" onclick="sendAIMessage()" aria-label="Enviar mensaje">➤</button>
+  </div>
+</div>
 
 <script>
 /* ============================================================================
@@ -1482,6 +1558,520 @@ $("sellForm").onsubmit=async e=>{
     document.querySelectorAll(".reveal").forEach(el=>el.classList.add("in-view"));
     window.observeReveal = function(){};
   }
+})();
+
+/* ================================================================
+   CARS STREET IA — asistente conversacional del inventario
+   ================================================================
+   NOTA DE SEGURIDAD IMPORTANTE:
+   Este asistente NO usa ninguna API de IA externa (OpenAI, Anthropic,
+   etc.), así que no hay ninguna clave secreta que proteger ni exponer
+   en el navegador. En su lugar, es un motor de búsqueda en lenguaje
+   natural que corre 100% en el navegador del visitante y consulta
+   siempre el arreglo "vehicles" ya existente en esta misma página
+   (el mismo que usan los filtros y que se sincroniza con Firebase).
+   Esto significa que la IA siempre "ve" el inventario real y
+   actualizado, sin inventar nada.
+
+   Si en el futuro quieres respuestas generadas por un modelo de
+   lenguaje real (más flexible con frases muy abiertas), lo correcto
+   es NO llamar a esa API directamente desde este HTML: la clave
+   quedaría visible para cualquier visitante. Habría que crear una
+   función server-side pequeña (por ejemplo con Firebase Cloud
+   Functions o Vercel/Netlify Functions) que reciba la pregunta del
+   usuario + el inventario actual, llame a la IA con la clave guardada
+   de forma segura en el servidor, y devuelva la respuesta a esta
+   página. El motor de abajo puede seguir funcionando igual mientras
+   tanto, y no se pierde nada si esa mejora nunca se agrega.
+================================================================= */
+(function(){
+
+const AI_OFFTOPIC_REPLY = "Soy el asistente virtual de CARS STREET 🚗. Estoy especializado en ayudarte a encontrar vehículos y resolver dudas sobre nuestras publicaciones.";
+
+const AI = { lastResults: null, lastFilters: {}, lastVehicle: null, greeted: false, awaitingBudget: false };
+
+function escapeHtml(str){
+  return String(str==null?"":str).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ---------- Detección de intención y extracción de datos ---------- */
+
+function parseAmountToNumber(raw){
+  const s = raw.replace(/\$/g,"").trim();
+  const digitsOnly = s.replace(/[.,]/g,"");
+  if(digitsOnly.length>=6) return parseInt(digitsOnly,10);
+  return parseFloat(s.replace(",", "."));
+}
+
+function extractMoneyMentions(norm){
+  const out=[];
+  const re=/\$?\s*(\d{1,3}(?:[.,]\d{3})+|\d+(?:[.,]\d+)?)\s*(millones|mill\.?|m\b|k\b)?/g;
+  let m;
+  while((m=re.exec(norm))){
+    const numStr=m[1], unit=m[2]||"";
+    let value=parseAmountToNumber(numStr);
+    if(isNaN(value)) continue;
+    if(/^m/.test(unit)) value*=1000000;
+    else if(unit==="k") value*=1000;
+    else{
+      if(value<1000){
+        if(/mill/.test(norm)) value*=1000000; else continue;
+      }
+    }
+    // Ignora años (1900-2100) que no vengan acompañados de "millones" o "$"
+    if(value>=1900 && value<=2100 && !/^m/.test(unit) && unit!=="k" && !/\$/.test(m[0])) continue;
+    out.push({raw:m[0], value, index:m.index});
+  }
+  return out;
+}
+
+function parsePriceCOP(norm){
+  const amounts=extractMoneyMentions(norm);
+  if(!amounts.length) return null;
+  if(amounts.length>=2 && /entre/.test(norm)){
+    const sorted=[amounts[0].value, amounts[1].value].sort((a,b)=>a-b);
+    return {min:sorted[0], max:sorted[1], mode:"range"};
+  }
+  const a=amounts[0];
+  const before=norm.slice(Math.max(0,a.index-22), a.index);
+  if(/maximo|hasta|menos de|por debajo|tope/.test(before)) return {min:0, max:a.value, mode:"max"};
+  if(/minimo|desde|mas de|arriba de|a partir de/.test(before)) return {min:a.value, max:Infinity, mode:"min"};
+  return {min:Math.round(a.value*0.85), max:Math.round(a.value*1.15), mode:"approx", target:a.value};
+}
+
+function detectType(norm){
+  if(/\bsuv\b/.test(norm)) return ["SUV"];
+  if(/camioneta/.test(norm)) return ["Camioneta","SUV"];
+  if(/pick\s?up|picop/.test(norm)) return ["Pickup"];
+  if(/sedan/.test(norm)) return ["Sedán"];
+  if(/hatchback/.test(norm)) return ["Hatchback"];
+  if(/coupe|cupe/.test(norm)) return ["Coupe"];
+  return null;
+}
+function detectTransmission(norm){
+  if(/automatic/.test(norm)) return "Automática";
+  if(/\bmanual\b/.test(norm)) return "Manual";
+  return null;
+}
+function detectFuel(norm){
+  if(/gasolina/.test(norm)) return "Gasolina";
+  if(/diesel/.test(norm)) return "Diésel";
+  if(/hibrid/.test(norm)) return "Híbrido";
+  if(/electric/.test(norm)) return "Eléctrico";
+  return null;
+}
+function detectBrand(norm){
+  for(const b of brands){
+    const nb=normalizeSearchText(b);
+    const re=new RegExp("\\b"+nb.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","i");
+    if(re.test(norm)) return b;
+  }
+  return null;
+}
+function detectYear(norm){
+  let m=norm.match(/(20\d{2}|19\d{2})\s*(en adelante|o mas|o posterior|o mayor)/);
+  if(m) return {min:parseInt(m[1],10)};
+  m=norm.match(/(desde|a partir de)\s*(el\s*)?(modelo\s*)?(20\d{2}|19\d{2})/);
+  if(m) return {min:parseInt(m[4],10)};
+  m=norm.match(/(modelo|ano|del)\s+(20\d{2}|19\d{2})\b/);
+  if(m) return {exact:parseInt(m[2],10)};
+  return null;
+}
+function detectSort(norm){
+  if(/mas barat|mas economic|menor precio/.test(norm)) return {by:"price", dir:"asc"};
+  if(/mas car[oa]|mayor precio/.test(norm)) return {by:"price", dir:"desc"};
+  if(/mas nuev|mas recien|recien lanzad/.test(norm)) return {by:"year", dir:"desc"};
+  if(/menos (kilometraje|kilometros|km)\b|menor (kilometraje|kilometros|km)\b/.test(norm)) return {by:"mileage", dir:"asc"};
+  return null;
+}
+function detectOrdinal(norm){
+  if(/\bla primera\b|\bel primero\b/.test(norm)) return 0;
+  if(/\bla segunda\b|\bel segundo\b/.test(norm)) return 1;
+  if(/\bla tercera\b|\bel tercero\b/.test(norm)) return 2;
+  if(/\bla cuarta\b|\bel cuarto\b/.test(norm)) return 3;
+  if(/\bla ultima\b|\bel ultimo\b/.test(norm)) return -1;
+  return null;
+}
+function hasPronounReference(norm){
+  return /\besa\b|\bese\b|\besta\b(?!\s+(informacion|disponible))|\beste\b|\bla anterior\b|\bel anterior\b/.test(norm);
+}
+function hasNewFilterHints(norm){
+  return !!(detectBrand(norm) || detectType(norm) || detectTransmission(norm) || detectFuel(norm) || parsePriceCOP(norm));
+}
+function looksLikeNewSearch(norm){
+  return /\b(busco|quiero|muestrame|enseñame|dame|necesito|estoy buscando)\b/.test(norm);
+}
+
+const AI_KEYWORDS=["carro","vehiculo","auto","automovil","camioneta","pickup","suv","sedan","hatchback","cupe","moto",
+  "precio","cuesta","vale","presupuesto","millon","millones","financia",
+  "km","kilometraje","motor","cilindraje","transmision","automatic","manual","combustible","gasolina","diesel","hibrido","electric",
+  "ubicacion","ubicado","color","version","modelo","ano","public","disponib","vendid","reservad","destacad",
+  "vender","vendo","compra","contact","cars street","whatsapp","instagram","telefono","llamar",
+  "foto","descripcion","caracteristica","oferta","inventario","stock","placa","blindaje","peritaje","similar","parecid"];
+
+function looksCarRelated(norm){
+  if(!norm.trim()) return false;
+  if(AI_KEYWORDS.some(k=>norm.includes(k))) return true;
+  if(detectBrand(norm)) return true;
+  if(detectType(norm)) return true;
+  if(parsePriceCOP(norm)) return true;
+  if(detectSort(norm)) return true;
+  if(detectOrdinal(norm)!==null) return true;
+  if(hasPronounReference(norm)) return true;
+  if(/\bhola\b|buenas|buenos dias|buenas tardes|buenas noches|\bgracias\b/.test(norm)) return true;
+  return false;
+}
+
+/* ---------- Búsqueda sobre el inventario real ---------- */
+
+function searchVehicles(filters){
+  return vehicles.filter(v=>{
+    if(v.status!=="Disponible") return false;
+    if(filters.brand && v.brand!==filters.brand) return false;
+    if(filters.type && !filters.type.some(t=>normalizeSearchText(t)===normalizeSearchText(v.type))) return false;
+    if(filters.transmission && normalizeSearchText(v.transmission)!==normalizeSearchText(filters.transmission)) return false;
+    if(filters.fuel && normalizeSearchText(v.fuel)!==normalizeSearchText(filters.fuel)) return false;
+    if(filters.year){
+      if(filters.year.exact!==undefined && v.year!==filters.year.exact) return false;
+      if(filters.year.min!==undefined && v.year<filters.year.min) return false;
+    }
+    if(filters.price){
+      if(v.price<filters.price.min) return false;
+      if(filters.price.max!==Infinity && v.price>filters.price.max) return false;
+    }
+    return true;
+  });
+}
+function aiSortComparator(sortReq){
+  return (a,b)=>{
+    if(sortReq.by==="price") return sortReq.dir==="asc"?a.price-b.price:b.price-a.price;
+    if(sortReq.by==="year") return sortReq.dir==="asc"?(a.year-b.year):((b.year-a.year)||((b.createdAt||0)-(a.createdAt||0)));
+    if(sortReq.by==="mileage") return sortReq.dir==="asc"?((a.mileage||0)-(b.mileage||0)):((b.mileage||0)-(a.mileage||0));
+    return 0;
+  };
+}
+
+function answerVehicleQuestion(v, norm){
+  if(/motor|cilindraje/.test(norm)) return v.engine?`El ${v.brand} ${v.model} publicado en CARS STREET tiene motor/cilindraje de ${v.engine}.`:"Esa información no está especificada en la publicación.";
+  if(/transmision/.test(norm)) return v.transmission?`Tiene transmisión ${v.transmission}.`:"Esa información no está especificada en la publicación.";
+  if(/cuanto cuesta|precio|vale\b/.test(norm)) return `Tiene un precio de ${money(v.price)}.`;
+  if(/que ano es|de que ano|que modelo es/.test(norm)) return `Es modelo ${v.year}.`;
+  if(/kilometraje|cuantos kilometros|km tiene/.test(norm)) return (v.mileage||v.mileage===0)?`Tiene ${v.mileage.toLocaleString("es-CO")} km.`:"Esa información no está especificada en la publicación.";
+  if(/es automatic|automatico\?|es manual/.test(norm)) return v.transmission?(v.transmission==="Automática"?"Sí, es automático.":`No, es de transmisión ${v.transmission}.`):"Esa información no está especificada en la publicación.";
+  if(/combustible|gasolina o diesel/.test(norm)) return v.fuel?`Utiliza ${v.fuel}.`:"Esa información no está especificada en la publicación.";
+  if(/donde esta ubicad|ubicacion/.test(norm)) return v.location?`Está ubicado en ${v.location}.`:"Esa información no está especificada en la publicación.";
+  if(/que color|de que color/.test(norm)) return v.color?`Es de color ${v.color}.`:"Esa información no está especificada en la publicación.";
+  if(/que version/.test(norm)) return v.version?`Es la versión ${v.version}.`:"Esa información no está especificada en la publicación.";
+  if(/cuando fue public|hace cuanto.*public/.test(norm)) return v.createdAt?`Fue publicado ${timeAgo(v.createdAt)}.`:"Esa información no está especificada en la publicación.";
+  if(/esta disponible|disponibilidad/.test(norm)) return `Estado actual: ${v.status}.`;
+  if(/tiene descripcion|que descripcion|descripcion\b/.test(norm)) return v.desc?v.desc:"Esa información no está especificada en la publicación.";
+  return null;
+}
+
+/* ---------- Presentación (tarjetas de vehículos en el chat) ---------- */
+
+function aiRenderCards(list){
+  if(!list||!list.length) return "";
+  return '<div class="ai-vcards">'+list.map(v=>{
+    const img=(v.images&&v.images.length?v.images[0]:v.img)||"";
+    return `<div class="ai-vcard">
+      <div class="ai-vcard-img"><img src="${img}" loading="lazy" alt="${escapeHtml(v.brand+" "+v.model)}"></div>
+      <div class="ai-vcard-body">
+        <div class="ai-vcard-brand">${escapeHtml(v.brand)}</div>
+        <div class="ai-vcard-title">${escapeHtml(v.model)}${v.version?" · "+escapeHtml(v.version):""} ${v.year}</div>
+        <div class="ai-vcard-price">${money(v.price)}</div>
+        <div class="ai-vcard-meta"><span>${escapeHtml(v.type)}</span><span>${escapeHtml(v.transmission)}</span><span>${escapeHtml(v.fuel)}</span><span>${(v.mileage||0).toLocaleString("es-CO")} km</span></div>
+        <div class="ai-vcard-actions">
+          <button type="button" class="ai-view" onclick="aiOpenDetail(${v.id})">VER VEHÍCULO</button>
+          <a class="ai-wa" target="_blank" href="${wa(v)}">WHATSAPP</a>
+        </div>
+      </div>
+    </div>`;
+  }).join("")+"</div>";
+}
+window.aiOpenDetail=function(id){ detail(id); toggleAIChat(false); };
+
+/* ---------- Motor conversacional ---------- */
+
+function aiRespond(rawText){
+  const norm=normalizeSearchText(rawText);
+
+  if(!looksCarRelated(norm)){
+    aiPushMessage("bot", escapeHtml(AI_OFFTOPIC_REPLY));
+    return;
+  }
+
+  if(/^\s*(hola|buenas|buenos dias|buenos tardes|buenas noches|hey)\b/.test(norm) && norm.length<40){
+    AI.awaitingBudget=false;
+    aiPushMessage("bot",'¡Hola! 👋 Soy el asistente de <strong>CARS STREET</strong>. Cuéntame qué vehículo buscas (marca, tipo, presupuesto...) y te muestro las opciones disponibles.');
+    return;
+  }
+  if(/\bgracias\b/.test(norm) && norm.length<40){
+    AI.awaitingBudget=false;
+    aiPushMessage("bot",'¡Con gusto! Si necesitas ver más opciones o tienes otra pregunta sobre nuestro inventario, aquí estoy. 🚗');
+    return;
+  }
+
+  if(/vender mi carro|quiero vender|vendo mi carro/.test(norm)){
+    AI.awaitingBudget=false;
+    aiPushMessage("bot",'Claro, puedes registrar tu vehículo en la sección "Vende tu carro" de la página; apenas la envíes por ese formulario, te contactaremos por WhatsApp con la información.<br><br><a class="btn btn-primary" style="display:inline-block;margin-top:6px" href="#vende" onclick="toggleAIChat(false)">IR A VENDE TU CARRO</a>');
+    return;
+  }
+  if(/como.*contact|numero de whatsapp|como los contacto|telefono de contacto/.test(norm)){
+    AI.awaitingBudget=false;
+    aiPushMessage("bot",'Puedes escribirnos por WhatsApp al 311 616 9801 o al 316 638 8399, llamarnos, o visitarnos en Instagram @ivx__gz.<br><br><a class="btn btn-primary" style="display:inline-block;margin-top:6px" target="_blank" href="https://wa.me/573116169801">ESCRIBIR POR WHATSAPP</a>');
+    return;
+  }
+
+  if(/destacad/.test(norm)){
+    AI.awaitingBudget=false;
+    const pool=vehicles.filter(v=>v.status==="Disponible"&&v.featured).slice(0,6);
+    AI.lastResults=pool.length?pool:null; AI.lastVehicle=pool[0]||null;
+    aiPushMessage("bot", pool.length?"Estos son los vehículos destacados en este momento:"+aiRenderCards(pool):"Por ahora no tengo vehículos marcados como destacados en el inventario.");
+    return;
+  }
+  if(/recien public|nuevas public|ultimas public/.test(norm)){
+    AI.awaitingBudget=false;
+    const pool=vehicles.filter(v=>v.status==="Disponible").slice().sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,6);
+    AI.lastResults=pool.length?pool:null; AI.lastVehicle=pool[0]||null;
+    aiPushMessage("bot", pool.length?"Estas son las publicaciones más recientes:"+aiRenderCards(pool):"No hay vehículos disponibles en este momento.");
+    return;
+  }
+  if(/otros? (parecid|similar)|vehiculos similares|mas parecid/.test(norm)){
+    const ref=AI.lastVehicle||(AI.lastResults&&AI.lastResults[0]);
+    if(ref){
+      AI.awaitingBudget=false;
+      const pool=vehicles.filter(v=>v.status==="Disponible"&&v.id!==ref.id&&(v.type===ref.type||v.brand===ref.brand)).slice(0,6);
+      AI.lastResults=pool.length?pool:AI.lastResults;
+      aiPushMessage("bot", pool.length?"Estos son otros vehículos similares en el inventario:"+aiRenderCards(pool):"No encontré otros vehículos similares disponibles en este momento.");
+      return;
+    }
+  }
+  if(/economic|para (la )?ciudad|urban[oa]/.test(norm) && !detectBrand(norm) && !parsePriceCOP(norm) && !detectType(norm)){
+    AI.awaitingBudget=false;
+    const pool=vehicles.filter(v=>v.status==="Disponible").slice().sort((a,b)=>a.price-b.price).slice(0,5);
+    AI.lastResults=pool.length?pool:null; AI.lastVehicle=null;
+    aiPushMessage("bot", pool.length?"Estas son algunas opciones con precios más accesibles disponibles en el inventario. Ten en cuenta que esta sugerencia se basa únicamente en las características registradas de cada publicación, no en pruebas de consumo real:"+aiRenderCards(pool):"No encontré vehículos disponibles para sugerir en este momento.");
+    return;
+  }
+
+  // Respuesta a "¿cuál es tu presupuesto?" con un número suelto
+  if(AI.awaitingBudget){
+    const price=parsePriceCOP(norm);
+    if(price && !detectBrand(norm) && !detectType(norm) && !detectTransmission(norm) && !detectFuel(norm)){
+      AI.awaitingBudget=false;
+      const filters={...AI.lastFilters, price:{min:0, max: price.mode==="range"?price.max:(price.target!==undefined?price.target:price.max)}};
+      AI.lastFilters=filters;
+      const results=searchVehicles(filters);
+      AI.lastResults=results.length?results.slice(0,8):null;
+      AI.lastVehicle=results.length===1?results[0]:null;
+      aiPushMessage("bot", results.length?`Perfecto. Encontré ${results.length} vehículo${results.length===1?"":"s"} de hasta ${money(filters.price.max)}:`+aiRenderCards(results.slice(0,6)):"No encontré vehículos disponibles dentro de ese presupuesto por ahora.");
+      return;
+    }
+    AI.awaitingBudget=false;
+  }
+
+  // Referencias por pronombre u ordinal a resultados previos ("esa", "la segunda", "la más barata"...)
+  const ordinal=detectOrdinal(norm);
+  const pronounRef=hasPronounReference(norm);
+  const sortReqEarly=detectSort(norm);
+  if((ordinal!==null || pronounRef) && AI.lastResults && AI.lastResults.length){
+    let v=null;
+    if(ordinal!==null) v = ordinal===-1?AI.lastResults[AI.lastResults.length-1]:AI.lastResults[ordinal];
+    else if(sortReqEarly) v=[...AI.lastResults].sort(aiSortComparator(sortReqEarly))[0];
+    else if(detectBrand(norm)){ const b=detectBrand(norm); v=AI.lastResults.find(x=>x.brand===b)||AI.lastResults[0]; }
+    else v = AI.lastVehicle || AI.lastResults[0];
+    if(v){
+      AI.lastVehicle=v;
+      const specific=answerVehicleQuestion(v, norm);
+      aiPushMessage("bot", specific?escapeHtml(specific):`Esta es la información de <strong>${escapeHtml(v.brand+" "+v.model+" "+v.year)}</strong>:`+aiRenderCards([v]));
+      return;
+    }
+  }
+
+  // Ordenar resultados previos o todo el inventario ("cuál es el más barato", "el más nuevo"...)
+  if(sortReqEarly && !hasNewFilterHints(norm)){
+    const pool=(AI.lastResults&&AI.lastResults.length)?AI.lastResults:vehicles.filter(v=>v.status==="Disponible");
+    const sorted=[...pool].sort(aiSortComparator(sortReqEarly));
+    const top=sorted.slice(0,1);
+    if(top.length){
+      AI.lastResults=sorted.slice(0,6); AI.lastVehicle=top[0];
+      const label=sortReqEarly.by==="price"?(sortReqEarly.dir==="asc"?"la opción con el precio más bajo":"la opción con el precio más alto"):sortReqEarly.by==="year"?"la opción más reciente":"la opción con menos kilometraje";
+      aiPushMessage("bot", `De las opciones encontradas, esta es ${label}:`+aiRenderCards(top));
+    }else{
+      aiPushMessage("bot","No encontré vehículos disponibles para mostrar en este momento.");
+    }
+    return;
+  }
+
+  // Pregunta puntual sobre el último vehículo mostrado (sin pronombre explícito)
+  if(AI.lastVehicle && !looksLikeNewSearch(norm)){
+    const specific=answerVehicleQuestion(AI.lastVehicle, norm);
+    if(specific){ aiPushMessage("bot", escapeHtml(specific)); return; }
+  }
+
+  /* ---- Construcción / refinamiento de filtros ---- */
+  const detected={
+    brand:detectBrand(norm), type:detectType(norm), transmission:detectTransmission(norm),
+    fuel:detectFuel(norm), year:detectYear(norm), price:parsePriceCOP(norm)
+  };
+  const anyDetected=Object.values(detected).some(Boolean);
+  if(!anyDetected){
+    aiPushMessage("bot",'Cuéntame más: ¿qué marca, tipo de vehículo o presupuesto tienes en mente? También puedo mostrarte los vehículos recién publicados o los destacados si prefieres.');
+    return;
+  }
+
+  const startsNewSearch=looksLikeNewSearch(norm);
+  const introducesNewScope=!!(detected.brand || detected.type);
+  const isRefinement=!startsNewSearch && !introducesNewScope && Object.keys(AI.lastFilters||{}).length>0;
+  const filters=isRefinement?{...AI.lastFilters}:{};
+  if(detected.brand) filters.brand=detected.brand;
+  if(detected.type) filters.type=detected.type;
+  if(detected.transmission) filters.transmission=detected.transmission;
+  if(detected.fuel) filters.fuel=detected.fuel;
+  if(detected.year) filters.year=detected.year;
+  if(detected.price) filters.price=detected.price;
+
+  AI.lastFilters=filters;
+  const results=searchVehicles(filters);
+
+  if(!results.length){
+    let relaxed=null;
+    if(filters.price){
+      const wide={...filters, price:{min:Math.round(filters.price.min*0.7), max:filters.price.max===Infinity?Infinity:Math.round(filters.price.max*1.3)}};
+      const r=searchVehicles(wide); if(r.length) relaxed=r;
+    }
+    if(!relaxed && filters.type){ const {type, ...rest}=filters; const r=searchVehicles(rest); if(r.length) relaxed=r; }
+    if(!relaxed && filters.brand){ const {brand, ...rest}=filters; const r=searchVehicles(rest); if(r.length) relaxed=r; }
+    if(relaxed && relaxed.length){
+      AI.lastResults=relaxed.slice(0,6); AI.lastVehicle=null;
+      aiPushMessage("bot","No encontré vehículos que cumplan exactamente esos criterios. Pero encontré estas opciones similares:"+aiRenderCards(AI.lastResults));
+    }else{
+      AI.lastResults=null; AI.lastVehicle=null;
+      aiPushMessage("bot","No encontré vehículos que cumplan exactamente esos criterios, ni opciones similares en el inventario disponible en este momento.");
+    }
+    return;
+  }
+
+  AI.lastResults=results.slice(0,8);
+  AI.lastVehicle=results.length===1?results[0]:null;
+  let intro=`Encontré ${results.length} vehículo${results.length===1?"":"s"} que coincide${results.length===1?"":"n"} con tu búsqueda:`;
+  aiPushMessage("bot", intro+aiRenderCards(AI.lastResults.slice(0,6)));
+
+  if(filters.type && !filters.price && results.length>3){
+    AI.awaitingBudget=true;
+    aiPushMessage("bot","¿Cuál es tu presupuesto aproximado?");
+  }
+}
+
+/* ---------- Interfaz del chat ---------- */
+
+function aiPushMessage(role, html){
+  const box=$("aiMessages");
+  const div=document.createElement("div");
+  div.className="ai-msg "+role;
+  div.innerHTML=html;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+function aiShowTyping(){
+  const box=$("aiMessages");
+  const div=document.createElement("div");
+  div.className="ai-typing"; div.id="aiTypingIndicator";
+  div.innerHTML='<span style="color:var(--muted);font-size:.78rem;margin-right:2px">Analizando el inventario...</span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+function aiHideTyping(){ const el=document.getElementById("aiTypingIndicator"); if(el) el.remove(); }
+
+function aiBuildSuggestions(){
+  const avail=vehicles.filter(v=>v.status==="Disponible");
+  const chips=[{icon:"🔎", label:"Buscar un vehículo", query:"Quiero buscar un vehículo"}];
+  if(avail.length){
+    const prices=avail.map(v=>v.price).sort((a,b)=>a-b);
+    const idx=Math.min(prices.length-1, Math.floor(prices.length*0.6));
+    const budget=Math.max(10000000, Math.round(prices[idx]/1000000)*1000000);
+    chips.push({icon:"💰", label:`Vehículos hasta $${(budget/1000000)}M`, query:`Vehículos hasta ${budget/1000000} millones`});
+    const types=new Set(avail.map(v=>v.type));
+    if(types.has("SUV")) chips.push({icon:"🚙", label:"SUVs disponibles", query:"Muéstrame las SUV disponibles"});
+    if(avail.some(v=>v.transmission==="Automática")) chips.push({icon:"⚙️", label:"Vehículos automáticos", query:"Quiero un vehículo automático"});
+    const brandCounts={};
+    avail.forEach(v=>{ brandCounts[v.brand]=(brandCounts[v.brand]||0)+1; });
+    const topBrand=Object.keys(brandCounts).sort((a,b)=>brandCounts[b]-brandCounts[a])[0];
+    if(topBrand) chips.push({icon:"🚗", label:`Ver ${topBrand} disponibles`, query:`¿Qué ${topBrand} tienen disponibles?`});
+    chips.push({icon:"🆕", label:"Recién publicados", query:"Muéstrame los vehículos recién publicados"});
+    if(avail.some(v=>v.featured)) chips.push({icon:"⭐", label:"Destacados", query:"Muéstrame los vehículos destacados"});
+  }
+  return chips.slice(0,6);
+}
+function aiRenderSuggestions(){
+  const box=$("aiSuggestions");
+  if(!box) return;
+  box.innerHTML="";
+  aiBuildSuggestions().forEach(c=>{
+    const btn=document.createElement("button");
+    btn.type="button"; btn.className="ai-chip";
+    btn.textContent=c.icon+" "+c.label;
+    btn.onclick=()=>aiAskSuggested(c.query);
+    box.appendChild(btn);
+  });
+}
+window.aiAskSuggested=function(q){ $("aiInput").value=q; sendAIMessage(); };
+
+window.toggleAIChat=function(force){
+  const panel=$("aiChat");
+  const shouldOpen=force!==undefined?force:!panel.classList.contains("open");
+  panel.classList.toggle("open", shouldOpen);
+  if(shouldOpen){
+    if(!AI.greeted){
+      AI.greeted=true;
+      aiPushMessage("bot",'¡Hola! 👋 Soy <strong>CARS STREET IA</strong>, tu asistente para encontrar el vehículo ideal. Puedes escribirme en lenguaje natural, por ejemplo: <em>"busco una SUV automática de máximo 40 millones"</em>.');
+      aiRenderSuggestions();
+    }
+    setTimeout(()=>{ const inp=$("aiInput"); if(inp) inp.focus(); }, 150);
+  }
+};
+
+window.sendAIMessage=function(){
+  const input=$("aiInput");
+  const text=input.value.trim();
+  if(!text) return;
+  aiPushMessage("user", escapeHtml(text));
+  input.value="";
+  const sendBtn=$("aiSendBtn");
+  if(sendBtn) sendBtn.disabled=true;
+  aiShowTyping();
+  setTimeout(()=>{
+    aiHideTyping();
+    try{ aiRespond(text); }
+    catch(err){
+      console.error("CARS STREET IA:", err);
+      aiPushMessage("bot","Ocurrió un problema al procesar tu búsqueda. ¿Puedes intentarlo de nuevo con otras palabras?");
+    }
+    if(sendBtn) sendBtn.disabled=false;
+    aiRenderSuggestions();
+  }, 550);
+};
+
+document.addEventListener("DOMContentLoaded", function(){
+  const input=$("aiInput");
+  if(input){
+    input.addEventListener("keydown", e=>{
+      if(e.key==="Enter"){ e.preventDefault(); sendAIMessage(); }
+    });
+  }
+});
+// Si el DOM ya cargó para cuando se ejecuta este script (script al final del body), engancha directo también.
+if(document.readyState==="interactive"||document.readyState==="complete"){
+  const input=$("aiInput");
+  if(input && !input._aiWired){
+    input._aiWired=true;
+    input.addEventListener("keydown", e=>{
+      if(e.key==="Enter"){ e.preventDefault(); sendAIMessage(); }
+    });
+  }
+}
+
 })();
 
 </script>
