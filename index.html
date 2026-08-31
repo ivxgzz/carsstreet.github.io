@@ -1750,8 +1750,8 @@ function detail(id,options={}){
   <div class="spec"><small>Color</small>${v.color||"No especificado"}</div></div><p style="color:#b9bec4">${v.desc||""}</p>
   <div class="cs-share-row">
     <button type="button" class="cs-share-btn cs-primary" onclick="csShareVehicle(vehicles.find(x=>x.id===${v.id}))">↗ Compartir</button>
+    <button type="button" class="cs-share-btn cs-primary" onclick="csAnalyzeVehicle(vehicles.find(x=>x.id===${v.id}))">🤖 Analizar con IA</button>
     <button type="button" class="cs-share-btn cs-wa" onclick="csShareWhatsApp(vehicles.find(x=>x.id===${v.id}))">🟢 WhatsApp</button>
-    <button type="button" class="cs-share-btn" onclick="csCopyVehicleUrl(vehicles.find(x=>x.id===${v.id}))">🔗 Copiar enlace</button>
   </div>
   <div class="cs-share-url">${url}</div>
   <div class="buttons"><a class="btn btn-primary" target="_blank" rel="noopener" href="${wa(v)}">CONTACTAR POR WHATSAPP</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a></div>`;
@@ -3229,6 +3229,31 @@ window.sendAIMessage=async function(){
   }finally{
     if(btn)btn.disabled=false;
     aiRenderSuggestions();
+  }
+};
+
+
+window.csAnalyzeVehicle=async function(v){
+  if(!v)return;
+  if(window.toggleAIChat) toggleAIChat(true);
+  aiShowTyping();
+  const datos=Object.entries({
+    Marca:v.brand,Modelo:v.model,Version:v.version,Año:v.year,Precio:v.price,
+    Kilometraje:v.mileage,Motor:v.engine,Cilindraje:v.displacement,
+    Potencia:v.power,Combustible:v.fuel,Transmision:v.transmission,
+    Traccion:v.traction,Color:v.color,Ciudad:v.city,Placa:v.plate,
+    Estado:v.condition,Blindaje:v.armor,Peritaje:v.inspection,
+    Descripcion:v.description,Equipamiento:v.equipment,Caracteristicas:v.features
+  }).filter(x=>x[1]).map(x=>`${x[0]}: ${x[1]}`).join('\n');
+
+  const prompt=`Analiza este vehículo de CARS STREET. Distingue claramente entre información de la publicación e información general del modelo. Incluye resumen, características, precio, mantenimiento, seguridad, puntos fuertes, aspectos a revisar y veredicto.\n\nDATOS DE LA PUBLICACIÓN:\n${datos}`;
+  try{
+    const r=await askClaude(prompt);
+    aiHideTyping();
+    aiPushMessage("bot",claudeFormat(r));
+  }catch(e){
+    aiHideTyping();
+    aiPushMessage("bot","🤖 Analizando este vehículo...\n\n"+datos);
   }
 };
 
