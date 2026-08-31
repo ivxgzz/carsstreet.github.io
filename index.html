@@ -165,7 +165,7 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 .ai-vcard-actions button,.ai-vcard-actions a{transition:filter .2s ease,transform .2s ease}
 .ai-vcard-actions button:hover,.ai-vcard-actions a:hover{filter:brightness(1.12);transform:translateY(-1px)}
 .ai-compare{margin-top:7px;border:1px solid #30353a;border-radius:13px;overflow:hidden;background:#111416;font-size:.73rem}
-.ai-compare-head,.ai-compare-row{display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:6px;padding:9px 10px;align-items:center}
+.ai-compare-head,.ai-compare-row{display:grid;grid-template-columns:1.05fr repeat(var(--ai-cols,2),minmax(105px,1fr));gap:6px;padding:9px 10px;align-items:center}.ai-compare{overflow-x:auto}.ai-compare-head,.ai-compare-row{min-width:max-content}.ai-compare-head>*,.ai-compare-row>*{min-width:105px}
 .ai-compare-head{background:#1b1f23;font-size:.7rem}
 .ai-compare-row{border-top:1px solid #292e33;color:#c9cdd1}
 .ai-compare-row b{color:#8f979f;font-size:.68rem}
@@ -1620,7 +1620,9 @@ const AI = {
   conversationHistory:[],
   greeted:false,
   awaitingBudget:false,
-  lastIntent:""
+  lastIntent:"",
+  lastComparison:[],
+  lastRecommendation:null
 };
 
 const AI_CONTACT = {
@@ -1772,7 +1774,7 @@ function detectAIIntent(text){
   if(/\bgracias\b|te agradezco/.test(n)) return "THANKS";
   if(/vender|publicar mi carro|poner mi carro/.test(n)) return "SELL_VEHICLE";
   if(/whatsapp|telefono|contactar|contacto|instagram|llamar/.test(n)) return "CONTACT";
-  if(/compara|comparar|diferencia entre|cual es mejor|cual conviene/.test(n)) return "COMPARE";
+  if(comparisonIntent(n)) return recommendationIntent(n) ? "COMPARE_AND_RECOMMEND" : "COMPARE";
   if(/recomiend|que carro|cual compro|para ciudad|para carretera|familiar/.test(n)) return "RECOMMEND";
   if(/motor|cilindraje|maquina/.test(n)) return "ENGINE";
   if(/placa|ultimo.*digito|termina/.test(n)) return "PLATE";
@@ -2008,29 +2010,328 @@ function answerGeneralAutomotive(norm){
   return hit?hit.answer:null;
 }
 
-/* ---------- Comparaciones ---------- */
-function compareVehicles(list){
-  if(!list||list.length<2) return null;
-  const a=list[0],b=list[1];
-  const rows=[];
-  const add=(label,va,vb)=>{
-    if(va!==""&&va!==undefined||vb!==""&&vb!==undefined) rows.push(`<div class="ai-compare-row"><b>${label}</b><span>${escapeHtml(String(va===""?"No registrado":va))}</span><span>${escapeHtml(String(vb===""?"No registrado":vb))}</span></div>`);
+/* ---------- Comparación y recomendación inteligente ---------- */
+
+function engineDisplacement(v){
+  const raw=fieldValue(v,["engine","motor","cilindraje"]);
+  if(raw==="") return null;
+  const s=String(raw).toLowerCase().replace(",",".");
+  const cc=s.match(/(\d{3,5})\s*(?:cc|cm3|cm³)?\b/);
+  if(cc) return Number(cc[1]);
+  const liters=s.match(/(\d+(?:\.\d+)?)\s*l\b/);
+  if(liters) return Number(liters[1])*1000;
+  return null;
+}
+
+function numericValue(v,keys){
+  const raw=fieldValue(v,keys);
+  if(raw==="") return null;
+  const n=Number(String(raw).replace(/[^\d.-]/g,""));
+  return Number.isFinite(n)?n:null;
+}
+
+function comparisonName(v){
+  return [v.brand,v.model,v.version,v.year].filter(Boolean).join(" · ");
+}
+
+function recommendationIntent(norm){
+  return /\b(recomiend|recomendacion|cual compr|comprarias|compraria|cual elegir|elegirias|con cual me qued|cual me conviene|vale la pena|vale mas la pena|mejor opcion|mejor relacion calidad precio|relacion calidad precio|cual es mejor|cual es la mejor|por cual te vas|por cual me voy|cual escoger|cual escog)\b/.test(norm);
+}
+
+function comparisonIntent(norm){
+  return /\b(compara|comparar|comparacion|comparativa|diferencia entre|entre .+ y |cual es mejor|cual conviene|cual me recomiendas|cual recomiendas|cual comprarias|cual compraria|cual me conviene|cual vale la pena|con cual me quedo|de estos|de esas|de los que|de las que)\b/.test(norm)
+    || recommendationIntent(norm);
+}
+
+function userPriority(norm){
+  if(/economico|barato|ahorrar|ahorrador|menos dinero|presupuesto|gastar menos|costo/.test(norm)) return "price";
+  if(/potente|potencia|caballos|hp|fuerte|desempeno|rendimiento/.test(norm)) return "engine";
+  if(/ciudad|urbano|urbana|trafico/.test(norm)) return "city";
+  if(/viajar|viaje|carretera|autopista|viajes/.test(norm)) return "travel";
+  if(/familiar|familia|espacio|grande/.test(norm)) return "family";
+  if(/nuevo|reciente|modelo reciente/.test(norm)) return "year";
+  if(/poco kilometraje|menos kilometraje|menos km|kilometraje bajo/.test(norm)) return "mileage";
+  return null;
+}
+
+function getComparisonVehicles(norm){
+  const available=vehicles.filter(v=>!v.status || normalizeAIText(v.status)==="disponible");
+  const previous=AI.lastResults||[];
+  const out=[];
+  const addUnique=v=>{
+    if(v && !out.some(x=>String(x.id)===String(v.id))) out.push(v);
   };
-  add("Precio",moneySafe(a.price),moneySafe(b.price));
-  add("Año",a.year,b.year);
-  add("Kilometraje",a.mileage!==undefined?Number(a.mileage).toLocaleString("es-CO")+" km":"",b.mileage!==undefined?Number(b.mileage).toLocaleString("es-CO")+" km":"");
-  add("Motor",fieldValue(a,["engine","motor","cilindraje"]),fieldValue(b,["engine","motor","cilindraje"]));
-  add("Combustible",a.fuel,b.fuel);
-  add("Transmisión",a.transmission,b.transmission);
-  add("Tipo",a.type,b.type);
-  const cheaper=Number(a.price)<Number(b.price)?a:Number(b.price)<Number(a.price)?b:null;
-  const newer=Number(a.year)>Number(b.year)?a:Number(b.year)>Number(a.year)?b:null;
-  const lowerKm=Number(a.mileage)<Number(b.mileage)?a:Number(b.mileage)<Number(a.mileage)?b:null;
-  let summary="Comparación basada únicamente en los datos registrados en CARS STREET.";
-  if(cheaper) summary+=` ${cheaper.brand} ${cheaper.model} tiene menor precio.`;
-  if(newer) summary+=` ${newer.brand} ${newer.model} es más reciente.`;
-  if(lowerKm) summary+=` ${lowerKm.brand} ${lowerKm.model} tiene menor kilometraje.`;
-  return `<div class="ai-compare"><div class="ai-compare-head"><span>Dato</span><b>${escapeHtml(a.brand+" "+a.model)}</b><b>${escapeHtml(b.brand+" "+b.model)}</b></div>${rows.join("")}</div><div class="ai-msg-note">${escapeHtml(summary)}</div>`;
+
+  /* Referencias: primero, segundo, tercero, etc. */
+  const ordinalRegex=/\b(?:el|la)?\s*(primer[oa]|segund[oa]|tercer[oa]|cuart[oa]|quint[oa]|ultim[oa])\b/g;
+  let om;
+  while((om=ordinalRegex.exec(norm))){
+    const word=om[1];
+    const idx=/^primer/.test(word)?0:/^segund/.test(word)?1:/^tercer/.test(word)?2:/^cuart/.test(word)?3:/^quint/.test(word)?4:-1;
+    if(previous.length) addUnique(idx===-1?previous[previous.length-1]:previous[idx]);
+  }
+
+  /* "¿Cuál de estos me recomiendas?" */
+  if(/\b(de estos|de esas|de los que|de las que|estos tres|estas tres|estos dos|esas dos)\b/.test(norm) && previous.length){
+    previous.slice(0,/tres/.test(norm)?3:2).forEach(addUnique);
+  }
+
+  /* Identificación directa por marca/modelo/versión. */
+  const scored=available.map(v=>({v,score:scoreVehicle(v,norm)}))
+    .filter(x=>x.score>=35)
+    .sort((a,b)=>b.score-a.score);
+
+  const strong=scored.filter(x=>x.score>=55);
+  const usedModels=new Set();
+  for(const item of strong){
+    const key=normalizeAIText(item.v.model||item.v.brand);
+    if(!usedModels.has(key)){
+      addUnique(item.v);
+      usedModels.add(key);
+    }
+    if(out.length>=6) break;
+  }
+
+  /* Si solo se dijo una marca ("BMW o Mercedes"), toma un candidato por marca. */
+  if(out.length<2){
+    const mentionedBrands=unique((typeof brands!=="undefined"?brands:[]).filter(b=>norm.includes(normalizeAIText(b))));
+    for(const brand of mentionedBrands){
+      const candidate=available
+        .filter(v=>normalizeAIText(v.brand)===normalizeAIText(brand))
+        .sort((a,b)=>scoreVehicle(b,norm)-scoreVehicle(a,norm))[0];
+      addUnique(candidate);
+    }
+  }
+
+  /* Contexto previo como último recurso. */
+  if(out.length<2 && previous.length>=2 && /\b(estos|esas|anteriores|mostraste|mostrados|opciones|vehiculos)\b/.test(norm)){
+    previous.slice(0,6).forEach(addUnique);
+  }
+
+  return out.slice(0,6);
+}
+
+/*
+  Puntuación interna:
+  precio 30%, año 20%, kilometraje 20%, motor/cilindraje 10%,
+  características 10%, estado/peritaje 10%.
+  Si un dato no existe, ese criterio no puntúa ni penaliza.
+*/
+function analyzeVehicleRecommendation(list,norm=""){
+  if(!Array.isArray(list)||list.length<2) return null;
+
+  const priority=userPriority(norm);
+  const baseWeights={price:30,year:20,mileage:20,engine:10,features:10,condition:10};
+
+  if(priority==="price") baseWeights.price=45;
+  if(priority==="year") baseWeights.year=35;
+  if(priority==="mileage") baseWeights.mileage=35;
+  if(priority==="engine") baseWeights.engine=35;
+  if(priority==="city"){baseWeights.price=25;baseWeights.mileage=15;}
+  if(priority==="travel"){baseWeights.price=20;baseWeights.year=15;baseWeights.mileage=25;baseWeights.engine=15;}
+  if(priority==="family"){baseWeights.price=25;baseWeights.year=15;baseWeights.mileage=15;baseWeights.features=20;}
+
+  const scores=list.map(v=>({vehicle:v,total:0,parts:[],advantages:[]}));
+
+  const addCriterion=(key,getter,higherIsBetter)=>{
+    const vals=list.map(getter);
+    const valid=vals.map((x,i)=>({x,i})).filter(o=>Number.isFinite(o.x));
+    if(valid.length<2) return;
+    const min=Math.min(...valid.map(o=>o.x));
+    const max=Math.max(...valid.map(o=>o.x));
+    const span=max-min;
+
+    valid.forEach(o=>{
+      const normalized=span===0?1:(higherIsBetter?(o.x-min)/span:(max-o.x)/span);
+      scores[o.i].total+=baseWeights[key]*normalized;
+      scores[o.i].parts.push({key,weight:baseWeights[key],normalized,raw:o.x});
+    });
+  };
+
+  addCriterion("price",v=>numericValue(v,["price"]),false);
+  addCriterion("year",v=>numericValue(v,["year"]),true);
+  addCriterion("mileage",v=>numericValue(v,["mileage"]),false);
+  addCriterion("engine",engineDisplacement,true);
+
+  const featureCount=v=>{
+    let n=0;
+    ["version","type","transmission","fuel","color","location","desc","description"].forEach(k=>{
+      if(fieldValue(v,[k])!=="") n++;
+    });
+    if(Array.isArray(v.images)&&v.images.length) n++;
+    return n;
+  };
+  addCriterion("features",featureCount,true);
+
+  const conditionScore=v=>{
+    const inspection=normalizeAIText(fieldValue(v,["inspection","peritaje"]));
+    if(!inspection) return null;
+    if(/excelente/.test(inspection)) return 4;
+    if(/con peritaje|bueno/.test(inspection)) return 3;
+    if(/regular/.test(inspection)) return 1;
+    if(/sin peritaje/.test(inspection)) return 0;
+    return 2;
+  };
+  addCriterion("condition",conditionScore,true);
+
+  /* Reponderación por datos realmente disponibles. */
+  scores.forEach(s=>{
+    const used=s.parts.reduce((sum,p)=>sum+p.weight,0);
+    s.total=used?s.total/used*100:0;
+  });
+
+  const ranked=[...scores].sort((a,b)=>b.total-a.total);
+
+  const addAdvantage=(getter,label,higherIsBetter)=>{
+    const vals=list.map(getter);
+    const valid=vals.map((x,i)=>({x,i})).filter(o=>Number.isFinite(o.x));
+    if(valid.length<2) return;
+    const best=valid.reduce((a,b)=>higherIsBetter?(b.x>a.x?b:a):(b.x<a.x?b:a));
+    const worst=valid.reduce((a,b)=>higherIsBetter?(b.x<a.x?b:a):(b.x>a.x?b:a));
+    if(best.i!==worst.i) scores[best.i].advantages.push(label);
+  };
+
+  addAdvantage(v=>numericValue(v,["price"]),"menor precio",false);
+  addAdvantage(v=>numericValue(v,["year"]),"año más reciente",true);
+  addAdvantage(v=>numericValue(v,["mileage"]),"menor kilometraje",false);
+  addAdvantage(engineDisplacement,"mayor cilindrada registrada",true);
+  addAdvantage(featureCount,"más información/características registradas",true);
+  addAdvantage(conditionScore,"mejor peritaje/estado registrado",true);
+
+  return {ranked,winner:ranked[0]?.vehicle||null,runnerUp:ranked[1]?.vehicle||null,priority,scores};
+}
+
+function renderVehicleComparisonTable(list){
+  if(!list||list.length<2) return "";
+
+  const fields=[
+    ["Precio",v=>moneySafe(v.price)],
+    ["Año",v=>safeText(v.year)],
+    ["Kilometraje",v=>hasValue(v,["mileage"])?Number(v.mileage).toLocaleString("es-CO")+" km":""],
+    ["Motor / cilindraje",v=>fieldValue(v,["engine","motor","cilindraje"])],
+    ["Transmisión",v=>safeText(v.transmission)],
+    ["Combustible",v=>safeText(v.fuel)],
+    ["Tipo",v=>safeText(v.type)],
+    ["Versión",v=>safeText(v.version)],
+    ["Color",v=>safeText(v.color)],
+    ["Ubicación",v=>safeText(v.location)],
+    ["Peritaje",v=>fieldValue(v,["inspection","peritaje"])],
+    ["Blindaje",v=>fieldValue(v,["armor","blindaje"])],
+    ["Placa",v=>fieldValue(v,["plateDigit","plate"])],
+    ["Características",v=>fieldValue(v,["desc","description"])]
+  ];
+
+  const rows=fields.map(([label,get])=>{
+    const values=list.map(v=>get(v));
+    if(!values.some(x=>x!==""&&x!==undefined&&x!==null)) return "";
+    return `<div class="ai-compare-row"><b>${escapeHtml(label)}</b>${values.map(x=>`<span>${escapeHtml(String(x===""||x===undefined||x===null?"No registrado":x))}</span>`).join("")}</div>`;
+  }).join("");
+
+  return `<div class="ai-compare" style="--ai-cols:${list.length}">
+    <div class="ai-compare-head"><span>Dato</span>${list.map(v=>`<b>${escapeHtml(comparisonName(v))}</b>`).join("")}</div>${rows}
+  </div>`;
+}
+
+function formatPriceDifference(a,b){
+  const pa=Number(a?.price),pb=Number(b?.price);
+  if(!Number.isFinite(pa)||!Number.isFinite(pb)||pa===pb) return "";
+  const cheaper=pa<pb?a:b;
+  return `${comparisonName(cheaper)} cuesta ${moneySafe(Math.abs(pa-pb))} menos.`;
+}
+
+function buildRecommendationResponse(list,norm){
+  const analysis=analyzeVehicleRecommendation(list,norm);
+  if(!analysis) return null;
+
+  const winner=analysis.winner, second=analysis.runnerUp;
+  const gap=Math.max(0,(analysis.ranked[0]?.total||0)-(analysis.ranked[1]?.total||0));
+  const priorityText={
+    price:"dando más peso al precio",
+    year:"dando más peso al año",
+    mileage:"dando más peso al kilometraje",
+    engine:"dando más peso al motor/cilindraje",
+    city:"priorizando factores útiles para ciudad",
+    travel:"priorizando factores útiles para viajes",
+    family:"priorizando espacio y características registradas"
+  }[analysis.priority]||"considerando precio, año, kilometraje y los demás datos disponibles";
+
+  const winnerScore=analysis.scores.find(s=>String(s.vehicle.id)===String(winner.id));
+  const reasons=winnerScore?.advantages||[];
+
+  let text=`<strong>🏆 MI RECOMENDACIÓN</strong><br><br>Entre estas opciones, me quedaría con <strong>${escapeHtml(comparisonName(winner))}</strong>.<br><br>`;
+  text+=`La elección se basa en los datos reales registrados en CARS STREET, ${escapeHtml(priorityText)}.`;
+  if(reasons.length) text+=` Sus principales ventajas objetivas son: <strong>${escapeHtml(reasons.slice(0,4).join(", "))}</strong>.`;
+
+  const diff=formatPriceDifference(winner,second);
+  if(diff) text+=` ${escapeHtml(diff)}`;
+  if(gap<8) text+=` La diferencia es relativamente ajustada, así que la elección puede cambiar si para ti pesa más otro criterio.`;
+  if(analysis.priority==="engine") text+=` Para potencia, solo considero el motor/cilindraje publicado; no invento cifras de potencia o torque.`;
+
+  if(list.length>2){
+    const ranking=analysis.ranked.map((r,i)=>`${i+1}. ${comparisonName(r.vehicle)}`).join(" · ");
+    text+=`<br><br><strong>Orden de recomendación:</strong> ${escapeHtml(ranking)}.`;
+  }
+
+  text+=`<br><br>${renderVehicleComparisonTable(list)}`;
+
+  AI.lastComparison=list.slice();
+  AI.lastRecommendation=analysis;
+  AI.currentVehicle=winner;
+  AI.lastVehicle=winner;
+  return text;
+}
+
+function answerComparisonFollowUp(norm){
+  const list=AI.lastComparison||[];
+  if(list.length<2) return null;
+
+  if(/porque|por que|razon|motivo/.test(norm)){
+    const r=AI.lastRecommendation;
+    if(!r?.winner) return null;
+    const s=r.scores.find(x=>String(x.vehicle.id)===String(r.winner.id));
+    const reasons=s?.advantages||[];
+    let out=`Elegí <strong>${escapeHtml(comparisonName(r.winner))}</strong> porque `;
+    out+=reasons.length?`en los datos publicados destaca por <strong>${escapeHtml(reasons.join(", "))}</strong>.`:`su puntuación global fue la más alta al comparar los datos disponibles.`;
+    const diff=formatPriceDifference(r.winner,r.runnerUp);
+    if(diff) out+=` ${escapeHtml(diff)}`;
+    out+=` No estoy suponiendo características que no estén registradas.`;
+    return out;
+  }
+
+  if(/mas barato|mas economico|menor precio|quien cuesta menos/.test(norm)){
+    const valid=list.filter(v=>Number.isFinite(Number(v.price)));
+    if(!valid.length) return "No tengo precios registrados suficientes para determinar cuál es más barato.";
+    const v=[...valid].sort((a,b)=>Number(a.price)-Number(b.price))[0];
+    return `El más barato es <strong>${escapeHtml(comparisonName(v))}</strong>, con un precio de <strong>${escapeHtml(moneySafe(v.price))}</strong>.`;
+  }
+
+  if(/menos kilometraje|menos kilometros|menos km|menor kilometraje/.test(norm)){
+    const valid=list.filter(v=>Number.isFinite(Number(v.mileage)));
+    if(!valid.length) return "No tengo kilometrajes registrados suficientes para determinarlo.";
+    const v=[...valid].sort((a,b)=>Number(a.mileage)-Number(b.mileage))[0];
+    return `El de menor kilometraje es <strong>${escapeHtml(comparisonName(v))}</strong>, con <strong>${Number(v.mileage).toLocaleString("es-CO")} km</strong>.`;
+  }
+
+  if(/mas nuevo|mas reciente|ano mas reciente/.test(norm)){
+    const valid=list.filter(v=>Number.isFinite(Number(v.year)));
+    if(!valid.length) return "No tengo años registrados suficientes para determinarlo.";
+    const v=[...valid].sort((a,b)=>Number(b.year)-Number(a.year))[0];
+    return `El más reciente es <strong>${escapeHtml(comparisonName(v))}</strong>, modelo <strong>${escapeHtml(v.year)}</strong>.`;
+  }
+
+  if(/motor|cilindraje/.test(norm)){
+    return list.map(v=>`<strong>${escapeHtml(comparisonName(v))}</strong>: ${escapeHtml(fieldValue(v,["engine","motor","cilindraje"])||"No registrado")}`).join("<br>");
+  }
+
+  if(/placa|ultimo.*digito|termina.*placa/.test(norm)){
+    return list.map(v=>`<strong>${escapeHtml(comparisonName(v))}</strong>: ${escapeHtml(fieldValue(v,["plateDigit","plate"])||"No registrado")}`).join("<br>");
+  }
+
+  if(/precio|cuesta|vale/.test(norm) && !recommendationIntent(norm)){
+    return list.map(v=>`<strong>${escapeHtml(comparisonName(v))}</strong>: ${escapeHtml(moneySafe(v.price))}`).join("<br>");
+  }
+
+  return null;
 }
 
 /* ---------- Respuesta principal ---------- */
@@ -2065,6 +2366,45 @@ function aiRespond(rawText){
   const explicitGeneral=/que es|que significa|diferencia|como funciona|explica|para que sirve|recomiendas|es bueno|es mejor/.test(norm);
   const vehicleRef=resolveReference(norm)||findVehicleFromText(norm,AI.lastResults);
   const specificQuestion=/motor|cilindraje|placa|peritaje|blindad|precio|cuesta|vale|kilometraje|kilometros|\bkm\b|ano|color|combustible|gasolina|diesel|hibrid|electrico|transmision|automatic|manual|version|ubicacion|donde esta|descripcion|estado|publicad/.test(norm);
+
+  /*
+    PRIORIDAD CRÍTICA:
+    Una pregunta de elección/comparación NO se convierte en searchVehicles().
+    Primero se identifican las publicaciones, luego se analizan y se recomienda.
+  */
+  if(comparisonIntent(norm)){
+    const follow=answerComparisonFollowUp(norm);
+    if(follow){
+      aiPushMessage("bot",follow);
+      return;
+    }
+
+    let comparisonList=getComparisonVehicles(norm);
+
+    if(comparisonList.length<2 && AI.lastResults.length>=2 &&
+       /\b(cual|cuales|recomiend|mejor|conviene|compr|vale|qued)\b/.test(norm)){
+      comparisonList=AI.lastResults.slice(0,6);
+    }
+
+    if(comparisonList.length>=2){
+      const response=buildRecommendationResponse(comparisonList,norm);
+      if(response){
+        aiPushMessage("bot",response);
+        return;
+      }
+    }
+
+    if(comparisonList.length===1){
+      AI.currentVehicle=comparisonList[0];
+      AI.lastVehicle=comparisonList[0];
+      aiPushMessage("bot",`Identifiqué <strong>${escapeHtml(comparisonName(comparisonList[0]))}</strong>, pero para recomendar entre opciones necesito al menos dos vehículos. Puedes decirme, por ejemplo: <strong>“${escapeHtml(comparisonName(comparisonList[0]))} o [otro vehículo]”</strong>.`);
+      return;
+    }
+
+    aiPushMessage("bot","Claro. Puedo compararlos y recomendarte uno con base en los datos reales de CARS STREET. Dime qué vehículos quieres comparar, por ejemplo: <strong>“Mustang o Camaro”</strong>, o si te refieres a los resultados anteriores, <strong>“¿cuál de esos me recomiendas?”</strong>.");
+    return;
+  }
+
   if(general && (!vehicleRef || explicitGeneral) && !specificQuestion){
     aiPushMessage("bot",`<strong>En términos generales:</strong> ${escapeHtml(general)}`);
     return;
@@ -2107,20 +2447,6 @@ function aiRespond(rawText){
     const pool=vehicles.filter(v=>v.status==="Disponible").slice().sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0)).slice(0,8);
     AI.lastResults=pool;AI.currentVehicle=pool[0]||null;AI.lastVehicle=pool[0]||null;
     aiPushMessage("bot",pool.length?"Estas son las publicaciones más recientes:"+aiRenderCards(pool):"No hay vehículos disponibles en este momento.");
-    return;
-  }
-
-  /* Comparación explícita. Si hay dos referencias previas, usa esas. */
-  if(/compara|comparar|diferencia entre|cual es mejor|cual conviene/.test(norm)){
-    let list=[];
-    if(AI.lastResults.length>=2) list=AI.lastResults.slice(0,2);
-    else{
-      const candidates=vehicles.filter(v=>v.status==="Disponible").filter(v=>scoreVehicle(v,norm)>0).sort((a,b)=>scoreVehicle(b,norm)-scoreVehicle(a,norm)).slice(0,2);
-      list=candidates;
-    }
-    const cmp=compareVehicles(list);
-    if(cmp){aiPushMessage("bot",cmp);return;}
-    aiPushMessage("bot","Para compararlos necesito identificar al menos dos vehículos del inventario. Puedes escribir, por ejemplo: “compara el primero y el segundo”.");
     return;
   }
 
@@ -2222,7 +2548,7 @@ function aiRespond(rawText){
     if(specific){aiPushMessage("bot",escapeHtml(specific));return;}
   }
 
-  aiPushMessage("bot","Puedo ayudarte con el inventario de CARS STREET y con dudas automotrices. Prueba algo como “muéstrame una SUV automática”, “¿qué motor tiene el Mustang?”, “¿cuánto vale el segundo?” o “¿qué diferencia hay entre AWD y 4x4?”");
+  aiPushMessage("bot","Puedo ayudarte con el inventario de CARS STREET y con dudas automotrices. También puedo comparar vehículos y recomendarte cuál conviene más según precio, año, kilometraje y los datos realmente publicados. Por ejemplo: “Mustang o Camaro”, “¿cuál comprarías?” o “¿cuál de esos me recomiendas?”");
 }
 
 /* ---------- UI ---------- */
