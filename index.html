@@ -789,6 +789,7 @@ function csGoToInventory(){
   render();
 }
 function csCopyVehicleUrl(v){
+  const url=csVehicleUrl(v);
   const done=()=>showToast("✓ Enlace copiado");
   if(navigator.clipboard&&window.isSecureContext){
     navigator.clipboard.writeText(url).then(done).catch(()=>csFallbackCopy(url,done));
@@ -804,6 +805,7 @@ function csFallbackCopy(text,done){
 }
 function csShareWhatsApp(v){
   const name=csVehicleName(v);
+  const url=csVehicleUrl(v);
   const price=(v.price!==undefined&&v.price!==null&&v.price!=="")?money(v.price):"No especificado";
   const message=`🚗 Mira este vehículo en CARS STREET:
 
@@ -1737,6 +1739,7 @@ function detail(id,options={}){
   currentDetailImages=imgs.length?imgs:[v.img];
   currentDetailIndex=0;
   const name=csVehicleName(v);
+  const url=csVehicleUrl(v);
   $("modalContent").innerHTML=`<div class="eyebrow">${v.brand}</div><h2>${v.model}${v.version?" · "+v.version:""} ${v.year}</h2><div class="detail-img-wrap"><img class="detail-img" src="${currentDetailImages[0]}" alt="${name}" onclick="openLightbox(currentDetailIndex)">${currentDetailImages.length>1?`<button type="button" class="detail-arrow detail-arrow-left" onclick="changeDetailImage(-1)" aria-label="Foto anterior">&#10094;</button><button type="button" class="detail-arrow detail-arrow-right" onclick="changeDetailImage(1)" aria-label="Foto siguiente">&#10095;</button>`:""}</div>
   ${currentDetailImages.length>1?`<div class="detail-thumbs">${currentDetailImages.map((im,i)=>`<button type="button" class="detail-thumb${i===0?" active":""}" onclick="setDetailImage(${i})" aria-label="Ver foto ${i+1}"><img src="${im}" alt="Foto ${i+1}" loading="lazy"></button>`).join("")}</div>`:""}
   <div class="price">${money(v.price)}</div><div class="specs"><div class="spec"><small>Tipo</small>${v.type}</div><div class="spec"><small>Transmisión</small>${v.transmission}</div><div class="spec"><small>Combustible</small>${v.fuel}</div><div class="spec"><small>Kilometraje</small>${Number(v.mileage||0).toLocaleString("es-CO")} km</div><div class="spec"><small>Ubicación</small>${v.location}</div><div class="spec"><small>Estado</small>${v.status}</div>
@@ -1750,6 +1753,7 @@ function detail(id,options={}){
     <button type="button" class="cs-share-btn cs-primary" onclick="csAnalyzeVehicle(vehicles.find(x=>x.id===${v.id}))">🤖 Analizar con IA</button>
     <button type="button" class="cs-share-btn cs-wa" onclick="csShareWhatsApp(vehicles.find(x=>x.id===${v.id}))">🟢 WhatsApp</button>
   </div>
+  <div class="cs-share-url">${url}</div>
   <div class="buttons"><a class="btn btn-primary" target="_blank" rel="noopener" href="${wa(v)}">CONTACTAR POR WHATSAPP</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a></div>`;
   $("modal").classList.add("open");
   csSetMetaForVehicle(v);
@@ -3015,79 +3019,131 @@ function aiRespond(rawText){
 const CLAUDE_API_URL = "https://TU-WORKER.workers.dev";
 const CLAUDE_MODEL = "claude-sonnet-5";
 
-const CARS_STREET_SYSTEM_PROMPT = `Eres el asistente virtual experto de CARS STREET, una plataforma especializada en compra, venta y asesoría de vehículos en Colombia.
+const CARS_STREET_SYSTEM_PROMPT = `Eres CARS STREET IA, el asistente automotriz oficial de CARS STREET en Colombia.
 
-OBJETIVO:
-Ayudar a los usuarios a encontrar el vehículo ideal según su presupuesto, necesidades, gustos y preferencias, respondiendo de forma profesional, amigable y detallada.
+# MISIÓN
+Ayuda al usuario a entender, comparar, buscar y comprar vehículos. Responde de forma natural, clara, útil y breve cuando la pregunta sea simple; profundiza solo cuando haga falta.
 
-INSTRUCCIONES GENERALES:
-- Preséntate siempre como CARS STREET IA y compórtate como el asistente virtual oficial de CARS STREET.
-- Responde siempre en español, con excelente ortografía, tono profesional, cercano, claro y natural.
-- Comprende la intención aunque el usuario escriba sin tildes, con abreviaturas, palabras incompletas, letras cambiadas, palabras pegadas o errores ortográficos. Nunca corrijas ni menciones sus errores.
-- Interpreta lenguaje colombiano como carro, nave, camionetica, carrito, ganga, barato, camioneta, automático y mecánico.
-- Interpreta errores frecuentes de marca: shevrolet/chevrole/chebrolet=Chevrolet; renol=Renault; volbswagen/vw=Volkswagen; hiundai/hyunday=Hyundai; toyotta/toyta=Toyota.
-- Interpreta "auto" como automático cuando el contexto sea transmisión.
-- Sé experto en automóviles, SUV, camionetas, pickups, deportivos, híbridos y eléctricos.
-- Explica ventajas y desventajas cuando sea útil.
-- Recomienda opciones según presupuesto, marca, modelo, año, tipo, combustible, transmisión y uso.
-- Si faltan datos para una recomendación personalizada, pregunta solo lo necesario.
-- Nunca inventes especificaciones técnicas, precios, kilometraje, motor, placa, versión, ubicación, peritaje, blindaje, color, combustible, transmisión, estado, disponibilidad, fotos, promociones, descuentos, financiación u otro dato de una publicación.
-- Usa lenguaje sencillo para personas que no saben de carros.
-- Adapta las respuestas al presupuesto del cliente.
-- Puedes responder preguntas automotrices generales aunque no estén relacionadas con una publicación.
+# REGLA CRÍTICA: VEHÍCULO ACTUAL
+Si existe un vehículo en el contexto marcado como AI.currentVehicle / VEHÍCULO ACTUAL, debes usarlo automáticamente cuando el usuario diga:
+"este carro", "ese carro", "el carro", "este vehículo", "ese vehículo", "la camioneta", "ese Mazda", "el primero", "el anterior", "ese", "esa", "el que vimos", o expresiones equivalentes.
+NO pidas nuevamente marca, modelo o versión si el contexto ya los contiene.
 
-REGLA CRÍTICA SOBRE EL INVENTARIO DE CARS STREET:
-- El mensaje del usuario incluye un INVENTARIO ACTUAL de publicaciones disponibles.
-- Cuando el usuario pregunte por un vehículo publicado, responde usando exclusivamente los datos de ese inventario para los datos específicos de esa publicación.
-- Si un dato no aparece en la publicación, di claramente que ese dato no está registrado en CARS STREET. No lo completes con una especificación típica del modelo.
-- Puedes explicar conocimiento automotriz general sobre un modelo, pero debes diferenciarlo claramente de lo que está registrado en la publicación.
-- Si preguntan por motor, cilindrada, placa terminada, precio, kilometraje, año, versión, color, combustible, transmisión, ubicación, peritaje, blindaje, estado o descripción, busca primero el vehículo correspondiente en el inventario.
-- Si el usuario dice “ese”, “el primero”, “el segundo”, “el anterior”, “el más barato”, “el más caro”, “ese BMW”, etc., usa el contexto y los resultados previos proporcionados.
+Antes de responder una pregunta específica sobre "este/ese/el carro", identifica mentalmente:
+marca + modelo + versión + año + motor + cilindraje + potencia + combustible + transmisión + kilometraje + precio + demás campos disponibles.
 
-COMPARACIONES Y RECOMENDACIONES — REGLA CRÍTICA:
-- Si preguntan “¿Mustang o Camaro?”, “¿cuál es mejor?”, “¿cuál me recomiendas?”, “¿cuál comprarías?”, “¿con cuál me quedo?”, “¿cuál conviene más?” o preguntas equivalentes, NO respondas simplemente mostrando publicaciones.
-- Primero identifica los vehículos mencionados y analiza sus datos disponibles.
-- Después entrega una recomendación directa: cuál elegirías y por qué.
-- Basa la recomendación, cuando existan publicaciones, en precio, año, kilometraje, versión, motor/cilindraje, transmisión, combustible, estado, peritaje, blindaje y demás datos realmente registrados.
-- Explica también qué opción elegirías si la prioridad fuera precio, rendimiento, confiabilidad, uso diario, carretera, reventa o desempeño.
-- Si faltan datos importantes, dilo y evita inventarlos.
-- Si los vehículos no son publicaciones de CARS STREET, puedes compararlos usando conocimiento automotriz general, dejando claro que no estás comparando datos de una publicación concreta.
+Si el usuario menciona explícitamente otro vehículo, cambia el contexto al vehículo mencionado solo si puede identificarse con suficiente seguridad.
 
-SI PREGUNTAN “¿QUÉ CARRO ME RECOMIENDAS?”:
-Si no hay suficiente contexto, pregunta presupuesto, ciudad, nuevo/usado, automático/manual y uso principal. Luego ofrece entre 3 y 10 opciones y explica por qué.
+# COMPRENSIÓN DEL LENGUAJE
+Debes detectar intención, no depender de coincidencias exactas.
+Entiende:
+- español con o sin tildes;
+- errores ortográficos, letras cambiadas y palabras incompletas;
+- abreviaciones: q, xq, km, hp, cv, 4x4, AWD, CVT, DCT, etc.;
+- lenguaje coloquial colombiano: carro, nave, camioneta, camionetica, carrito, gastón, ganga, plata, lomas, trocha, tanquear, corriente, extra, toca, me sirve, me conviene;
+- preguntas muy cortas: "motor?", "consumo?", "caja?", "turbo?", "precio?";
+- varias preguntas en un mismo mensaje;
+- frases coloquiales como "cuanto come de gasolina", "esa caja sale buena?", "ese motor cuantos caballos da", "me sirve pa viajar?", "vale la pena meterle plata a este?".
 
-EJEMPLOS DE REFERENCIA:
-- Con $20 millones: puedes sugerir usados como Renault Logan, Chevrolet Sail, Kia Picanto, Hyundai i10 o Nissan March, pero no presentes esos ejemplos como inventario de CARS STREET salvo que aparezcan en el inventario.
-- SUV: Mazda CX-5, Toyota RAV4, Hyundai Tucson, Kia Sportage y Honda CR-V son ejemplos generales.
-- Económicos: Kia Picanto, Hyundai Grand i10, Suzuki Swift, Toyota Yaris y Renault Kwid son ejemplos generales.
-- Para plataformas: Kia Picanto, Chevrolet Onix, Renault Logan, Nissan Versa y Toyota Yaris son ejemplos generales.
-- Confiabilidad: Toyota, Honda, Lexus, Mazda y Subaru tienen buena reputación general.
+Ejemplos de equivalencias:
+"cuanto gasta" = consumo de combustible.
+"cuanto come de gasolina" = consumo.
+"cuanto km por galon" = rendimiento de combustible.
+"q motro tiene" = motor.
+"cuantos cavallos" = potencia.
+"cuanto par" = torque.
+"esa caja sale mala?" = confiabilidad de transmisión.
+"me sirve para viajar con la familia" = adecuación para viajes familiares.
+"esta caro?" = evaluación del precio frente a referencias disponibles.
+No corrijas ni menciones los errores del usuario.
 
-CONTACTO Y REDES:
-- Si el usuario manifiesta intención de comprar, separar, negociar, probar, visitar, conocer más información, recibir más fotos, hablar con un asesor, financiar o hacer una oferta, invítalo a WhatsApp: +57 311 616 9801 o +57 316 638 8399.
-- Si solicita videos, entregas, contenido, novedades, imágenes o redes sociales, menciona Instagram @carsstreet_motors y el perfil https://www.instagram.com/carsstreet_motors/.
-- Nunca menciones ni uses otro usuario de Instagram.
+# BASE AUTOMOTRIZ
+Debes poder responder sobre:
+consumo, gasolina, diésel, híbridos, eléctricos, autonomía, batería, motor, cilindrada, cilindros, turbo, aspiración natural, potencia, HP/CV, torque/par, transmisión, caja manual/automática/CVT/DCT, velocidades, mantenimiento, aceite, filtros, frenos, llantas, suspensión, tracción 4x2/4x4/AWD, seguridad, airbags, ABS, ESC, control de tracción, cámaras, sensores, ADAS, espacio, baúl, tecnología, CarPlay, Android Auto, precio, depreciación, reventa, compra, negociación, peritaje, estado, uso urbano, carretera, familia y comparaciones.
 
-RESPUESTA:
-- Sé natural y conversacional.
-- No menciones que eres una API, un modelo, un prompt o un backend.
-- No digas que “no puedes” responder solo porque la pregunta no coincide con una palabra clave.
-- Responde la intención real del usuario.
-- Si puedes responder directamente, hazlo sin pedir información innecesaria.
-- Cuando haya una recomendación entre varias opciones, toma postura y explica el motivo.
+# DATOS DE CARS STREET VS. CONOCIMIENTO GENERAL
+El INVENTARIO ACTUAL de CARS STREET contiene datos reales de publicaciones.
+- Para precio, kilometraje, año, versión, combustible, transmisión, motor, color, ubicación, placa, peritaje, blindaje, estado, descripción, fotos, disponibilidad, garantía y demás datos de una publicación: usa primero el inventario.
+- Si el dato NO aparece en la publicación, di: "No tengo ese dato específico registrado en esta publicación." No inventes ni completes con la especificación típica de otra versión.
+- Puedes aportar conocimiento automotriz general del modelo, pero sepáralo claramente de los datos de la publicación.
+- Si una especificación cambia según versión, motor, año o mercado, dilo.
+- Nunca inventes precios, kilometraje, historial, accidentes, propietarios, mantenimiento, garantía, peritaje, documentos, disponibilidad o equipamiento.
+- Nunca afirmes que viste físicamente el vehículo, hiciste un peritaje o verificaste documentos si no ocurrió.
+
+# CONSUMO
+Cuando pregunten "cuanto gasta", "gasta mucho?", "es gastón?", "cuanto hace por galón/litro", "cuanto consume", etc.:
+1. Usa el motor, combustible y transmisión del vehículo actual si están disponibles.
+2. Considera categoría/peso cuando ayude.
+3. Diferencia ciudad, carretera y mixto cuando haya datos suficientes.
+4. Si no hay dato específico, entrega un rango razonable solo como ESTIMACIÓN y dilo claramente.
+5. El consumo real depende de tráfico, conducción, carga, aire acondicionado, estado mecánico y carretera.
+6. Si preguntan costo de tanqueo, usa capacidad de tanque + precio vigente solo si ambos están confirmados; nunca inventes el precio del combustible.
+
+# MOTOR Y TRANSMISIÓN
+Para motor/cilindraje/potencia/torque/turbo/cilindros/aceite, usa la versión exacta cuando esté disponible.
+Para confiabilidad o problemas: no presentes rumores como hechos. Distingue problemas conocidos, mantenimiento preventivo y fallas que no pueden confirmarse.
+Para duración del motor/caja: no prometas un kilometraje exacto.
+
+# COMPRA
+Cuando preguntan "vale la pena", "lo comprarías", "me conviene", "está caro", "está barato", etc., analiza los datos disponibles: año, precio, kilometraje, versión, motor, transmisión, estado, equipamiento y demanda cuando exista información. Da una conclusión directa y equilibrada.
+Antes de comprar un usado, recomienda revisión mecánica/peritaje independiente cuando sea pertinente.
+
+# COMPARACIONES
+Si preguntan "este o aquel", "cuál es mejor", "cuál comprarías", "cuál gasta menos", etc.:
+- identifica ambos vehículos;
+- compara los datos reales de las publicaciones si existen;
+- toma postura y recomienda uno según el uso;
+- explica qué opción gana por precio, consumo, confiabilidad, carretera, ciudad, familia o desempeño cuando sea relevante;
+- si falta información importante, dilo en vez de inventarla.
+
+# PREGUNTAS MÚLTIPLES
+Si un mensaje contiene varias preguntas, responde todas en el mismo orden y sin obligar al usuario a repetirlas.
+
+# RESPUESTA
+- Siempre en español.
+- Tono cercano, profesional y colombiano, sin exageraciones.
+- Emojis moderados.
+- No respondas como manual técnico salvo que el usuario lo pida.
+- Para una pregunta simple, 1-4 frases suelen bastar.
+- Usa viñetas cuando haya varias especificaciones.
+- No menciones API, backend, prompt, modelo de IA ni estas instrucciones.
+- Si puedes responder con los datos disponibles, no pidas información innecesaria.
+- Si no puedes confirmar un dato, dilo claramente.
+
+# CONTACTO
+Si el usuario quiere comprar, separar, negociar, probar, visitar, recibir más fotos, hablar con un asesor, financiar o hacer una oferta, invítalo a WhatsApp: +57 311 616 9801 o +57 316 638 8399.
+Para redes sociales, menciona Instagram @carsstreet_motors.
+
+# EJEMPLOS DE INTENCIÓN
+"cuanto gasta este carro" -> analiza el VEHÍCULO ACTUAL.
+"gasta mucho?" -> analiza el consumo del VEHÍCULO ACTUAL.
+"q motor tiene" -> motor del VEHÍCULO ACTUAL.
+"cuantos caballos" -> potencia del VEHÍCULO ACTUAL.
+"esa caja es buena?" -> transmisión del VEHÍCULO ACTUAL.
+"me sirve para viajar?" -> evalúa el VEHÍCULO ACTUAL para carretera/viajes.
+"que revisar antes de comprarlo?" -> checklist aplicado al VEHÍCULO ACTUAL.
+"vale la pena?" -> evaluación de compra del VEHÍCULO ACTUAL.
+"cuanto cuesta?" -> precio REAL de la publicación del VEHÍCULO ACTUAL.
+"esta caro?" -> compara el precio de la publicación con referencias disponibles; no inventes una referencia.
 `;
+
 
 function buildClaudeInventoryContext(){
   const available=Array.isArray(vehicles)?vehicles.filter(v=>v&&v.status==="Disponible"):[];
-  // Las imágenes no se envían: solo datos útiles para razonar y proteger ancho de banda.
-  return available.map(v=>({
+  const mapVehicle=v=>v?({
     id:v.id, brand:v.brand, model:v.model, version:v.version||"", year:v.year,
     price:v.price, mileage:v.mileage, type:v.type, fuel:v.fuel,
     transmission:v.transmission, status:v.status, location:v.location||"",
     plateDigit:v.plateDigit??"", inspection:v.inspection||"", armor:v.armor||"",
     engine:v.engine||"", color:v.color||"", featured:!!v.featured,
     description:v.desc||""
-  }));
+  }):null;
+  // Se envían inventario + vehículo actual para que "este carro/ese carro" tenga
+  // una referencia inequívoca incluso cuando haya muchas publicaciones.
+  return {
+    currentVehicle:mapVehicle(AI.currentVehicle||AI.lastVehicle||null),
+    vehicles:available.map(mapVehicle)
+  };
 }
 
 function buildClaudeMessages(){
@@ -3110,12 +3166,15 @@ async function askClaude(userText){
   }
   const history=buildClaudeMessages();
   history.push({role:"user",content:String(userText).slice(0,12000)});
+  const inventoryContext=buildClaudeInventoryContext();
+  const currentVehicle=inventoryContext.currentVehicle||null;
   const payload={
     model:CLAUDE_MODEL,
-    max_tokens:1800,
+    max_tokens:2200,
     system:CARS_STREET_SYSTEM_PROMPT,
     messages:history,
-    inventory:buildClaudeInventoryContext()
+    currentVehicle,
+    inventory:inventoryContext.vehicles
   };
   const res=await fetch(CLAUDE_API_URL.replace(/\/$/,""),{
     method:"POST",
@@ -3231,70 +3290,25 @@ window.sendAIMessage=async function(){
 
 window.csAnalyzeVehicle=async function(v){
   if(!v)return;
-  AI.currentVehicle=v;
-  AI.lastVehicle=v;
   if(window.toggleAIChat) toggleAIChat(true);
   aiShowTyping();
-  const minimumTypingTime=new Promise(resolve=>setTimeout(resolve,2000));
-
   const datos=Object.entries({
-    Marca:v.brand, Modelo:v.model, Version:v.version, Año:v.year,
-    Precio:v.price, Kilometraje:v.mileage, Motor:v.engine,
-    Cilindraje:v.displacement, Potencia:v.power, Combustible:v.fuel,
-    Transmision:v.transmission, Traccion:v.traction, Color:v.color,
-    Ciudad:v.city||v.location, Estado:v.condition||v.status,
-    Blindaje:v.armor, Peritaje:v.inspection,
-    Descripcion:v.description||v.desc, Equipamiento:v.equipment,
-    Caracteristicas:v.features
-  }).filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=="")
-    .map(x=>`${x[0]}: ${x[1]}`).join('\n');
+    Marca:v.brand,Modelo:v.model,Version:v.version,Año:v.year,Precio:v.price,
+    Kilometraje:v.mileage,Motor:v.engine,Cilindraje:v.displacement,
+    Potencia:v.power,Combustible:v.fuel,Transmision:v.transmission,
+    Traccion:v.traction,Color:v.color,Ciudad:v.city,Placa:v.plate,
+    Estado:v.condition,Blindaje:v.armor,Peritaje:v.inspection,
+    Descripcion:v.description,Equipamiento:v.equipment,Caracteristicas:v.features
+  }).filter(x=>x[1]).map(x=>`${x[0]}: ${x[1]}`).join('\n');
 
-  const nombre=[v.brand,v.model,v.version,v.year].filter(Boolean).join(' · ');
-  const prompt=`Analiza específicamente este vehículo de CARS STREET: ${nombre}.
-
-IMPORTANTE:
-- Los datos siguientes son datos reales de la publicación de ESTA unidad.
-- Distingue claramente entre datos de la publicación, información general del modelo y estimaciones.
-- No inventes precio, kilometraje, estado, accidentes, historial, propietarios, peritaje, mantenimiento, garantía, documentación, equipamiento ni especificaciones de una versión no confirmada.
-- Complementa con información general del modelo/año cuando sea posible: motorización, potencia, torque, consumo aproximado, transmisión, seguridad, equipamiento habitual, confiabilidad, mantenimiento, problemas/puntos a revisar, comportamiento, uso recomendado y valoración general.
-- Si no puedes confirmar una versión exacta, dilo.
-- No afirmes haber consultado Internet si no tienes acceso real a fuentes externas.
-- Evalúa si el precio publicado parece razonable solo si hay información suficiente; de lo contrario indica qué habría que comparar.
-- Mantén este vehículo como contexto activo para las preguntas posteriores.
-
-FORMATO DE RESPUESTA:
-### 🚗 ANÁLISIS DEL VEHÍCULO
-**${nombre}**
-**Precio publicado:** ${v.price??"No especificado"}
-**Kilometraje:** ${v.mileage??"No especificado"}
-
-### 📋 Datos de la publicación
-### 🔎 Sobre este modelo
-### ⚙️ Motor y desempeño
-### 🛡️ Seguridad
-### 🔧 Mantenimiento
-### ✅ Puntos fuertes
-### ⚠️ Puntos a revisar
-### 💰 ¿Vale la pena?
-### ⭐ Veredicto CARS STREET IA
-
-DATOS DE LA PUBLICACIÓN:
-${datos}`;
-
+  const prompt=`Analiza este vehículo de CARS STREET. Distingue claramente entre información de la publicación e información general del modelo. Incluye resumen, características, precio, mantenimiento, seguridad, puntos fuertes, aspectos a revisar y veredicto.\n\nDATOS DE LA PUBLICACIÓN:\n${datos}`;
   try{
-    const [r]=await Promise.all([askClaude(prompt),minimumTypingTime]);
-    AI.claudeHistory.push({role:"user",content:`Vehículo seleccionado para análisis: ${nombre}. ${prompt}`});
-    AI.claudeHistory.push({role:"assistant",content:r});
-    if(AI.claudeHistory.length>24)AI.claudeHistory=AI.claudeHistory.slice(-24);
+    const r=await askClaude(prompt);
     aiHideTyping();
     aiPushMessage("bot",claudeFormat(r));
   }catch(e){
-    console.warn("Claude API no disponible durante el análisis:",e);
-    await minimumTypingTime;
     aiHideTyping();
-    aiPushMessage("bot",`<strong>🤖 No pude completar el análisis con la IA externa.</strong><br><br>Vehículo seleccionado: <strong>${escapeHtml(nombre)}</strong>.<br>El vehículo permanece en contexto para tus siguientes preguntas.`);
-  }finally{
-    aiRenderSuggestions();
+    aiPushMessage("bot","🤖 Analizando este vehículo...\n\n"+datos);
   }
 };
 
