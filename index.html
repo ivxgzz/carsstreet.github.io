@@ -270,6 +270,28 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<!-- ===== CARS STREET: URL INDIVIDUAL Y COMPARTIR ===== -->
+<meta id="csOgTitle" property="og:title" content="CARS STREET | Compra y venta de vehículos en Colombia">
+<meta id="csOgDescription" property="og:description" content="Encuentra vehículos nuevos y usados en Colombia.">
+<meta id="csOgUrl" property="og:url" content="">
+<meta id="csOgImage" property="og:image" content="">
+<meta name="twitter:card" content="summary">
+<meta id="csTwitterImage" name="twitter:image" content="">
+<meta id="csTwitterTitle" name="twitter:title" content="CARS STREET | Compra y venta de vehículos en Colombia">
+<meta id="csTwitterDescription" name="twitter:description" content="Encuentra vehículos nuevos y usados en Colombia.">
+<style id="csVehicleShareStyles">
+  .cs-share-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .cs-share-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 13px;border-radius:10px;font-weight:850;font-size:.78rem;border:1px solid #343a40;background:#1a1d21;color:#fff;transition:transform .2s ease,filter .2s ease,border-color .2s ease}
+  .cs-share-btn:hover{transform:translateY(-1px);filter:brightness(1.12);border-color:#59616a}
+  .cs-share-btn.cs-wa{background:var(--success);color:#061006;border-color:transparent}
+  .cs-share-btn.cs-primary{background:var(--accent);color:#100000;border-color:transparent}
+  .cs-share-url{margin-top:12px;padding:10px 12px;border:1px solid #292f35;border-radius:10px;background:#0b0d0f;color:#9fa7af;font-size:.72rem;word-break:break-all}
+  .cs-unavailable{text-align:center;padding:30px 10px}
+  .cs-unavailable h2{margin:8px 0 10px;font-size:1.7rem}
+  .cs-unavailable p{color:#a7adb4;margin-bottom:18px}
+</style>
+
 </head>
 <body>
 <header class="nav"><div class="container nav-inner">
@@ -654,6 +676,174 @@ function nextTopOrder(){
   const orders=vehicles.map(v=>Number(v.order)||0);
   return orders.length?Math.min(...orders)-1:0;
 }
+
+/* ===== URL INDIVIDUAL DE VEHÍCULOS — CARS STREET =====
+   La parte final se deriva del ID permanente de la publicación.
+   Así no cambia al editar marca/modelo/año y no requiere servidor.
+*/
+function csSlugify(value){
+  return String(value||"")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase()
+    .replace(/&/g," and ")
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"")
+    .replace(/-+/g,"-");
+}
+function csStableCode(id){
+  const raw=String(id??"").trim();
+  const n=Number(raw);
+  // Los IDs actuales de CARS STREET son numéricos. Su representación base36
+  // es inyectiva: dos IDs diferentes no producen el mismo identificador.
+  if(Number.isFinite(n)&&Number.isInteger(n)) return Math.abs(n).toString(36);
+  // Respaldo estable para un ID no numérico, manteniendo el mismo valor entre renderizados.
+  let h=2166136261;
+  for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(36);
+}
+function csVehicleName(v){
+  return [v?.brand,v?.model,v?.version,v?.year].filter(x=>String(x??"").trim()!=="").join(" ").trim();
+}
+function csVehicleSlug(v){
+  if(!v) return "";
+  const permanent = csSlugify(v.vehicleSlug||v.slug||"");
+  if(permanent) return permanent;
+  const base=csSlugify([v.brand,v.model,v.version,v.year].filter(x=>String(x??"").trim()!=="").join(" "));
+  const code=csStableCode(v.id);
+  return (base||"vehiculo")+"-"+code;
+}
+function csVehicleUrl(v){
+  return new URL("#"+csVehicleSlug(v),window.location.href).href;
+}
+function csFindVehicleBySlug(hash){
+  const slug=String(hash||"").replace(/^#/,"").trim();
+  if(!slug)return null;
+  let v=vehicles.find(x=>csVehicleSlug(x)===slug);
+  if(v)return v;
+  // Compatibilidad con enlaces antiguos después de editar marca/modelo/año:
+  // el identificador permanente queda al final de la URL y sigue asociado al ID.
+  const code=slug.split("-").pop();
+  return vehicles.find(x=>csStableCode(x.id)===code)||null;
+}
+function csIsVehicleHash(hash){
+  const slug=String(hash||"").replace(/^#/,"").trim();
+  if(!slug)return false;
+  // Los hashes de vehículo tienen varias partes y un identificador final,
+  // evitando interferir con los anclajes existentes (#inicio, #vehiculos, #vende, etc.).
+  return /^[a-z0-9]+(?:-[a-z0-9]+)+-[a-z0-9]+$/i.test(slug);
+}
+function csSetMetaForVehicle(v){
+  const title=v?`${csVehicleName(v)} | CARS STREET`:"CARS STREET | Compra y venta de vehículos en Colombia";
+  const description=v?`${csVehicleName(v)} — vehículo publicado en CARS STREET.`:"Encuentra vehículos nuevos y usados en Colombia.";
+  document.title=title;
+  const ogT=document.getElementById("csOgTitle"),ogD=document.getElementById("csOgDescription"),ogU=document.getElementById("csOgUrl"),ogI=document.getElementById("csOgImage");
+  const twT=document.getElementById("csTwitterTitle"),twD=document.getElementById("csTwitterDescription"),twI=document.getElementById("csTwitterImage");
+  if(ogT)ogT.setAttribute("content",title);
+  if(ogD)ogD.setAttribute("content",description);
+  if(ogU)ogU.setAttribute("content",v?csVehicleUrl(v):new URL(window.location.pathname+window.location.search,window.location.href).href);
+  if(ogI)ogI.setAttribute("content",v?(v.img||""):"");
+  if(twT)twT.setAttribute("content",title);
+  if(twD)twD.setAttribute("content",description);
+  if(twI)twI.setAttribute("content",v?(v.img||""):"");
+}
+function csOpenVehicleHash(slug,replace=false){
+  const v=csFindVehicleBySlug("#"+slug);
+  if(v){
+    detail(v.id,{fromRoute:true});
+    if(replace){
+      history.replaceState({carsStreetVehicle:csVehicleSlug(v)}, "", "#"+csVehicleSlug(v));
+    }
+    return true;
+  }
+  return false;
+}
+function csShowUnavailable(){
+  currentDetailImages=[];
+  currentDetailIndex=0;
+  $("modalContent").innerHTML=`<div class="cs-unavailable">
+    <div class="eyebrow">CARS STREET</div>
+    <h2>Este vehículo ya no está disponible.</h2>
+    <p>La publicación asociada a este enlace ya no existe en el inventario.</p>
+    <button type="button" class="btn btn-primary" onclick="csGoToInventory()">Ver vehículos disponibles</button>
+  </div>`;
+  $("modal").classList.add("open");
+  csSetMetaForVehicle(null);
+}
+function csGoToInventory(){
+  $("modal").classList.remove("open");
+  csSetMetaForVehicle(null);
+  history.pushState({}, "", window.location.pathname+window.location.search);
+  document.getElementById("vehiculos")?.scrollIntoView({behavior:"smooth"});
+  render();
+}
+function csCopyVehicleUrl(v){
+  const url=csVehicleUrl(v);
+  const done=()=>showToast("✓ Enlace copiado");
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(url).then(done).catch(()=>csFallbackCopy(url,done));
+  }else csFallbackCopy(url,done);
+}
+function csFallbackCopy(text,done){
+  const ta=document.createElement("textarea");
+  ta.value=text;ta.setAttribute("readonly","");
+  ta.style.position="fixed";ta.style.opacity="0";
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand("copy");done();}catch(e){showToast("No se pudo copiar el enlace");}
+  ta.remove();
+}
+function csShareWhatsApp(v){
+  const name=csVehicleName(v);
+  const url=csVehicleUrl(v);
+  const price=(v.price!==undefined&&v.price!==null&&v.price!=="")?money(v.price):"No especificado";
+  const message=`🚗 Mira este vehículo en CARS STREET:
+
+${name}
+
+💰 ${price}
+
+🔗 Ver vehículo:
+${url}`;
+  window.open("https://wa.me/573116169801?text="+encodeURIComponent(message),"_blank","noopener");
+}
+async function csNativeShare(v){
+  const name=csVehicleName(v),url=csVehicleUrl(v);
+  if(navigator.share){
+    try{
+      await navigator.share({title:`${name} — CARS STREET`,text:`${name} — vehículo publicado en CARS STREET.`,url});
+      return;
+    }catch(e){
+      if(e&&e.name==="AbortError")return;
+    }
+  }
+  csCopyVehicleUrl(v);
+}
+function csShareVehicle(v){
+  if(!v)return;
+  csNativeShare(v);
+}
+function csOpenVehicleFromCard(id){
+  const v=vehicles.find(x=>x.id===id);
+  if(!v)return;
+  const slug=csVehicleSlug(v);
+  history.pushState({carsStreetVehicle:slug},"","#"+slug);
+  detail(id,{fromRoute:true});
+}
+function csHandleVehicleRoute(){
+  const hash=window.location.hash;
+  if(!hash){
+    if($("modal")?.classList.contains("open")) closeModal();
+    csSetMetaForVehicle(null);
+    return;
+  }
+  if(!csIsVehicleHash(hash))return;
+  const v=csFindVehicleBySlug(hash);
+  if(v){
+    detail(v.id,{fromRoute:true});
+  }else if(vehicles&&vehicles.length){
+    csShowUnavailable();
+  }
+}
+
 function normalizeVehicleList(list){
   return (list||[]).map(v=>({...v,images:Array.isArray(v.images)&&v.images.length?v.images:[v.img],plateDigit:v.plateDigit||"",inspection:v.inspection||"",armor:v.armor||"No blindado",engine:v.engine||"",color:v.color||"",createdAt:Number(v.createdAt)||fallbackCreatedAt(v)}));
 }
@@ -803,6 +993,7 @@ function listenToCloudVehicles(){
     backupVehiclesToLocalStorage(vehicles);
     render();
     renderAdminCars();
+    if(csIsVehicleHash(window.location.hash)) csHandleVehicleRoute();
   },err=>{
     console.error("Se perdió la conexión en tiempo real con Firebase (se sigue usando la copia local):",err);
   });
@@ -1377,6 +1568,7 @@ async function saveCar(e){
 
     const data={
       id:id?Number(id):Date.now(),
+      ...(old&&old.vehicleSlug?{vehicleSlug:old.vehicleSlug}:{}),
       brand:$("carBrand").value,
       model:$("carModel").value.trim(),
       version:$("carVersion").value.trim(),
@@ -1459,6 +1651,10 @@ async function saveCar(e){
     }
     render();
     renderAdminCars();
+    if(old&&csIsVehicleHash(window.location.hash)){
+      const updated=vehicles.find(x=>x.id===old.id);
+      if(updated) history.replaceState({carsStreetVehicle:csVehicleSlug(updated)},"","#"+csVehicleSlug(updated));
+    }
     const successMsg=old?"Publicación actualizada correctamente":"¡Nuevo auto publicado correctamente!";
     let statusNote="";
     if(!cloudEnabled)statusNote=" (solo en este navegador: configura Firebase para que todos lo vean)";
@@ -1482,9 +1678,13 @@ async function deleteCar(id){
     // El listener en tiempo real actualizará "vehicles" para todos en un instante.
     // Igual guardamos copia local por si se pierde la conexión después.
     await saveVehicles();
+    render();
+    if(csIsVehicleHash(window.location.hash)) csShowUnavailable();
     showToast(ok?"Publicación eliminada para todos":"No se pudo eliminar en la nube; se quitó solo en este navegador");
   }else{
     await saveVehicles();
+    render();
+    if(csIsVehicleHash(window.location.hash)) csShowUnavailable();
     showToast("Publicación eliminada (solo en este navegador)");
   }
 }
@@ -1502,8 +1702,8 @@ async function resetDemoCars(){
 }
 
 
-function render(list=vehicles){$("inventory").innerHTML=list.length?list.map(v=>`<article class="card reveal reveal-scale"><div class="card-img"><img class="card-img-fg" loading="lazy" src="${v.img}" alt="${v.brand} ${v.model} ${v.year}"><span class="badge">${v.featured?"DESTACADO":"DISPONIBLE"}</span></div><div class="card-body"><div class="card-brand">${v.brand}<span class="post-age" data-created-at="${v.createdAt||""}">${timeAgo(v.createdAt)}</span></div><h3>${v.model}${v.version?" · "+v.version:""} ${v.year}</h3><div class="price">${money(v.price)}</div><div class="meta"><span>${v.type}</span><span>${v.transmission}</span><span>${v.fuel}</span>${v.engine?`<span>${v.engine}</span>`:""}${v.color?`<span>${v.color}</span>`:""}<span>${v.location}</span></div><div class="card-actions"><button class="btn btn-secondary" onclick="detail(${v.id})">VER DETALLES</button><a class="btn btn-primary" target="_blank" href="${wa(v)}">WHATSAPP</a></div></div></article>`).join(""):`<div class="empty"><h3>No encontramos vehículos disponibles</h3><p>Prueba con otros filtros para encontrar opciones similares.</p><button class="btn btn-primary" style="margin-top:15px" onclick="clearFilters()">LIMPIAR FILTROS</button></div>`;$("counter").textContent=`${list.length} vehículo${list.length===1?"":"s"} encontrado${list.length===1?"":"s"}`;if(typeof observeReveal==="function")observeReveal();}
-function wa(v){const name=[v.brand,v.model,v.version,v.year].filter(Boolean).join(" ");return "https://wa.me/573116169801?text="+encodeURIComponent(`Hola, estoy interesado en el ${name} publicado en CARS STREET. ¿Sigue disponible?`)}
+function render(list=vehicles){$("inventory").innerHTML=list.length?list.map(v=>`<article class="card reveal reveal-scale"><div class="card-img"><img class="card-img-fg" loading="lazy" src="${v.img}" alt="${v.brand} ${v.model} ${v.year}"><span class="badge">${v.featured?"DESTACADO":"DISPONIBLE"}</span></div><div class="card-body"><div class="card-brand">${v.brand}<span class="post-age" data-created-at="${v.createdAt||""}">${timeAgo(v.createdAt)}</span></div><h3>${v.model}${v.version?" · "+v.version:""} ${v.year}</h3><div class="price">${money(v.price)}</div><div class="meta"><span>${v.type}</span><span>${v.transmission}</span><span>${v.fuel}</span>${v.engine?`<span>${v.engine}</span>`:""}${v.color?`<span>${v.color}</span>`:""}<span>${v.location}</span></div><div class="card-actions"><button class="btn btn-secondary" onclick="csOpenVehicleFromCard(${v.id})">VER DETALLES</button><button class="btn btn-secondary" type="button" onclick="csShareVehicle(vehicles.find(x=>x.id===${v.id}))">↗ COMPARTIR</button><a class="btn btn-primary" target="_blank" rel="noopener" href="${wa(v)}">WHATSAPP</a></div></div></article>`).join(""):`<div class="empty"><h3>No encontramos vehículos disponibles</h3><p>Prueba con otros filtros para encontrar opciones similares.</p><button class="btn btn-primary" style="margin-top:15px" onclick="clearFilters()">LIMPIAR FILTROS</button></div>`;$("counter").textContent=`${list.length} vehículo${list.length===1?"":"s"} encontrado${list.length===1?"":"s"}`;if(typeof observeReveal==="function")observeReveal();}
+function wa(v){const name=[v.brand,v.model,v.version,v.year].filter(Boolean).join(" ");return "https://wa.me/573116169801?text="+encodeURIComponent(`Hola, estoy interesado en el ${name} publicado en CARS STREET. ¿Sigue disponible?\n\n🔗 Ver vehículo: ${csVehicleUrl(v)}`)}
 function applyFilters(){
   let list=vehicles.filter(v=>v.status==="Disponible");
   const norm=x=>String(x||"").trim().toLocaleLowerCase("es");
@@ -1520,17 +1720,46 @@ function clearFilters(){
   render();
 }
 let currentDetailImages=[];let currentDetailIndex=0;
-function detail(id){const v=vehicles.find(x=>x.id===id);const imgs=(v.images&&v.images.length?v.images:[v.img]);currentDetailImages=imgs;currentDetailIndex=0;$("modalContent").innerHTML=`<div class="eyebrow">${v.brand}</div><h2>${v.model} ${v.year}</h2><div class="detail-img-wrap"><img class="detail-img" src="${imgs[0]}" alt="${v.brand} ${v.model}" onclick="openLightbox(currentDetailIndex)">${imgs.length>1?`<button type="button" class="detail-arrow detail-arrow-left" onclick="changeDetailImage(-1)" aria-label="Foto anterior">&#10094;</button><button type="button" class="detail-arrow detail-arrow-right" onclick="changeDetailImage(1)" aria-label="Foto siguiente">&#10095;</button>`:""}</div>
-${imgs.length>1?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0">${imgs.map((im,i)=>`<img src="${im}" style="width:100%;height:80px;object-fit:contain;object-position:center;background:#111;border-radius:8px;cursor:pointer" onclick="openLightbox(${i})">`).join("")}</div>`:""}
-<div class="price">${money(v.price)}</div><div class="specs"><div class="spec"><small>Tipo</small>${v.type}</div><div class="spec"><small>Transmisión</small>${v.transmission}</div><div class="spec"><small>Combustible</small>${v.fuel}</div><div class="spec"><small>Kilometraje</small>${v.mileage.toLocaleString("es-CO")} km</div><div class="spec"><small>Ubicación</small>${v.location}</div><div class="spec"><small>Estado</small>${v.status}</div>
-<div class="spec"><small>Último dígito placa</small>${v.plateDigit||"No especificado"}</div>
-<div class="spec"><small>Peritaje</small>${v.inspection||"No especificado"}</div>
-<div class="spec"><small>Blindaje</small>${v.armor||"No especificado"}</div>
-<div class="spec"><small>Cilindraje</small>${v.engine||"No especificado"}</div>
-<div class="spec"><small>Color</small>${v.color||"No especificado"}</div></div><p style="color:#b9bec4">${v.desc}</p><div class="buttons"><a class="btn btn-primary" target="_blank" href="${wa(v)}">CONTACTAR POR WHATSAPP</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a></div>`;$("modal").classList.add("open")}
+function detail(id,options={}){
+  const v=vehicles.find(x=>x.id===id);
+  if(!v){csShowUnavailable();return;}
+  const imgs=(v.images&&v.images.length?v.images:[v.img]).filter(Boolean);
+  currentDetailImages=imgs.length?imgs:[v.img];
+  currentDetailIndex=0;
+  const name=csVehicleName(v);
+  const url=csVehicleUrl(v);
+  $("modalContent").innerHTML=`<div class="eyebrow">${v.brand}</div><h2>${v.model}${v.version?" · "+v.version:""} ${v.year}</h2><div class="detail-img-wrap"><img class="detail-img" src="${currentDetailImages[0]}" alt="${name}" onclick="openLightbox(currentDetailIndex)">${currentDetailImages.length>1?`<button type="button" class="detail-arrow detail-arrow-left" onclick="changeDetailImage(-1)" aria-label="Foto anterior">&#10094;</button><button type="button" class="detail-arrow detail-arrow-right" onclick="changeDetailImage(1)" aria-label="Foto siguiente">&#10095;</button>`:""}</div>
+  ${currentDetailImages.length>1?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0">${currentDetailImages.map((im,i)=>`<img src="${im}" style="width:100%;height:80px;object-fit:contain;object-position:center;background:#111;border-radius:8px;cursor:pointer" onclick="openLightbox(${i})">`).join("")}</div>`:""}
+  <div class="price">${money(v.price)}</div><div class="specs"><div class="spec"><small>Tipo</small>${v.type}</div><div class="spec"><small>Transmisión</small>${v.transmission}</div><div class="spec"><small>Combustible</small>${v.fuel}</div><div class="spec"><small>Kilometraje</small>${Number(v.mileage||0).toLocaleString("es-CO")} km</div><div class="spec"><small>Ubicación</small>${v.location}</div><div class="spec"><small>Estado</small>${v.status}</div>
+  <div class="spec"><small>Último dígito placa</small>${v.plateDigit||"No especificado"}</div>
+  <div class="spec"><small>Peritaje</small>${v.inspection||"No especificado"}</div>
+  <div class="spec"><small>Blindaje</small>${v.armor||"No especificado"}</div>
+  <div class="spec"><small>Cilindraje</small>${v.engine||"No especificado"}</div>
+  <div class="spec"><small>Color</small>${v.color||"No especificado"}</div></div><p style="color:#b9bec4">${v.desc||""}</p>
+  <div class="cs-share-row">
+    <button type="button" class="cs-share-btn cs-primary" onclick="csShareVehicle(vehicles.find(x=>x.id===${v.id}))">↗ Compartir</button>
+    <button type="button" class="cs-share-btn cs-wa" onclick="csShareWhatsApp(vehicles.find(x=>x.id===${v.id}))">🟢 WhatsApp</button>
+    <button type="button" class="cs-share-btn" onclick="csCopyVehicleUrl(vehicles.find(x=>x.id===${v.id}))">🔗 Copiar enlace</button>
+  </div>
+  <div class="cs-share-url">${url}</div>
+  <div class="buttons"><a class="btn btn-primary" target="_blank" rel="noopener" href="${wa(v)}">CONTACTAR POR WHATSAPP</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a></div>`;
+  $("modal").classList.add("open");
+  csSetMetaForVehicle(v);
+  if(!options.fromRoute){
+    const slug=csVehicleSlug(v);
+    if(window.location.hash!=="#"+slug)history.pushState({carsStreetVehicle:slug},"","#"+slug);
+  }
+}
 function setDetailImage(i){if(!currentDetailImages||!currentDetailImages.length)return;currentDetailIndex=((i%currentDetailImages.length)+currentDetailImages.length)%currentDetailImages.length;const img=document.querySelector(".detail-img");if(!img)return;img.style.opacity="0";setTimeout(()=>{img.src=currentDetailImages[currentDetailIndex];img.style.opacity="1"},150)}
 function changeDetailImage(dir){setDetailImage(currentDetailIndex+dir)}
-function closeModal(){$("modal").classList.remove("open")}
+function closeModal(){
+  if(csIsVehicleHash(window.location.hash)){
+    history.back();
+    return;
+  }
+  $("modal").classList.remove("open");
+  csSetMetaForVehicle(null);
+}
 function openLightbox(i){if(!currentDetailImages||!currentDetailImages.length)return;currentDetailIndex=((i%currentDetailImages.length)+currentDetailImages.length)%currentDetailImages.length;$("lightboxImg").src=currentDetailImages[currentDetailIndex];document.querySelectorAll("#lightbox .detail-arrow").forEach(btn=>{btn.style.display=currentDetailImages.length>1?"flex":"none"});$("lightbox").classList.add("open")}
 function closeLightbox(){$("lightbox").classList.remove("open")}
 function lightboxNav(dir){if(!currentDetailImages||!currentDetailImages.length)return;currentDetailIndex=((currentDetailIndex+dir)%currentDetailImages.length+currentDetailImages.length)%currentDetailImages.length;const src=currentDetailImages[currentDetailIndex];$("lightboxImg").src=src;const mainImg=document.querySelector(".detail-img");if(mainImg)mainImg.src=src}
@@ -1568,6 +1797,10 @@ $("profileForm").onsubmit=async e=>{
 };
 applyProfile();
 
+/* ===== ROUTER DE VEHÍCULOS POR HASH ===== */
+window.addEventListener("hashchange",csHandleVehicleRoute);
+window.addEventListener("popstate",csHandleVehicleRoute);
+
 render();
 
 // Carga las publicaciones. Primero se pinta rápido con la última copia local
@@ -1580,6 +1813,8 @@ render();
   vehicles=vehicles.map(normalizeVehiclePhotos);
   render();
   renderAdminCars();
+  // El enlace puede haberse abierto directamente antes de que Firebase/IndexedDB terminara de cargar.
+  if(csIsVehicleHash(window.location.hash)) csHandleVehicleRoute();
   if(cloudEnabled){
     await ensureCloudSeeded();
     listenToCloudVehicles();
