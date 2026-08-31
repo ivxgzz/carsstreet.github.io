@@ -789,7 +789,6 @@ function csGoToInventory(){
   render();
 }
 function csCopyVehicleUrl(v){
-  const url=csVehicleUrl(v);
   const done=()=>showToast("✓ Enlace copiado");
   if(navigator.clipboard&&window.isSecureContext){
     navigator.clipboard.writeText(url).then(done).catch(()=>csFallbackCopy(url,done));
@@ -805,7 +804,6 @@ function csFallbackCopy(text,done){
 }
 function csShareWhatsApp(v){
   const name=csVehicleName(v);
-  const url=csVehicleUrl(v);
   const price=(v.price!==undefined&&v.price!==null&&v.price!=="")?money(v.price):"No especificado";
   const message=`🚗 Mira este vehículo en CARS STREET:
 
@@ -1739,7 +1737,6 @@ function detail(id,options={}){
   currentDetailImages=imgs.length?imgs:[v.img];
   currentDetailIndex=0;
   const name=csVehicleName(v);
-  const url=csVehicleUrl(v);
   $("modalContent").innerHTML=`<div class="eyebrow">${v.brand}</div><h2>${v.model}${v.version?" · "+v.version:""} ${v.year}</h2><div class="detail-img-wrap"><img class="detail-img" src="${currentDetailImages[0]}" alt="${name}" onclick="openLightbox(currentDetailIndex)">${currentDetailImages.length>1?`<button type="button" class="detail-arrow detail-arrow-left" onclick="changeDetailImage(-1)" aria-label="Foto anterior">&#10094;</button><button type="button" class="detail-arrow detail-arrow-right" onclick="changeDetailImage(1)" aria-label="Foto siguiente">&#10095;</button>`:""}</div>
   ${currentDetailImages.length>1?`<div class="detail-thumbs">${currentDetailImages.map((im,i)=>`<button type="button" class="detail-thumb${i===0?" active":""}" onclick="setDetailImage(${i})" aria-label="Ver foto ${i+1}"><img src="${im}" alt="Foto ${i+1}" loading="lazy"></button>`).join("")}</div>`:""}
   <div class="price">${money(v.price)}</div><div class="specs"><div class="spec"><small>Tipo</small>${v.type}</div><div class="spec"><small>Transmisión</small>${v.transmission}</div><div class="spec"><small>Combustible</small>${v.fuel}</div><div class="spec"><small>Kilometraje</small>${Number(v.mileage||0).toLocaleString("es-CO")} km</div><div class="spec"><small>Ubicación</small>${v.location}</div><div class="spec"><small>Estado</small>${v.status}</div>
@@ -1753,7 +1750,6 @@ function detail(id,options={}){
     <button type="button" class="cs-share-btn cs-primary" onclick="csAnalyzeVehicle(vehicles.find(x=>x.id===${v.id}))">🤖 Analizar con IA</button>
     <button type="button" class="cs-share-btn cs-wa" onclick="csShareWhatsApp(vehicles.find(x=>x.id===${v.id}))">🟢 WhatsApp</button>
   </div>
-  <div class="cs-share-url">${url}</div>
   <div class="buttons"><a class="btn btn-primary" target="_blank" rel="noopener" href="${wa(v)}">CONTACTAR POR WHATSAPP</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a></div>`;
   $("modal").classList.add("open");
   csSetMetaForVehicle(v);
@@ -3016,7 +3012,7 @@ function aiRespond(rawText){
    La clave NO se guarda en este HTML. El navegador llama a un proxy/backend
    seguro configurado en CLAUDE_API_URL, que guarda ANTHROPIC_API_KEY como secreto.
    ============================================================================ */
-const CLAUDE_API_URL = "https://coches-calle-ia.ivanghtyx.workers.dev";
+const CLAUDE_API_URL = "https://TU-WORKER.workers.dev";
 const CLAUDE_MODEL = "claude-sonnet-5";
 
 const CARS_STREET_SYSTEM_PROMPT = `Eres el asistente virtual experto de CARS STREET, una plataforma especializada en compra, venta y asesoría de vehículos en Colombia.
@@ -3121,7 +3117,7 @@ async function askClaude(userText){
     messages:history,
     inventory:buildClaudeInventoryContext()
   };
-  const res=await fetch(https://coches-street-ia.ivanghtyx.workers.dev.replace(/\/$/,""),{
+  const res=await fetch(CLAUDE_API_URL.replace(/\/$/,""),{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(payload)
@@ -3235,25 +3231,70 @@ window.sendAIMessage=async function(){
 
 window.csAnalyzeVehicle=async function(v){
   if(!v)return;
+  AI.currentVehicle=v;
+  AI.lastVehicle=v;
   if(window.toggleAIChat) toggleAIChat(true);
   aiShowTyping();
-  const datos=Object.entries({
-    Marca:v.brand,Modelo:v.model,Version:v.version,Año:v.year,Precio:v.price,
-    Kilometraje:v.mileage,Motor:v.engine,Cilindraje:v.displacement,
-    Potencia:v.power,Combustible:v.fuel,Transmision:v.transmission,
-    Traccion:v.traction,Color:v.color,Ciudad:v.city,Placa:v.plate,
-    Estado:v.condition,Blindaje:v.armor,Peritaje:v.inspection,
-    Descripcion:v.description,Equipamiento:v.equipment,Caracteristicas:v.features
-  }).filter(x=>x[1]).map(x=>`${x[0]}: ${x[1]}`).join('\n');
+  const minimumTypingTime=new Promise(resolve=>setTimeout(resolve,2000));
 
-  const prompt=`Analiza este vehículo de CARS STREET. Distingue claramente entre información de la publicación e información general del modelo. Incluye resumen, características, precio, mantenimiento, seguridad, puntos fuertes, aspectos a revisar y veredicto.\n\nDATOS DE LA PUBLICACIÓN:\n${datos}`;
+  const datos=Object.entries({
+    Marca:v.brand, Modelo:v.model, Version:v.version, Año:v.year,
+    Precio:v.price, Kilometraje:v.mileage, Motor:v.engine,
+    Cilindraje:v.displacement, Potencia:v.power, Combustible:v.fuel,
+    Transmision:v.transmission, Traccion:v.traction, Color:v.color,
+    Ciudad:v.city||v.location, Estado:v.condition||v.status,
+    Blindaje:v.armor, Peritaje:v.inspection,
+    Descripcion:v.description||v.desc, Equipamiento:v.equipment,
+    Caracteristicas:v.features
+  }).filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=="")
+    .map(x=>`${x[0]}: ${x[1]}`).join('\n');
+
+  const nombre=[v.brand,v.model,v.version,v.year].filter(Boolean).join(' · ');
+  const prompt=`Analiza específicamente este vehículo de CARS STREET: ${nombre}.
+
+IMPORTANTE:
+- Los datos siguientes son datos reales de la publicación de ESTA unidad.
+- Distingue claramente entre datos de la publicación, información general del modelo y estimaciones.
+- No inventes precio, kilometraje, estado, accidentes, historial, propietarios, peritaje, mantenimiento, garantía, documentación, equipamiento ni especificaciones de una versión no confirmada.
+- Complementa con información general del modelo/año cuando sea posible: motorización, potencia, torque, consumo aproximado, transmisión, seguridad, equipamiento habitual, confiabilidad, mantenimiento, problemas/puntos a revisar, comportamiento, uso recomendado y valoración general.
+- Si no puedes confirmar una versión exacta, dilo.
+- No afirmes haber consultado Internet si no tienes acceso real a fuentes externas.
+- Evalúa si el precio publicado parece razonable solo si hay información suficiente; de lo contrario indica qué habría que comparar.
+- Mantén este vehículo como contexto activo para las preguntas posteriores.
+
+FORMATO DE RESPUESTA:
+### 🚗 ANÁLISIS DEL VEHÍCULO
+**${nombre}**
+**Precio publicado:** ${v.price??"No especificado"}
+**Kilometraje:** ${v.mileage??"No especificado"}
+
+### 📋 Datos de la publicación
+### 🔎 Sobre este modelo
+### ⚙️ Motor y desempeño
+### 🛡️ Seguridad
+### 🔧 Mantenimiento
+### ✅ Puntos fuertes
+### ⚠️ Puntos a revisar
+### 💰 ¿Vale la pena?
+### ⭐ Veredicto CARS STREET IA
+
+DATOS DE LA PUBLICACIÓN:
+${datos}`;
+
   try{
-    const r=await askClaude(prompt);
+    const [r]=await Promise.all([askClaude(prompt),minimumTypingTime]);
+    AI.claudeHistory.push({role:"user",content:`Vehículo seleccionado para análisis: ${nombre}. ${prompt}`});
+    AI.claudeHistory.push({role:"assistant",content:r});
+    if(AI.claudeHistory.length>24)AI.claudeHistory=AI.claudeHistory.slice(-24);
     aiHideTyping();
     aiPushMessage("bot",claudeFormat(r));
   }catch(e){
+    console.warn("Claude API no disponible durante el análisis:",e);
+    await minimumTypingTime;
     aiHideTyping();
-    aiPushMessage("bot","🤖 Analizando este vehículo...\n\n"+datos);
+    aiPushMessage("bot",`<strong>🤖 No pude completar el análisis con la IA externa.</strong><br><br>Vehículo seleccionado: <strong>${escapeHtml(nombre)}</strong>.<br>El vehículo permanece en contexto para tus siguientes preguntas.`);
+  }finally{
+    aiRenderSuggestions();
   }
 };
 
