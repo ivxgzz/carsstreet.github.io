@@ -241,7 +241,7 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 <section id="nosotros"><div class="container"><div class="section-head reveal"><div><div class="eyebrow">CARS STREET</div><h2>Confianza en cada decisión.</h2></div></div><p style="color:#c8cdd1;max-width:800px;margin-bottom:25px">CARS STREET es tu espacio para encontrar vehículos y conectar con oportunidades de compra y venta en Colombia. Nuestro objetivo es ofrecer una experiencia clara, sencilla y confiable para quienes buscan su próximo vehículo.</p><div class="about-grid"><div class="info-card reveal"><h3>VEHÍCULOS PARA TODOS</h3><p>Encuentra diferentes tipos de vehículos en un solo lugar.</p></div><div class="info-card reveal"><h3>FÁCIL Y RÁPIDO</h3><p>Consulta información y contacta directamente desde la plataforma.</p></div><div class="info-card reveal"><h3>ATENCIÓN PERSONALIZADA</h3><p>Estamos disponibles para ayudarte durante tu proceso.</p></div></div></div></section>
 
 <section class="contact" id="contacto"><div class="container reveal">
-<div class="eyebrow">Contacto</div><h2>HABLEMOS DE TU<br>PRÓXIMO VEHÍCULO</h2><p>WhatsApp y teléfono: 311 616 9801 · 316 638 8399 · Instagram: @ivx__gz</p><div class="contact-links"><a class="btn btn-primary" target="_blank" href="https://wa.me/573116169801">ESCRIBIR POR WHATSAPP</a><a class="btn btn-primary" target="_blank" href="https://wa.me/573166388399">WHATSAPP (316 638 8399)</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a><a class="btn btn-secondary" target="_blank" href="https://www.instagram.com/ivx__gz/">VISITAR INSTAGRAM</a></div></div></section>
+<div class="eyebrow">Contacto</div><h2>HABLEMOS DE TU<br>PRÓXIMO VEHÍCULO</h2><p>WhatsApp y teléfono: 311 616 9801 · 316 638 8399 · Instagram: @carsstreet_motors</p><div class="contact-links"><a class="btn btn-primary" target="_blank" href="https://wa.me/573116169801">ESCRIBIR POR WHATSAPP</a><a class="btn btn-primary" target="_blank" href="https://wa.me/573166388399">WHATSAPP (316 638 8399)</a><a class="btn btn-secondary" href="tel:+573116169801">LLAMAR AHORA</a><a class="btn btn-secondary" target="_blank" href="https://www.instagram.com/carsstreet_motors/">VISITAR INSTAGRAM</a></div></div></section>
 </main>
 <footer class="container footer"><span>© <span id="footerYear"></span> CARS STREET</span><span>Compra y venta de vehículos en Colombia</span></footer>
 
@@ -1622,13 +1622,14 @@ const AI = {
   awaitingBudget:false,
   lastIntent:"",
   lastComparison:[],
-  lastRecommendation:null
+  lastRecommendation:null,
+  claudeHistory:[]
 };
 
 const AI_CONTACT = {
   whatsapp1:"573116169801",
   whatsapp2:"573166388399",
-  instagram:"https://www.instagram.com/ivx__gz/"
+  instagram:"https://www.instagram.com/carsstreet_motors/"
 };
 
 function escapeHtml(str){
@@ -1643,7 +1644,21 @@ function fieldValue(v, keys){
 }
 function hasValue(v, keys){ return fieldValue(v,keys)!==""; }
 function normalizeAIText(text){
-  try{return normalizeSearchText(String(text||""));}catch(e){
+  try{
+    let n=normalizeSearchText(String(text||""));
+    const aliases={
+      "shevrolet":"chevrolet","chebrolet":"chevrolet","chevrole":"chevrolet",
+      "renol":"renault","renaut":"renault",
+      "volbswagen":"volkswagen","volkswaguen":"volkswagen","vw":"volkswagen",
+      "hiundai":"hyundai","hyunday":"hyundai","huyndai":"hyundai",
+      "toyotta":"toyota","toyta":"toyota",
+      "disel":"diesel","eletrico":"electrico","hibrido":"hibrido",
+      "camionetica":"camioneta","varato":"barato","baratito":"barato",
+      "automatico":"automatica","automatic":"automatica"
+    };
+    n=n.replace(/\b[^\s]+\b/g,token=>aliases[token]||token);
+    return n;
+  }catch(e){
     return String(text||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\w\s$.,-]/g," ");
   }
 }
@@ -1708,7 +1723,7 @@ function detectType(norm){
   return null;
 }
 function detectTransmission(norm){
-  if(/automatic|automatica|automatico|at\b/.test(norm)) return "Automática";
+  if(/automatic|automatica|automatico|auto\b|at\b/.test(norm)) return "Automática";
   if(/\bmanual\b|mecanica|mecanico/.test(norm)) return "Manual";
   return null;
 }
@@ -1721,9 +1736,29 @@ function detectFuel(norm){
 }
 function detectBrand(norm){
   const all=unique([...(typeof brands!=="undefined"?brands:[]),...vehicles.map(v=>v.brand)]);
+  const aliases={
+    "shevrolet":"Chevrolet","chebrolet":"Chevrolet","chevrole":"Chevrolet",
+    "renol":"Renault","renaut":"Renault",
+    "volbswagen":"Volkswagen","vw":"Volkswagen",
+    "hiundai":"Hyundai","hyunday":"Hyundai","huyndai":"Hyundai",
+    "toyotta":"Toyota","toyta":"Toyota"
+  };
+  for(const [bad,good] of Object.entries(aliases)){
+    if(new RegExp("\\b"+bad+"\\b","i").test(norm)) return good;
+  }
   for(const b of all){
     const nb=normalizeAIText(b).trim();
-    if(nb && new RegExp("(^|\\s)"+nb.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|\\s)","i").test(norm)) return b;
+    if(nb && new RegExp("(^|\\s)"+nb.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"($|\s)","i").test(norm)) return b;
+  }
+  for(const b of all){
+    const nb=normalizeAIText(b).trim();
+    if(!nb || nb.length<4) continue;
+    for(const token of norm.split(/\s+/).filter(Boolean)){
+      if(token.length<4) continue;
+      const d=editDistance(token,nb);
+      const threshold=nb.length>=8?2:1;
+      if(d<=threshold && Math.abs(token.length-nb.length)<=threshold) return b;
+    }
   }
   return null;
 }
@@ -1744,7 +1779,7 @@ function detectColor(norm){
   return null;
 }
 function detectSort(norm){
-  if(/mas barato|mas economico|menor precio|barato/.test(norm)) return {by:"price",dir:"asc"};
+  if(/mas barato|mas economico|menor precio|barato|baratito|economico|economica|poco presupuesto|bajo presupuesto/.test(norm)) return {by:"price",dir:"asc"};
   if(/mas caro|mayor precio|mas costoso/.test(norm)) return {by:"price",dir:"desc"};
   if(/mas nuevo|mas reciente|ultimo publicado|recien publicado/.test(norm)) return {by:"year",dir:"desc"};
   if(/menos kilometraje|menos kilometros|menos km|menor kilometraje/.test(norm)) return {by:"mileage",dir:"asc"};
@@ -1773,7 +1808,7 @@ function detectAIIntent(text){
   if(/^(hola|hey|buenas|buenos dias|buenas tardes|buenas noches)\b/.test(n)) return "GREETING";
   if(/\bgracias\b|te agradezco/.test(n)) return "THANKS";
   if(/vender|publicar mi carro|poner mi carro/.test(n)) return "SELL_VEHICLE";
-  if(/whatsapp|telefono|contactar|contacto|instagram|llamar/.test(n)) return "CONTACT";
+  if(/whatsapp|telefono|contactar|contacto|instagram|llamar|comprar|compra|separar|negociar|negociacion|probar|prueba de manejo|visitar|conocer mas|mas informacion|mas fotos|recibir fotos|financiar|financiacion|credito|hacer una oferta|ofertar/.test(n)) return "CONTACT";
   if(comparisonIntent(n)) return recommendationIntent(n) ? "COMPARE_AND_RECOMMEND" : "COMPARE";
   if(/recomiend|que carro|cual compro|para ciudad|para carretera|familiar/.test(n)) return "RECOMMEND";
   if(/motor|cilindraje|maquina/.test(n)) return "ENGINE";
@@ -1913,7 +1948,15 @@ function scoreVehicle(v,norm){
   let score=0;
   const brand=normalizeAIText(v.brand), model=normalizeAIText(v.model), version=normalizeAIText(v.version);
   if(brand && norm.includes(brand)) score+=35;
+  else if(brand){
+    const token=norm.split(/\\s+/).find(t=>t.length>=4 && editDistance(t,brand)<=(brand.length>=8?2:1));
+    if(token) score+=30;
+  }
   if(model && norm.includes(model)) score+=55;
+  else if(model && model.length>=4){
+    const token=norm.split(/\\s+/).find(t=>t.length>=4 && editDistance(t,model)<=(model.length>=8?2:1));
+    if(token) score+=45;
+  }
   if(version && norm.includes(version)) score+=20;
   if(v.year && new RegExp("\\b"+v.year+"\\b").test(norm)) score+=15;
   if(v.color && norm.includes(normalizeAIText(v.color))) score+=10;
@@ -1982,7 +2025,7 @@ function getRecommendationFilters(norm){
   const f={};
   const b=detectBrand(norm),t=detectType(norm),tr=detectTransmission(norm),fu=detectFuel(norm),y=detectYear(norm),p=parsePriceCOP(norm),c=detectColor(norm);
   if(b)f.brand=b;if(t)f.type=t;if(tr)f.transmission=tr;if(fu)f.fuel=fu;if(y)f.year=y;if(p)f.price=p;if(c)f.color=c;
-  if(/economico|barato|ahorrador|ciudad/.test(norm)&&!f.type&&!f.brand) f.sort={by:"price",dir:"asc"};
+  if(/economico|economica|barato|baratito|ahorrador|poco presupuesto|bajo presupuesto|gastar menos|ciudad/.test(norm)&&!f.type&&!f.brand) f.sort={by:"price",dir:"asc"};
   return f;
 }
 
@@ -2345,7 +2388,7 @@ function aiRespond(rawText){
 
   if(/^(hola|hey|buenas|buenos dias|buenas tardes|buenas noches)\b/.test(norm) && norm.length<55){
     AI.awaitingBudget=false;
-    aiPushMessage("bot",'¡Hola! 👋 Soy <strong>CARS STREET IA</strong>. Puedo buscar vehículos del inventario, comparar publicaciones, consultar motor, placa, precio, kilometraje, peritaje, blindaje y demás datos registrados, además de resolver dudas generales sobre automóviles.');
+    aiPushMessage("bot",'¡Hola! 👋 Soy <strong>CARS STREET IA</strong>, el asistente virtual oficial de CARS STREET. Puedo buscar vehículos reales del inventario, recomendar opciones según tu presupuesto y preferencias, comparar publicaciones, consultar sus datos registrados y ayudarte a contactar al equipo.');
     return;
   }
   if(/\bgracias\b|te agradezco/.test(norm) && norm.length<55){
@@ -2356,8 +2399,14 @@ function aiRespond(rawText){
     aiPushMessage("bot",'Claro. Puedes enviar los datos de tu vehículo desde <strong>Vende tu carro</strong>. Te llevará directamente al formulario.<br><br><a class="btn btn-primary" style="display:inline-block" href="#vende" onclick="toggleAIChat(false)">IR A VENDE TU CARRO</a>');
     return;
   }
-  if(/whatsapp|telefono|contactar|contacto|instagram|llamar/.test(norm)){
-    aiPushMessage("bot",`Puedes contactarnos por WhatsApp al <strong>311 616 9801</strong> o <strong>316 638 8399</strong>, llamar al 311 616 9801 o visitar nuestro Instagram <strong>@ivx__gz</strong>.<br><br><div class="ai-contact-actions"><a class="ai-wa" target="_blank" rel="noopener" href="https://wa.me/${AI_CONTACT.whatsapp1}">WHATSAPP 311</a><a class="ai-view" target="_blank" rel="noopener" href="${AI_CONTACT.instagram}">INSTAGRAM</a></div>`);
+  if(/whatsapp|telefono|contactar|contacto|instagram|llamar|comprar|compra|separar|separarlo|negociar|negociacion|probar|prueba de manejo|visitar|conocer mas|mas informacion|mas fotos|recibir fotos|financiar|financiacion|credito|hacer una oferta|ofertar/.test(norm)){
+    const social=/instagram|videos|entregas|contenido|novedades|redes sociales|imagenes/.test(norm);
+    const salesIntent=/comprar|compra|separar|negociar|negociacion|probar|prueba de manejo|visitar|conocer mas|mas informacion|mas fotos|recibir fotos|financiar|financiacion|credito|hacer una oferta|ofertar/.test(norm);
+    let msg=social && !salesIntent
+      ? `También puedes seguirnos en Instagram: <strong>@carsstreet_motors</strong>, donde encontrarás videos, entregas y contenido de nuestros vehículos.`
+      : `Claro. Para comprar, separar, negociar, probar un vehículo, visitarnos, recibir más información/fotos, financiar o hacer una oferta, puedes contactar directamente a nuestro equipo por WhatsApp: <strong>311 616 9801</strong> o <strong>316 638 8399</strong>.`;
+    msg+=`<br><br><div class="ai-contact-actions"><a class="ai-wa" target="_blank" rel="noopener" href="https://wa.me/${AI_CONTACT.whatsapp1}">WHATSAPP 311</a><a class="ai-wa" target="_blank" rel="noopener" href="https://wa.me/${AI_CONTACT.whatsapp2}">WHATSAPP 316</a><a class="ai-view" target="_blank" rel="noopener" href="${AI_CONTACT.instagram}">INSTAGRAM</a></div>`;
+    aiPushMessage("bot",msg);
     return;
   }
 
@@ -2551,6 +2600,128 @@ function aiRespond(rawText){
   aiPushMessage("bot","Puedo ayudarte con el inventario de CARS STREET y con dudas automotrices. También puedo comparar vehículos y recomendarte cuál conviene más según precio, año, kilometraje y los datos realmente publicados. Por ejemplo: “Mustang o Camaro”, “¿cuál comprarías?” o “¿cuál de esos me recomiendas?”");
 }
 
+/* ============================================================================
+   CLAUDE API — IA REAL DE CARS STREET
+   La clave NO se guarda en este HTML. El navegador llama a un proxy/backend
+   seguro configurado en CLAUDE_API_URL, que guarda ANTHROPIC_API_KEY como secreto.
+   ============================================================================ */
+const CLAUDE_API_URL = "https://TU-WORKER.workers.dev";
+const CLAUDE_MODEL = "claude-sonnet-5";
+
+const CARS_STREET_SYSTEM_PROMPT = `Eres el asistente virtual experto de CARS STREET, una plataforma especializada en compra, venta y asesoría de vehículos en Colombia.
+
+OBJETIVO:
+Ayudar a los usuarios a encontrar el vehículo ideal según su presupuesto, necesidades, gustos y preferencias, respondiendo de forma profesional, amigable y detallada.
+
+INSTRUCCIONES GENERALES:
+- Preséntate siempre como CARS STREET IA y compórtate como el asistente virtual oficial de CARS STREET.
+- Responde siempre en español, con excelente ortografía, tono profesional, cercano, claro y natural.
+- Comprende la intención aunque el usuario escriba sin tildes, con abreviaturas, palabras incompletas, letras cambiadas, palabras pegadas o errores ortográficos. Nunca corrijas ni menciones sus errores.
+- Interpreta lenguaje colombiano como carro, nave, camionetica, carrito, ganga, barato, camioneta, automático y mecánico.
+- Interpreta errores frecuentes de marca: shevrolet/chevrole/chebrolet=Chevrolet; renol=Renault; volbswagen/vw=Volkswagen; hiundai/hyunday=Hyundai; toyotta/toyta=Toyota.
+- Interpreta "auto" como automático cuando el contexto sea transmisión.
+- Sé experto en automóviles, SUV, camionetas, pickups, deportivos, híbridos y eléctricos.
+- Explica ventajas y desventajas cuando sea útil.
+- Recomienda opciones según presupuesto, marca, modelo, año, tipo, combustible, transmisión y uso.
+- Si faltan datos para una recomendación personalizada, pregunta solo lo necesario.
+- Nunca inventes especificaciones técnicas, precios, kilometraje, motor, placa, versión, ubicación, peritaje, blindaje, color, combustible, transmisión, estado, disponibilidad, fotos, promociones, descuentos, financiación u otro dato de una publicación.
+- Usa lenguaje sencillo para personas que no saben de carros.
+- Adapta las respuestas al presupuesto del cliente.
+- Puedes responder preguntas automotrices generales aunque no estén relacionadas con una publicación.
+
+REGLA CRÍTICA SOBRE EL INVENTARIO DE CARS STREET:
+- El mensaje del usuario incluye un INVENTARIO ACTUAL de publicaciones disponibles.
+- Cuando el usuario pregunte por un vehículo publicado, responde usando exclusivamente los datos de ese inventario para los datos específicos de esa publicación.
+- Si un dato no aparece en la publicación, di claramente que ese dato no está registrado en CARS STREET. No lo completes con una especificación típica del modelo.
+- Puedes explicar conocimiento automotriz general sobre un modelo, pero debes diferenciarlo claramente de lo que está registrado en la publicación.
+- Si preguntan por motor, cilindrada, placa terminada, precio, kilometraje, año, versión, color, combustible, transmisión, ubicación, peritaje, blindaje, estado o descripción, busca primero el vehículo correspondiente en el inventario.
+- Si el usuario dice “ese”, “el primero”, “el segundo”, “el anterior”, “el más barato”, “el más caro”, “ese BMW”, etc., usa el contexto y los resultados previos proporcionados.
+
+COMPARACIONES Y RECOMENDACIONES — REGLA CRÍTICA:
+- Si preguntan “¿Mustang o Camaro?”, “¿cuál es mejor?”, “¿cuál me recomiendas?”, “¿cuál comprarías?”, “¿con cuál me quedo?”, “¿cuál conviene más?” o preguntas equivalentes, NO respondas simplemente mostrando publicaciones.
+- Primero identifica los vehículos mencionados y analiza sus datos disponibles.
+- Después entrega una recomendación directa: cuál elegirías y por qué.
+- Basa la recomendación, cuando existan publicaciones, en precio, año, kilometraje, versión, motor/cilindraje, transmisión, combustible, estado, peritaje, blindaje y demás datos realmente registrados.
+- Explica también qué opción elegirías si la prioridad fuera precio, rendimiento, confiabilidad, uso diario, carretera, reventa o desempeño.
+- Si faltan datos importantes, dilo y evita inventarlos.
+- Si los vehículos no son publicaciones de CARS STREET, puedes compararlos usando conocimiento automotriz general, dejando claro que no estás comparando datos de una publicación concreta.
+
+SI PREGUNTAN “¿QUÉ CARRO ME RECOMIENDAS?”:
+Si no hay suficiente contexto, pregunta presupuesto, ciudad, nuevo/usado, automático/manual y uso principal. Luego ofrece entre 3 y 10 opciones y explica por qué.
+
+EJEMPLOS DE REFERENCIA:
+- Con $20 millones: puedes sugerir usados como Renault Logan, Chevrolet Sail, Kia Picanto, Hyundai i10 o Nissan March, pero no presentes esos ejemplos como inventario de CARS STREET salvo que aparezcan en el inventario.
+- SUV: Mazda CX-5, Toyota RAV4, Hyundai Tucson, Kia Sportage y Honda CR-V son ejemplos generales.
+- Económicos: Kia Picanto, Hyundai Grand i10, Suzuki Swift, Toyota Yaris y Renault Kwid son ejemplos generales.
+- Para plataformas: Kia Picanto, Chevrolet Onix, Renault Logan, Nissan Versa y Toyota Yaris son ejemplos generales.
+- Confiabilidad: Toyota, Honda, Lexus, Mazda y Subaru tienen buena reputación general.
+
+CONTACTO Y REDES:
+- Si el usuario manifiesta intención de comprar, separar, negociar, probar, visitar, conocer más información, recibir más fotos, hablar con un asesor, financiar o hacer una oferta, invítalo a WhatsApp: +57 311 616 9801 o +57 316 638 8399.
+- Si solicita videos, entregas, contenido, novedades, imágenes o redes sociales, menciona Instagram @carsstreet_motors y el perfil https://www.instagram.com/carsstreet_motors/.
+- Nunca menciones ni uses otro usuario de Instagram.
+
+RESPUESTA:
+- Sé natural y conversacional.
+- No menciones que eres una API, un modelo, un prompt o un backend.
+- No digas que “no puedes” responder solo porque la pregunta no coincide con una palabra clave.
+- Responde la intención real del usuario.
+- Si puedes responder directamente, hazlo sin pedir información innecesaria.
+- Cuando haya una recomendación entre varias opciones, toma postura y explica el motivo.
+`;
+
+function buildClaudeInventoryContext(){
+  const available=Array.isArray(vehicles)?vehicles.filter(v=>v&&v.status==="Disponible"):[];
+  // Las imágenes no se envían: solo datos útiles para razonar y proteger ancho de banda.
+  return available.map(v=>({
+    id:v.id, brand:v.brand, model:v.model, version:v.version||"", year:v.year,
+    price:v.price, mileage:v.mileage, type:v.type, fuel:v.fuel,
+    transmission:v.transmission, status:v.status, location:v.location||"",
+    plateDigit:v.plateDigit??"", inspection:v.inspection||"", armor:v.armor||"",
+    engine:v.engine||"", color:v.color||"", featured:!!v.featured,
+    description:v.desc||""
+  }));
+}
+
+function buildClaudeMessages(){
+  const clean=(AI.claudeHistory||[]).filter(x=>x&&x.role&&x.content).slice(-12);
+  return clean.map(x=>({role:x.role,content:String(x.content).slice(0,12000)}));
+}
+
+function claudeFormat(text){
+  let s=escapeHtml(String(text||""));
+  s=s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  s=s.replace(/`([^`]+)`/g,"<code>$1</code>");
+  s=s.replace(/^\s*[-•]\s+(.+)$/gm,"• $1");
+  s=s.replace(/\n/g,"<br>");
+  return s;
+}
+
+async function askClaude(userText){
+  if(!CLAUDE_API_URL || /TU-WORKER\.workers\.dev/i.test(CLAUDE_API_URL)){
+    throw new Error("CLAUDE_API_URL no está configurada");
+  }
+  const history=buildClaudeMessages();
+  history.push({role:"user",content:String(userText).slice(0,12000)});
+  const payload={
+    model:CLAUDE_MODEL,
+    max_tokens:1800,
+    system:CARS_STREET_SYSTEM_PROMPT,
+    messages:history,
+    inventory:buildClaudeInventoryContext()
+  };
+  const res=await fetch(CLAUDE_API_URL.replace(/\/$/,""),{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data?.error||data?.message||`HTTP ${res.status}`);
+  const answer=String(data?.text||data?.content?.[0]?.text||"").trim();
+  if(!answer) throw new Error("Claude no devolvió una respuesta");
+  return answer;
+}
+
 /* ---------- UI ---------- */
 function aiPushMessage(role,html){
   const box=$("aiMessages");if(!box)return;
@@ -2608,25 +2779,40 @@ window.toggleAIChat=function(force){
   if(shouldOpen){
     if(!AI.greeted){
       AI.greeted=true;
-      aiPushMessage("bot",'¡Hola! 👋 Soy <strong>CARS STREET IA</strong>. Conozco las publicaciones disponibles y puedo consultar los datos registrados de cada vehículo. También puedo ayudarte con dudas generales de automóviles.');
+      aiPushMessage("bot",'¡Hola! 👋 Soy <strong>CARS STREET IA</strong>, el asistente virtual oficial de CARS STREET. Conozco las publicaciones disponibles y puedo ayudarte a encontrar vehículos según presupuesto, marca, modelo, año, tipo, combustible, transmisión y uso, además de resolver dudas generales de automóviles.');
       aiRenderSuggestions();
     }
     setTimeout(()=>{const inp=$("aiInput");if(inp)inp.focus();},120);
   }
 };
 
-window.sendAIMessage=function(){
+window.sendAIMessage=async function(){
   const input=$("aiInput");if(!input)return;
   const text=input.value.trim();if(!text)return;
   aiPushMessage("user",escapeHtml(text));input.value="";
   const btn=$("aiSendBtn");if(btn)btn.disabled=true;
   aiShowTyping();
-  setTimeout(()=>{
-    try{aiHideTyping();aiRespond(text);}
-    catch(err){console.error("CARS STREET IA:",err);aiHideTyping();aiPushMessage("bot","Tuve un problema procesando esa consulta. Inténtalo de nuevo y revisaré el inventario.");}
+  try{
+    const answer=await askClaude(text);
+    AI.claudeHistory.push({role:"user",content:text});
+    AI.claudeHistory.push({role:"assistant",content:answer});
+    if(AI.claudeHistory.length>24)AI.claudeHistory=AI.claudeHistory.slice(-24);
+    aiHideTyping();
+    aiPushMessage("bot",claudeFormat(answer));
+  }catch(err){
+    console.warn("Claude API no disponible; usando motor local de respaldo:",err);
+    try{
+      aiHideTyping();
+      aiRespond(text);
+    }catch(fallbackErr){
+      console.error("CARS STREET IA:",fallbackErr);
+      aiHideTyping();
+      aiPushMessage("bot","No pude conectar con la IA en este momento. Revisa la configuración del servicio de Claude e inténtalo de nuevo.");
+    }
+  }finally{
     if(btn)btn.disabled=false;
     aiRenderSuggestions();
-  },320);
+  }
 };
 
 document.addEventListener("DOMContentLoaded",()=>{
