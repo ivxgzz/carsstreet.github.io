@@ -3121,7 +3121,7 @@ async function askClaude(userText){
     messages:history,
     inventory:buildClaudeInventoryContext()
   };
-  const res=await fetch(CLAUDE_API_URL.replace(/\/$/,""),{
+  const res=await fetch(https://coches-street-ia.ivanghtyx.workers.dev.replace(/\/$/,""),{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(payload)
