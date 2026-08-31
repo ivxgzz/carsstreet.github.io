@@ -81,7 +81,7 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 
 
 /* Buscadores desplegables de modelo y versión */
-.searchable-field{position:relative}.search-select{position:relative}.search-select>input{padding-right:45px;cursor:pointer}.search-select>input:disabled{cursor:not-allowed;opacity:.55}.search-select-arrow{position:absolute;right:8px;top:7px;width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer}.search-menu{display:none;position:absolute;z-index:80;left:0;right:0;top:calc(100% + 7px);padding:10px;background:#101214;border:1px solid #3a4046;border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.55)}.search-select.open .search-menu{display:block}.search-menu-input{width:100%!important;background:#080a0c!important;border:1px solid #454b52!important;color:#fff!important;padding:12px 13px!important;border-radius:9px!important;outline:none!important;margin-bottom:8px}.search-menu-input:focus{border-color:var(--accent)!important}.search-results{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:3px}.search-result{width:100%;border:0;background:transparent;color:#e9ecef;text-align:left;padding:10px 11px;border-radius:8px;cursor:pointer;font-size:.94rem}.search-result:hover,.search-result.active{background:#20252a}.search-result small{display:block;color:#8f969d;font-size:.72rem;margin-top:2px}.search-empty{padding:12px;color:#8f969d;font-size:.85rem}.search-hint{padding:7px 10px 9px;color:#737b83;font-size:.72rem;border-bottom:1px solid #252a2f;margin-bottom:3px}
+.searchable-field{position:relative}.search-select{position:relative}.search-select>input{padding-right:45px;cursor:pointer}.search-select>input:disabled{cursor:not-allowed;opacity:.55}.search-select-arrow{position:absolute;right:8px;top:7px;width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer}.search-menu{display:none;position:absolute;z-index:80;left:0;right:0;top:calc(100% + 7px);padding:10px;background:#101214;border:1px solid #3a4046;border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.55)}.search-select.open .search-menu{display:block}.search-menu-input{width:100%!important;background:#080a0c!important;border:1px solid #454b52!important;color:#fff!important;padding:12px 13px!important;border-radius:9px!important;outline:none!important;margin-bottom:8px}.search-menu-input:focus{border-color:var(--accent)!important}.search-results{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:3px}.search-result{width:100%;border:0;background:transparent;color:#e9ecef;text-align:left;padding:10px 11px;border-radius:8px;cursor:pointer;font-size:.94rem}.search-result:hover,.search-result.active{background:#20252a}.search-result small{display:block;color:#8f969d;font-size:.72rem;margin-top:2px}.search-empty{padding:12px;color:#8f969d;font-size:.85rem}.search-hint{padding:7px 10px 9px;color:#737b83;font-size:.72rem;border-bottom:1px solid #252a2f;margin-bottom:3px}.brand-picker{position:relative}.brand-picker>select{position:absolute!important;inset:0!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;margin:0!important;padding:0!important}.brand-picker>input{width:100%;background:#080a0c;border:1px solid #30353a;color:#fff;padding:13px 45px 13px 13px;border-radius:10px;outline:none;cursor:pointer}.brand-picker>input:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(255,43,43,.12)}.brand-picker .search-select-arrow{top:7px}.brand-picker .search-menu{max-height:min(360px,55vh);overflow:hidden}.brand-picker .search-results{max-height:270px}.brand-picker.open .search-menu{animation:brandMenuIn .18s ease-out}@keyframes brandMenuIn{from{opacity:0;transform:translateY(-5px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}@media(max-width:560px){.brand-picker .search-menu{max-width:100%;max-height:60vh}.brand-picker .search-results{max-height:calc(60vh - 70px)}.brand-picker .search-result{padding:12px 11px}}
 
 /* ===== CARS STREET IA (asistente de chat) ===== */
 .ai-fab{position:fixed;right:20px;bottom:20px;z-index:140;display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--accent),#ff6a3d);color:#fff;border:1px solid rgba(255,255,255,.25);padding:14px 18px;border-radius:999px;font-weight:900;font-size:.86rem;letter-spacing:.02em;box-shadow:0 14px 40px rgba(255,43,43,.35),0 4px 14px rgba(0,0,0,.35);animation:aiFabPulse 3.2s ease-in-out infinite;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease}
@@ -106,7 +106,7 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 .ai-msg.user{align-self:flex-end;background:var(--accent);color:#100000;font-weight:600;border-bottom-right-radius:4px}
 .ai-msg-note{color:var(--muted);font-size:.72rem;margin-top:6px;font-style:italic}
 .ai-typing{align-self:flex-start;display:flex;align-items:center;gap:4px;padding:12px 14px;background:#1a1d21;border:1px solid #2a2f34;border-radius:14px;border-bottom-left-radius:4px}
-.ai-typing-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:aiTypingBounce 1.1s infinite ease-in-out;display:inline-block}
+.ai-typing-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:aiTypingBounce 1.1s infinite ease-in-out;display:inline-block}.ai-typing-label{color:var(--muted);font-size:.78rem;font-weight:800;letter-spacing:.02em;margin-right:3px}
 .ai-typing-dot:nth-of-type(2){animation-delay:.15s}.ai-typing-dot:nth-of-type(3){animation-delay:.3s}
 @keyframes aiTypingBounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
 .ai-chat-suggestions{display:flex;gap:7px;flex-wrap:wrap;padding:0 14px 12px;flex-shrink:0}
@@ -208,7 +208,12 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 <section id="buscador"><div class="container">
 <div class="section-head reveal"><div><div class="eyebrow">Inventario</div><h2>Encuentra tu vehículo</h2></div><p>Filtra por marca, modelo, año, precio, tipo, combustible y transmisión.</p></div>
 <div class="search-box reveal reveal-scale"><div class="filters">
-<div class="field"><label>MARCA</label><select id="brand"><option value="">Todas las marcas</option></select></div>
+<div class="field brand-search-field"><label>MARCA</label><div class="brand-picker search-select" id="brandPicker">
+  <select id="brand" aria-hidden="true" tabindex="-1"><option value="">Todas las marcas</option></select>
+  <input id="brandDisplay" autocomplete="off" placeholder="Todas las marcas" readonly>
+  <button type="button" class="search-select-arrow" aria-label="Abrir búsqueda de marca">⌄</button>
+  <div class="search-menu"><input id="brandSearch" class="search-menu-input" type="search" placeholder="Buscar marca..." autocomplete="off"><div id="brandResults" class="search-results"></div></div>
+</div></div>
 <div class="field searchable-field"><label>MODELO</label><div class="search-select" id="modelPicker">
   <input id="model" autocomplete="off" placeholder="Toca para buscar un modelo" readonly disabled>
   <button type="button" class="search-select-arrow" aria-label="Abrir búsqueda">⌄</button>
@@ -228,7 +233,12 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 <section id="vende"><div class="container"><div class="sell reveal reveal-scale"><div class="sell-layout"><div><div class="eyebrow">¿Quieres vender?</div><h2>VENDE<br>TU CARRO</h2><p>Cuéntanos sobre tu vehículo y te ayudaremos a conectarlo con nuevos compradores.</p></div>
 <form id="sellForm"><div class="form-grid">
 <div class="field"><label>NOMBRE COMPLETO</label><input required name="name"></div><div class="field"><label>TELÉFONO</label><input required name="phone"></div>
-<div class="field"><label>MARCA</label><select id="sellBrand" required></select></div><div class="field searchable-field"><label>MODELO</label><div class="search-select" id="sellModelPicker">
+<div class="field brand-search-field"><label>MARCA</label><div class="brand-picker search-select" id="sellBrandPicker">
+  <select id="sellBrand" name="brand" required aria-hidden="true" tabindex="-1"><option value="">Selecciona una marca</option></select>
+  <input id="sellBrandDisplay" autocomplete="off" placeholder="Selecciona una marca" readonly>
+  <button type="button" class="search-select-arrow" aria-label="Abrir búsqueda de marca">⌄</button>
+  <div class="search-menu"><input id="sellBrandSearch" class="search-menu-input" type="search" placeholder="Buscar marca..." autocomplete="off"><div id="sellBrandResults" class="search-results"></div></div>
+</div></div><div class="field searchable-field"><label>MODELO</label><div class="search-select" id="sellModelPicker">
   <input id="sellModel" name="model" autocomplete="off" placeholder="Toca para buscar un modelo" readonly required disabled>
   <button type="button" class="search-select-arrow" aria-label="Abrir búsqueda">⌄</button>
   <div class="search-menu"><input id="sellModelSearch" class="search-menu-input" type="search" placeholder="Buscar modelo..." autocomplete="off"><div id="sellModelResults" class="search-results"></div></div>
@@ -811,7 +821,10 @@ function refreshPostAges(){
   });
 }
 setInterval(refreshPostAges,30000);
-function populateBrands(select,all=true){select.innerHTML=(all?'<option value="">Todas las marcas</option>': '<option value="">Selecciona una marca</option>')+brands.map(b=>`<option>${b}</option>`).join("")}
+function populateBrands(select,all=true){
+  if(!select)return;
+  select.innerHTML=(all?'<option value="">Todas las marcas</option>':'<option value="">Selecciona una marca</option>')+brands.map(b=>`<option value="${String(b).replace(/"/g,"&quot;")}">${b}</option>`).join("");
+}
 function populateYears(select){const current=new Date().getFullYear();select.innerHTML='<option value="">Todos los años</option>'+Array.from({length:current-1900+2},(_,i)=>current+1-i).map(y=>`<option>${y}</option>`).join("")}
 populateBrands($("brand"));populateBrands($("sellBrand"),false);populateYears($("year"));populateYears($("sellYear"));$("footerYear").textContent=new Date().getFullYear();
 
@@ -897,6 +910,64 @@ function setupSearchPicker({pickerId,inputId,searchId,resultsId,getOptions,onSel
   return {setOptions,open,close};
 }
 
+function setupBrandPicker({pickerId,selectId,inputId,searchId,resultsId,placeholder}){
+  const picker=$(pickerId), select=$(selectId), input=$(inputId), search=$(searchId), results=$(resultsId);
+  if(!picker||!select||!input||!search||!results)return null;
+  let options=brands.slice();
+  function syncDisplay(){
+    const value=select.value||"";
+    input.value=value||placeholder;
+  }
+  function renderResults(query=""){
+    const q=normalizeSearchText(query);
+    const ranked=options.map(value=>({value,score:similarityScore(q,value)}))
+      .filter(x=>!q||x.score>25)
+      .sort((a,b)=>b.score-a.score||a.value.localeCompare(b.value,"es",{sensitivity:"base"}));
+    const allOption=placeholder==="Todas las marcas"&&!q
+      ? '<button type="button" class="search-result active" data-value="">Todas las marcas</button>'
+      : "";
+    results.innerHTML=allOption+(ranked.length
+      ? ranked.map((x,i)=>`<button type="button" class="search-result${i===0&&q?" active":""}" data-value="${x.value.replace(/&/g,"&amp;").replace(/"/g,"&quot;")}">${x.value}${q&&i===0?'<small>Mejor coincidencia</small>':''}</button>`).join("")
+      : (!allOption?'<div class="search-empty">No se encontraron marcas</div>':""));
+  }
+  function open(){
+    picker.classList.add("open");
+    search.value="";
+    renderResults("");
+    setTimeout(()=>search.focus(),0);
+  }
+  function close(){picker.classList.remove("open");}
+  function setOptions(nextOptions){
+    options=uniqueSorted(nextOptions&&nextOptions.length?nextOptions:brands);
+    if(select.value&&!options.some(v=>normalizeSearchText(v)===normalizeSearchText(select.value))){
+      select.value="";
+      select.dispatchEvent(new Event("change",{bubbles:true}));
+    }
+    syncDisplay();
+  }
+  input.addEventListener("click",open);
+  input.addEventListener("focus",open);
+  picker.querySelector(".search-select-arrow").addEventListener("click",open);
+  search.addEventListener("input",()=>renderResults(search.value));
+  search.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){e.preventDefault();const first=results.querySelector(".search-result");if(first)first.click();}
+    if(e.key==="Escape"){e.preventDefault();close();input.focus();}
+  });
+  results.addEventListener("click",e=>{
+    const btn=e.target.closest(".search-result");
+    if(!btn)return;
+    select.value=btn.dataset.value||"";
+    syncDisplay();
+    select.dispatchEvent(new Event("change",{bubbles:true}));
+    close();
+  });
+  select.addEventListener("change",syncDisplay);
+  document.addEventListener("click",e=>{if(!picker.contains(e.target))close()});
+  syncDisplay();
+  return {setOptions,open,close,syncDisplay};
+}
+
+
 let modelPicker,sellModelPicker;
 function fillModels(brand, modelInput){
   modelInput.value="";
@@ -912,6 +983,9 @@ $("brand").onchange=()=>{fillModels($("brand").value,$("model"));};
 $("sellBrand").onchange=()=>fillModels($("sellBrand").value,$("sellModel"));
 
 
+
+brandPicker=setupBrandPicker({pickerId:"brandPicker",selectId:"brand",inputId:"brandDisplay",searchId:"brandSearch",resultsId:"brandResults",placeholder:"Todas las marcas"});
+sellBrandPicker=setupBrandPicker({pickerId:"sellBrandPicker",selectId:"sellBrand",inputId:"sellBrandDisplay",searchId:"sellBrandSearch",resultsId:"sellBrandResults",placeholder:"Selecciona una marca"});
 
 let editingPhotos=[];
 function normalizeVehiclePhotos(v){
@@ -2737,7 +2811,7 @@ function aiShowTyping(){
   aiHideTyping();
   const div=document.createElement("div");
   div.className="ai-typing";div.id="aiTypingIndicator";
-  div.innerHTML='<span style="color:var(--muted);font-size:.78rem;margin-right:2px">CARS STREET IA está analizando...</span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
+  div.innerHTML='<span class="ai-typing-label">CARS STREET IA</span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
   box.appendChild(div);box.scrollTop=box.scrollHeight;
 }
 function aiHideTyping(){const el=document.getElementById("aiTypingIndicator");if(el)el.remove();}
@@ -2791,21 +2865,29 @@ window.sendAIMessage=async function(){
   const text=input.value.trim();if(!text)return;
   aiPushMessage("user",escapeHtml(text));input.value="";
   const btn=$("aiSendBtn");if(btn)btn.disabled=true;
+  const typingStartedAt=performance.now();
   aiShowTyping();
+  const waitForMinimumTyping=async()=>{
+    const remaining=2000-(performance.now()-typingStartedAt);
+    if(remaining>0)await new Promise(resolve=>setTimeout(resolve,remaining));
+  };
   try{
     const answer=await askClaude(text);
     AI.claudeHistory.push({role:"user",content:text});
     AI.claudeHistory.push({role:"assistant",content:answer});
     if(AI.claudeHistory.length>24)AI.claudeHistory=AI.claudeHistory.slice(-24);
+    await waitForMinimumTyping();
     aiHideTyping();
     aiPushMessage("bot",claudeFormat(answer));
   }catch(err){
     console.warn("Claude API no disponible; usando motor local de respaldo:",err);
     try{
+      await Promise.resolve(aiRespond(text));
+      await waitForMinimumTyping();
       aiHideTyping();
-      aiRespond(text);
     }catch(fallbackErr){
       console.error("CARS STREET IA:",fallbackErr);
+      await waitForMinimumTyping();
       aiHideTyping();
       aiPushMessage("bot","No pude conectar con la IA en este momento. Revisa la configuración del servicio de Claude e inténtalo de nuevo.");
     }
