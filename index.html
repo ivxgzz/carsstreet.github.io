@@ -67,7 +67,7 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 .photo-thumb img{width:100%;height:100%;object-fit:cover}
 .photo-thumb button{position:absolute;right:6px;top:6px;background:rgba(0,0,0,.75);color:#fff;border-radius:7px;padding:5px 7px;font-weight:900}
 .photo-thumb.main{border:2px solid var(--accent)}
-.photo-label{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.78);color:#fff;padding:4px 6px;border-radius:6px;font-size:.7rem;font-weight:800}
+.photo-label{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.78);color:#fff;padding:4px 6px;border-radius:6px;font-size:.7rem;font-weight:800}\n.photo-download-btn{right:6px!important;top:6px!important;background:rgba(0,0,0,.82)!important;color:#fff!important;border:1px solid rgba(255,255,255,.18);font-size:.72rem}\n.photo-download-btn:hover{background:var(--accent)!important}\n.photo-download-all{margin-bottom:10px;padding:8px 11px;border-radius:8px;background:#272b30;color:#fff;font-weight:800}\n.photo-download-all:hover{background:var(--accent)}\n
 @media(max-width:700px){.photo-grid{grid-template-columns:repeat(2,1fr)}}
 
 
@@ -449,6 +449,7 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
   <label>FOTOS DE LA PUBLICACIÓN</label>
   <input id="carImage" type="file" accept="image/*" multiple>
   <div class="photo-manager">
+    <button type="button" class="photo-download-all" onclick="downloadAllVehiclePhotosFromEditor()" disabled>⬇ Descargar todas</button>
     <div id="carPhotoGrid" class="photo-grid"></div>
     <p class="admin-note">Agrega varias fotos. Puedes eliminar fotos y elegir cuál será la foto principal.</p>
   </div>
@@ -485,6 +486,8 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
     <button class="ai-send" id="aiSendBtn" onclick="sendAIMessage()" aria-label="Enviar mensaje">➤</button>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
 <script>
 /* ============================================================================
@@ -857,7 +860,11 @@ function csHandleVehicleRoute(){
 }
 
 function normalizeVehicleList(list){
-  return (list||[]).map(v=>({...v,images:Array.isArray(v.images)&&v.images.length?v.images:[v.img],plateDigit:v.plateDigit||"",inspection:v.inspection||"",armor:v.armor||"No blindado",engine:v.engine||"",color:v.color||"",createdAt:Number(v.createdAt)||fallbackCreatedAt(v)}));
+  return (list||[]).map(v=>{
+    const images=Array.isArray(v.images)&&v.images.length?v.images:[v.img];
+    const originalImages=Array.isArray(v.originalImages)&&v.originalImages.length?v.originalImages:[...images];
+    return {...v,images,originalImages,plateDigit:v.plateDigit||"",inspection:v.inspection||"",armor:v.armor||"No blindado",engine:v.engine||"",color:v.color||"",createdAt:Number(v.createdAt)||fallbackCreatedAt(v)};
+  });
 }
 // Valida que lo recuperado sea realmente una lista de vehículos utilizable,
 // para evitar que datos corruptos (JSON inválido, tipo incorrecto, etc.)
@@ -929,11 +936,33 @@ async function uploadVehicleImages(vehicle){
   return uploaded;
 }
 
+async function uploadVehicleOriginalImages(vehicle,uploadedDisplayImages=[]){
+  const source=Array.isArray(vehicle.originalImages)&&vehicle.originalImages.length?vehicle.originalImages:(vehicle.images||[]);
+  const uploaded=[];
+  for(let i=0;i<source.length;i++){
+    const im=source[i];
+    if(typeof im==="string"&&im.startsWith("data:")){
+      try{
+        const url=await uploadImageToCloudinary(im);
+        uploaded.push(url||uploadedDisplayImages[i]||vehicle.images?.[i]||im);
+      }catch(e){
+        console.error("No se pudo subir la foto original a Cloudinary:",e);
+        uploaded.push(uploadedDisplayImages[i]||vehicle.images?.[i]||im);
+      }
+    }else{
+      uploaded.push(im);
+    }
+  }
+  return uploaded;
+}
+
+
 async function saveVehicleToCloud(vehicle){
   if(!cloudEnabled)return null;
   try{
     const images=await uploadVehicleImages(vehicle);
-    const toSave={...vehicle,images,img:images[0]||vehicle.img};
+    const originalImages=await uploadVehicleOriginalImages({...vehicle,images:vehicle.originalImages||vehicle.images},images);
+    const toSave={...vehicle,images,img:images[0]||vehicle.img,originalImages};
     await cloudDb.collection(CLOUD_VEHICLES_COLLECTION).doc(String(vehicle.id)).set(toSave);
     return toSave;
   }catch(e){
@@ -1281,25 +1310,62 @@ brandPicker=setupBrandPicker({pickerId:"brandPicker",selectId:"brand",inputId:"b
 sellBrandPicker=setupBrandPicker({pickerId:"sellBrandPicker",selectId:"sellBrand",inputId:"sellBrandDisplay",searchId:"sellBrandSearch",resultsId:"sellBrandResults",placeholder:"Selecciona una marca"});
 
 let editingPhotos=[];
+let editingOriginalPhotos=[];
 function normalizeVehiclePhotos(v){
   if(!v.images||!Array.isArray(v.images)||!v.images.length) v.images=[v.img];
   if(!v.img) v.img=v.images[0];
+  if(!Array.isArray(v.originalImages)||!v.originalImages.length){
+    v.originalImages=[...(v.images||[])];
+  }else if(v.originalImages.length<v.images.length){
+    v.originalImages=[...v.originalImages,...v.images.slice(v.originalImages.length)];
+  }
   return v;
 }
 vehicles=vehicles.map(normalizeVehiclePhotos);
 function renderCarPhotos(){
   const box=$("carPhotoGrid"); if(!box)return;
+  const allBtn=document.querySelector(".photo-download-all");
+  if(allBtn)allBtn.disabled=!editingPhotos.length;
   box.innerHTML=editingPhotos.length?editingPhotos.map((im,i)=>`
     <div class="photo-thumb ${i===0?"main":""}">
       <img src="${im}" alt="Foto ${i+1}">
       <span class="photo-label">${i===0?"PRINCIPAL":"FOTO "+(i+1)}</span>
-      <button type="button" onclick="removeCarPhoto(${i})">×</button>
+      <button type="button" class="photo-download-btn" onclick="downloadEditorPhoto(${i})" title="Descargar imagen original" aria-label="Descargar imagen original">⬇</button>
+      <button type="button" onclick="removeCarPhoto(${i})" title="Eliminar foto" aria-label="Eliminar foto">×</button>
     </div>`).join(""):`<div class="admin-note">No hay fotos. Selecciona imágenes arriba.</div>`;
 }
-function removeCarPhoto(i){editingPhotos.splice(i,1);renderCarPhotos()}
-async function addCarPhotos(files){
-  for(const file of Array.from(files||[])){const im=await readImage(file);if(im)editingPhotos.push(im)}
+function removeCarPhoto(i){
+  editingPhotos.splice(i,1);
+  editingOriginalPhotos.splice(i,1);
   renderCarPhotos();
+}
+async function addCarPhotos(files){
+  const selected=Array.from(files||[]);
+  if(!selected.length)return;
+  const box=$("carPhotoGrid");
+  if(box)box.innerHTML='<div class="admin-note">⏳ Procesando fotos... espera un momento.</div>';
+  try{
+    for(const file of selected){
+      const original=await readImage(file);
+      let display=original;
+      try{
+        const optimized=await compressImage(file);
+        if(optimized)display=optimized;
+      }catch(err){
+        console.error("No se pudo optimizar una foto; se conservará la lectura original:",err);
+      }
+      if(display){
+        editingPhotos.push(display);
+        editingOriginalPhotos.push(original||display);
+      }
+    }
+    renderCarPhotos();
+    showToast(`${selected.length} foto(s) listas para guardar`);
+  }catch(err){
+    console.error(err);
+    renderCarPhotos();
+    showToast("Una foto no pudo procesarse. Usa JPG, PNG o WEBP.");
+  }
 }
 
 
@@ -1369,27 +1435,7 @@ async function readImage(file){
   }
 }
 
-async function addCarPhotos(files){
-  const selected=Array.from(files||[]);
-  if(!selected.length)return;
-
-  const oldText=$("carPhotoGrid").innerHTML;
-  $("carPhotoGrid").innerHTML='<div class="admin-note">⏳ Procesando y comprimiendo fotos... espera un momento.</div>';
-
-  try{
-    for(const file of selected){
-      const im=await compressImage(file);
-      if(im)editingPhotos.push(im);
-    }
-    renderCarPhotos();
-    showToast(`${selected.length} foto(s) listas para guardar`);
-  }catch(err){
-    console.error(err);
-    renderCarPhotos();
-    showToast("Una foto no pudo procesarse. Usa JPG, PNG o WEBP.");
-  }
-}
-
+// addCarPhotos ya conserva por separado la referencia original de cada archivo.
 function readImage(file){
   return new Promise((resolve,reject)=>{
     if(!file){resolve("");return}
@@ -1473,6 +1519,7 @@ function logoutAdmin(){
   sessionStorage.removeItem("carsStreetAdminAuth");
   adminAuthenticated=false;
   closeAdmin();
+  renderAdminCars();
   showToast("Sesión de administrador cerrada");
 }
 $("adminLoginForm").onsubmit=async e=>{
@@ -1508,6 +1555,161 @@ function adminTab(tab,btn){
   if(tab==="profile"){$("adminProfile").classList.add("active"); if(btn)btn.classList.add("active");applyProfile()}
   if(tab==="editor"){$("adminCarEditor").classList.add("active")}
 }
+function isAdminDownloadAuthorized(){
+  return adminAuthenticated===true && sessionStorage.getItem("carsStreetAdminAuth")==="1";
+}
+function getVehiclePhotoSources(v){
+  if(!v)return [];
+  const images=Array.isArray(v.images)&&v.images.length?v.images:[v.img];
+  const originals=Array.isArray(v.originalImages)&&v.originalImages.length?v.originalImages:images;
+  return images.filter(Boolean).map((im,i)=>originals[i]||im);
+}
+function safeDownloadName(value){
+  return String(value||"")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").replace(/-+/g,"-");
+}
+function getVehicleDownloadBaseName(v){
+  const base=safeDownloadName([v?.brand,v?.model,v?.version,v?.year].filter(Boolean).join("-"));
+  return base||("cars-street-vehiculo-"+(safeDownloadName(v?.id)||"sin-id"));
+}
+function getExtensionFromContentType(type){
+  const t=String(type||"").toLowerCase().split(";")[0];
+  return ({"image/jpeg":".jpg","image/jpg":".jpg","image/png":".png","image/webp":".webp","image/gif":".gif","image/avif":".avif","image/bmp":".bmp","image/tiff":".tiff"}[t]||"");
+}
+function getExtensionFromSource(src){
+  const clean=String(src||"").split("?")[0].split("#")[0];
+  const m=clean.match(/\.([a-z0-9]{2,5})$/i);
+  return m?"."+m[1].toLowerCase():"";
+}
+function cloudinaryOriginalUrl(src){
+  const value=String(src||"");
+  if(!/res\.cloudinary\.com\//i.test(value))return value;
+  try{
+    const u=new URL(value);
+    const marker="/image/upload/";
+    const idx=u.pathname.indexOf(marker);
+    if(idx===-1)return value;
+    const after=u.pathname.slice(idx+marker.length);
+    const parts=after.split("/").filter(Boolean);
+    const versionIndex=parts.findIndex(x=>/^v\d+$/.test(x));
+    let publicParts;
+    if(versionIndex>=0)publicParts=parts.slice(versionIndex);
+    else{
+      const transformPattern=/^(?:w_|h_|c_|q_|f_|fl_|dpr_|ar_|g_|e_|bo_|br_|so_|du_|pg_|dn_|ac_|cs_|vc_|x_|y_|z_|t_)/i;
+      let start=0;
+      while(start<parts.length&&transformPattern.test(parts[start]))start++;
+      publicParts=parts.slice(start);
+    }
+    if(!publicParts.length)return value;
+    u.pathname=u.pathname.slice(0,idx+marker.length)+publicParts.join("/");
+    return u.toString();
+  }catch(e){
+    console.error("No se pudo resolver la URL original de Cloudinary:",e);
+    return value;
+  }
+}
+async function resolveOriginalImageSource(src){
+  if(!src)throw new Error("Imagen sin referencia");
+  if(typeof src!=="string")throw new Error("Referencia de imagen inválida");
+  if(src.startsWith("data:")||src.startsWith("blob:"))return src;
+  if(src.startsWith("gs://")&&window.firebase&&firebase.storage){
+    return await firebase.storage().refFromURL(src).getDownloadURL();
+  }
+  if(/res\.cloudinary\.com\//i.test(src))return cloudinaryOriginalUrl(src);
+  return src;
+}
+async function fetchOriginalBlob(src){
+  const resolved=await resolveOriginalImageSource(src);
+  const res=await fetch(resolved,{cache:"no-store"});
+  if(!res.ok)throw new Error("No se pudo descargar la imagen");
+  const blob=await res.blob();
+  if(!blob.size)throw new Error("La imagen está vacía");
+  return {blob,source:resolved};
+}
+function triggerBlobDownload(blob,filename){
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=filename;
+  a.style.display="none";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),15000);
+}
+async function downloadVehiclePhoto(v,index){
+  if(!isAdminDownloadAuthorized()){
+    showToast("Acceso restringido");
+    return;
+  }
+  const sources=getVehiclePhotoSources(v);
+  if(index<0||index>=sources.length){
+    showToast("❌ No se pudo descargar la imagen");
+    return;
+  }
+  showToast("⏳ Preparando descarga...");
+  try{
+    const result=await fetchOriginalBlob(sources[index]);
+    const ext=getExtensionFromSource(result.source)||getExtensionFromContentType(result.blob.type)||".jpg";
+    const filename=`${getVehicleDownloadBaseName(v)}-${index+1}${ext}`;
+    triggerBlobDownload(result.blob,filename);
+    showToast("✅ Imagen descargada");
+  }catch(error){
+    console.error("Error descargando imagen original:",error);
+    showToast("❌ No se pudo descargar la imagen");
+  }
+}
+async function downloadAllVehiclePhotos(v){
+  if(!isAdminDownloadAuthorized()){
+    showToast("Acceso restringido");
+    return;
+  }
+  const sources=getVehiclePhotoSources(v);
+  if(!sources.length){
+    showToast("❌ No se pudo descargar la imagen");
+    return;
+  }
+  showToast("⏳ Preparando descarga...");
+  try{
+    const files=[];
+    for(let i=0;i<sources.length;i++){
+      const result=await fetchOriginalBlob(sources[i]);
+      const ext=getExtensionFromSource(result.source)||getExtensionFromContentType(result.blob.type)||".jpg";
+      files.push({blob:result.blob,name:`${getVehicleDownloadBaseName(v)}-${i+1}${ext}`});
+    }
+    if(window.JSZip){
+      const zip=new JSZip();
+      const folder=zip.folder(getVehicleDownloadBaseName(v));
+      files.forEach(file=>folder.file(file.name,file.blob,{binary:true,compression:"STORE"}));
+      const zipBlob=await zip.generateAsync({type:"blob",compression:"STORE"});
+      triggerBlobDownload(zipBlob,`${getVehicleDownloadBaseName(v)}.zip`);
+    }else{
+      files.forEach(file=>triggerBlobDownload(file.blob,file.name));
+    }
+    showToast("✅ Imagen descargada");
+  }catch(error){
+    console.error("Error descargando todas las imágenes originales:",error);
+    showToast("❌ No se pudo descargar la imagen");
+  }
+}
+function downloadEditorPhoto(index){
+  if(!isAdminDownloadAuthorized()){
+    showToast("Acceso restringido");
+    return;
+  }
+  const v={id:$("carId").value||Date.now(),brand:$("carBrand").value,model:$("carModel").value.trim(),version:$("carVersion").value.trim(),year:$("carYear").value};
+  return downloadVehiclePhoto({...v,images:editingPhotos,originalImages:editingOriginalPhotos},index);
+}
+function downloadAllVehiclePhotosFromEditor(){
+  if(!isAdminDownloadAuthorized()){
+    showToast("Acceso restringido");
+    return;
+  }
+  const v={id:$("carId").value||Date.now(),brand:$("carBrand").value,model:$("carModel").value.trim(),version:$("carVersion").value.trim(),year:$("carYear").value};
+  return downloadAllVehiclePhotos({...v,images:editingPhotos,originalImages:editingOriginalPhotos});
+}
+
 function renderAdminCars(){
   const box=$("adminCarList"); if(!box)return;
   box.innerHTML=vehicles.length?vehicles.map((v,i)=>`
@@ -1523,6 +1725,7 @@ function renderAdminCars(){
           <button class="admin-small" onclick="moveCar(${v.id},1)" ${i===vehicles.length-1?"disabled":""} title="Bajar" aria-label="Bajar posición">&#9660;</button>
         </div>
         <button class="admin-small" onclick="editCar(${v.id})">Editar</button>
+        <button class="admin-small" onclick="downloadAllVehiclePhotos(vehicles.find(x=>x.id===${v.id}))">⬇ Descargar todas</button>
         <button class="admin-small danger" onclick="deleteCar(${v.id})">Eliminar</button>
       </div>
     </div>`).join(""):`<div class="empty">No hay publicaciones. Agrega tu primer auto.</div>`;
@@ -1556,7 +1759,7 @@ function newCar(){
   $("carYear").value=new Date().getFullYear(); $("carMileage").value=0; $("carLocation").value="Colombia";
   $("carPlateDigit").value=""; $("carInspection").value=""; $("carArmor").value=""; $("carEngine").value=""; $("carColor").value="";
   $("carEditorTitle").textContent="Agregar vehículo";
-  editingPhotos=[]; renderCarPhotos(); setupCarBrands(); adminTab("editor");
+  editingPhotos=[]; editingOriginalPhotos=[]; renderCarPhotos(); setupCarBrands(); adminTab("editor");
 }
 function editCar(id){
   const v=vehicles.find(x=>x.id===id); if(!v)return;
@@ -1567,7 +1770,10 @@ function editCar(id){
   $("carPlateDigit").value=v.plateDigit||"";$("carInspection").value=v.inspection||"";$("carArmor").value=v.armor||"";
   $("carEngine").value=v.engine||"";$("carColor").value=v.color||"";
   $("carDesc").value=v.desc||"";$("carImage").value="";
-  editingPhotos=[...(v.images||[v.img]).filter(Boolean)]; renderCarPhotos();
+  editingPhotos=[...(v.images||[v.img]).filter(Boolean)];
+  editingOriginalPhotos=[...((Array.isArray(v.originalImages)&&v.originalImages.length?v.originalImages:v.images||[v.img]).filter(Boolean))];
+  while(editingOriginalPhotos.length<editingPhotos.length)editingOriginalPhotos.push(editingPhotos[editingOriginalPhotos.length]);
+  renderCarPhotos();
   $("carEditorTitle").textContent="Editar vehículo";setupCarBrands();$("carBrand").value=v.brand;adminTab("editor");
 }
 async function saveCar(e){
@@ -1577,6 +1783,7 @@ async function saveCar(e){
     const old=id?vehicles.find(x=>x.id==id):null;
     const fallback="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=85";
     const photos=editingPhotos.length?[...editingPhotos]:[old?.img||fallback];
+    const originalPhotos=editingOriginalPhotos.length?[...editingOriginalPhotos]:[...photos];
 
     const data={
       id:id?Number(id):Date.now(),
@@ -1600,6 +1807,7 @@ async function saveCar(e){
       featured:$("carFeatured").value==="true",
       img:photos[0],
       images:photos,
+      originalImages:originalPhotos,
       desc:$("carDesc").value.trim()||`${$("carBrand").value} ${$("carModel").value} disponible en Colombia.`,
       // La fecha de creación NUNCA se reinicia al editar: si ya existía una
       // publicación, se conserva su createdAt original; solo se asigna
@@ -1674,6 +1882,7 @@ async function saveCar(e){
     showToast(successMsg+statusNote);
     $("carForm").reset();
     editingPhotos=[];
+    editingOriginalPhotos=[];
     renderCarPhotos();
     adminTab("cars");
   }catch(error){
@@ -3016,7 +3225,7 @@ function aiRespond(rawText){
    La clave NO se guarda en este HTML. El navegador llama a un proxy/backend
    seguro configurado en CLAUDE_API_URL, que guarda ANTHROPIC_API_KEY como secreto.
    ============================================================================ */
-const CLAUDE_API_URL = "https://cars-street-ia.ivanghtyx.workers.dev/";
+const CLAUDE_API_URL = "https://TU-WORKER.workers.dev";
 const CLAUDE_MODEL = "claude-sonnet-5";
 
 const CARS_STREET_SYSTEM_PROMPT = `Eres CARS STREET IA, el asistente automotriz oficial de CARS STREET en Colombia.
