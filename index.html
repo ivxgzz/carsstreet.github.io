@@ -450,7 +450,7 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
 <div class="field"><label>KILOMETRAJE</label><input required name="mileage" type="number"></div><div class="field"><label>PRECIO ESPERADO</label><input required name="price" type="number"></div>
 <div class="field full"><label>DESCRIPCIÓN</label><textarea name="description" rows="4"></textarea></div>
 <div class="field full"><label>FOTOGRAFÍAS</label><input type="file" accept="image/*" multiple></div>
-</div><button class="btn btn-primary" style="margin-top:15px;width:100%">ENVIAR INFORMACIÓN</button></form></div></div></div></section>
+</div><button id="sellPublishBtn" type="submit" class="btn btn-primary" style="margin-top:15px;width:100%">PUBLICAR VEHÍCULO</button></form></div></div></div></section>
 
 <section id="nosotros"><div class="container"><div class="section-head reveal"><div><div class="eyebrow">CARS STREET</div><h2>Confianza en cada decisión.</h2></div></div><p style="color:#c8cdd1;max-width:800px;margin-bottom:25px">CARS STREET es tu espacio para encontrar vehículos y conectar con oportunidades de compra y venta en Colombia. Nuestro objetivo es ofrecer una experiencia clara, sencilla y confiable para quienes buscan su próximo vehículo.</p><div class="about-grid"><div class="info-card reveal"><h3>VEHÍCULOS PARA TODOS</h3><p>Encuentra diferentes tipos de vehículos en un solo lugar.</p></div><div class="info-card reveal"><h3>FÁCIL Y RÁPIDO</h3><p>Consulta información y contacta directamente desde la plataforma.</p></div><div class="info-card reveal"><h3>ATENCIÓN PERSONALIZADA</h3><p>Estamos disponibles para ayudarte durante tu proceso.</p></div></div></div></section>
 
@@ -847,6 +847,152 @@ async function csInitAuth(){
     }else csApplyUserUI(null,{});
   }catch(e){console.error("CARS STREET: error al restaurar la sesión local:",e);csApplyUserUI(null,{})}
 }
+async function csReadUserPosts(){
+  try{
+    const fromIdb=await idbGet(CS_USER_POSTS_KEY);
+    if(Array.isArray(fromIdb))return fromIdb;
+  }catch(e){console.warn("CARS STREET: no se pudo leer publicaciones de usuarios desde IndexedDB:",e)}
+  try{
+    const raw=localStorage.getItem(CS_USER_POSTS_KEY);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch(e){return []}
+}
+async function csWriteUserPosts(posts){
+  const clean=Array.isArray(posts)?posts:[];
+  let idbOk=false;
+  try{await idbSet(CS_USER_POSTS_KEY,clean);idbOk=true}catch(e){console.warn("CARS STREET: IndexedDB de publicaciones no disponible:",e)}
+  try{localStorage.setItem(CS_USER_POSTS_KEY,JSON.stringify(clean))}catch(e){
+    if(!idbOk)throw new Error("No hay espacio disponible para guardar la publicación en este navegador.");
+    console.warn("CARS STREET: respaldo local de publicaciones no disponible:",e);
+  }
+}
+async function csMergeUserPostsIntoVehicles(baseList){
+  const base=Array.isArray(baseList)?baseList:[];
+  const posts=await csReadUserPosts();
+  if(!posts.length)return base;
+  const byId=new Map(base.map(v=>[String(v?.id),v]));
+  posts.forEach(v=>byId.set(String(v.id),v));
+  return sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(Array.from(byId.values()))));
+}
+function csCurrentUsername(){
+  if(!csCurrentUser)return "";
+  return String(csCurrentUser.username||csCurrentUser.displayName||"").trim();
+}
+async function csFileToDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||""));
+    reader.onerror=()=>reject(reader.error||new Error("No se pudo leer la fotografía."));
+    reader.readAsDataURL(file);
+  });
+}
+async function csCaptureSellDraft(){
+  const form=$("sellForm");if(!form)return null;
+  const fields={};
+  form.querySelectorAll("input,select,textarea").forEach(el=>{
+    if(el.type==="file")return;
+    const key=el.name||el.id;
+    if(key)fields[key]=el.value;
+  });
+  const fileInput=form.querySelector('input[type="file"]');
+  const photos=[];
+  if(fileInput?.files?.length){
+    for(const file of Array.from(fileInput.files)){
+      try{photos.push({name:file.name,type:file.type,dataUrl:await csFileToDataUrl(file)})}catch(e){console.warn("CARS STREET: no se pudo guardar una fotografía temporal:",e)}
+    }
+  }
+  const draft={fields,photos,savedAt:Date.now()};
+  try{await idbSet(CS_SELL_DRAFT_KEY,draft)}catch(e){}
+  try{localStorage.setItem(CS_SELL_DRAFT_KEY,JSON.stringify(draft))}catch(e){}
+  return draft;
+}
+async function csGetSellDraft(){
+  try{const d=await idbGet(CS_SELL_DRAFT_KEY);if(d&&typeof d==="object")return d}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem(CS_SELL_DRAFT_KEY)||"null");return d&&typeof d==="object"?d:null}catch(e){return null}
+}
+async function csClearSellDraft(){
+  try{await idbSet(CS_SELL_DRAFT_KEY,null)}catch(e){}
+  try{localStorage.removeItem(CS_SELL_DRAFT_KEY)}catch(e){}
+}
+async function csRestoreSellDraft(){
+  const draft=await csGetSellDraft();const form=$("sellForm");if(!draft||!form)return false;
+  const fields=draft.fields||{};
+  if(fields.brand&&$("sellBrand")){
+    $("sellBrand").value=fields.brand;
+    $("sellBrand").dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  Object.entries(fields).forEach(([key,value])=>{
+    const el=form.elements.namedItem(key)||$(key);
+    if(el&&el.type!=="file")el.value=value==null?"":String(value);
+  });
+  if($("sellBrandDisplay")&&fields.brand)$("sellBrandDisplay").value=fields.brand;
+  if($("sellModel")&&fields.model)$("sellModel").value=fields.model;
+  if($("sellYear")&&fields.sellYear)$("sellYear").value=fields.sellYear;
+  return true;
+}
+async function csGetSellPhotos(){
+  const input=$("sellForm")?.querySelector('input[type="file"]');
+  const current=[];
+  if(input?.files?.length){
+    for(const file of Array.from(input.files)){
+      try{current.push({name:file.name,type:file.type,dataUrl:await csFileToDataUrl(file)})}catch(e){}
+    }
+  }
+  if(current.length)return current;
+  const draft=await csGetSellDraft();
+  return Array.isArray(draft?.photos)?draft.photos:[];
+}
+function csFocusSellForm(){
+  const target=$("vende");if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
+  setTimeout(()=>{const b=$("sellPublishBtn");if(b)b.focus({preventScroll:true})},250);
+}
+async function csRequireSellLogin(){
+  await csCaptureSellDraft();
+  csOpenAccountDialog("login");
+  showToast("Inicia sesión o crea tu cuenta para publicar el vehículo.");
+}
+async function csPublishSellVehicle(){
+  if(csSellPublishing)return;
+  if(!csCurrentUser){await csRequireSellLogin();return}
+  const form=$("sellForm"),btn=$("sellPublishBtn");if(!form)return;
+  csSellPublishing=true;if(btn){btn.disabled=true;btn.textContent="PUBLICANDO..."}
+  try{
+    const fd=new FormData(form),get=(name,id)=>String(fd.get(name)||$(id)?.value||"").trim();
+    const brand=get("brand","sellBrand"),model=get("model","sellModel"),year=get("sellYear","sellYear");
+    const photos=await csGetSellPhotos();
+    const ownerUid=String(csCurrentUser.uid||"");const ownerUsername=csCurrentUsername();
+    if(!ownerUid||!ownerUsername)throw new Error("No se pudo identificar la cuenta actual.");
+    const id=Date.now().toString()+Math.floor(Math.random()*100000).toString().padStart(5,"0");
+    const vehicle={
+      id,vehicleSlug:"user-"+id,brand,model,version:get("version","version"),year:Number(year)||year,
+      price:Number(get("price","price"))||0,mileage:Number(get("mileage","mileage"))||0,
+      type:get("type","type")||"Vehículo",fuel:get("fuel","fuel")||"Gasolina",transmission:get("transmission","transmission")||"Manual",
+      status:"Disponible",location:get("location","location")||"Colombia",plateDigit:get("plateDigit","plateDigit"),inspection:get("inspection","inspection"),armor:get("armor","armor")||"No blindado",engine:get("engine","engine"),color:get("color","color"),
+      featured:false,views:0,img:photos[0]?.dataUrl||"",images:photos.map(p=>p.dataUrl).filter(Boolean),originalImages:photos.map(p=>p.dataUrl).filter(Boolean),
+      desc:get("description","description"),description:get("description","description"),ownerUid,ownerUsername,userUid:ownerUid,createdByUid:ownerUid,createdAt:Date.now(),order:nextTopOrder(),
+      sellerName:get("name","name"),sellerPhone:get("phone","phone"),photoNames:photos.map(p=>p.name).join(", "),isUserPost:true
+    };
+    const posts=await csReadUserPosts();
+    posts.push(vehicle);
+    await csWriteUserPosts(posts);
+    vehicles=await csMergeUserPostsIntoVehicles(vehicles);
+    try{await idbSet(IDB_VEHICLES_KEY,vehicles)}catch(e){}
+    try{backupVehiclesToLocalStorage(vehicles)}catch(e){}
+    render();renderAdminCars();
+    await csClearSellDraft();
+    form.reset();
+    if($("sellBrandDisplay"))$("sellBrandDisplay").value="";
+    if($("sellBrand"))$("sellBrand").value="";
+    if($("sellModel")){ $("sellModel").value="";$("sellModel").disabled=true; }
+    showToast("¡Vehículo publicado correctamente! Ya aparece en Mis publicaciones.");
+  }catch(error){
+    console.error("CARS STREET: error al publicar vehículo:",error);
+    showToast(error?.message||"No se pudo guardar la publicación. Inténtalo de nuevo.");
+  }finally{
+    csSellPublishing=false;if(btn){btn.disabled=false;btn.textContent="PUBLICAR VEHÍCULO"}
+  }
+}
 async function csHandleAuthSubmit(e){
   e.preventDefault();csSetAccountError("");
   const form=$("csAuthForm"),submitBtn=form?.querySelector('button[type="submit"]'),originalText=submitBtn?.textContent||"";
@@ -871,7 +1017,7 @@ async function csHandleAuthSubmit(e){
       const user=csMakeLocalUser(username,name,photo,uid);
       await csSaveUserProfile(user,{username,name,photo});
       localStorage.setItem(CS_LOCAL_SESSION_KEY,uid);csCurrentUser=user;csApplyUserUI(user,{username,name,photo});
-      csCloseAccountDialog();showToast("Cuenta creada correctamente.");form?.reset();return;
+      csCloseAccountDialog();showToast("Cuenta creada correctamente.");form?.reset();await csRestoreSellDraft();csFocusSellForm();return;
     }
     const record=accounts[key];
     if(!record)throw {code:"cs/user-not-found",message:"El nombre de usuario no existe."};
@@ -879,7 +1025,7 @@ async function csHandleAuthSubmit(e){
     if(passwordHash!==record.passwordHash)throw {code:"cs/wrong-password",message:"El nombre de usuario o la contraseña son incorrectos."};
     const user=csMakeLocalUser(record.username,record.name,record.photo,record.uid);
     localStorage.setItem(CS_LOCAL_SESSION_KEY,record.uid);csCurrentUser=user;await csSaveUserProfile(user,record);csApplyUserUI(user,record);
-    csCloseAccountDialog();showToast("Sesión iniciada correctamente.");form?.reset();
+    csCloseAccountDialog();showToast("Sesión iniciada correctamente.");form?.reset();await csRestoreSellDraft();csFocusSellForm();
   }catch(error){
     console.error("CARS STREET Authentication error:",error);
     const messages={"cs/invalid-username":"El nombre de usuario debe tener entre 3 y 20 caracteres y solo puede usar letras, números, punto, guion o guion bajo.","cs/name-required":"Escribe tu nombre completo.","cs/weak-password":"La contraseña debe tener al menos 6 caracteres.","cs/username-exists":"Ese nombre de usuario ya está registrado.","cs/user-not-found":"El nombre de usuario no existe.","cs/wrong-password":"El nombre de usuario o la contraseña son incorrectos."};
@@ -925,7 +1071,8 @@ async function csOpenUserPosts(){
   const panel=$("csUserPanel"),list=$("csUserPostsList");
   const postsProfile=await csLoadUserProfile(csCurrentUser); $("csUserPanelName").textContent="Mis publicaciones";$("csUserPanelEmail").textContent=csUsernameFromProfile(csCurrentUser,postsProfile) ? "@"+csUsernameFromProfile(csCurrentUser,postsProfile) : "";$("csUserPanelPhoto").src=csProfilePhotoForUser(csCurrentUser,postsProfile);
   list.innerHTML='<div class="cs-user-empty">Cargando publicaciones…</div>';panel.classList.add("open");panel.setAttribute("aria-hidden","false");
-  const owned=vehicles.filter(v=>String(v.ownerUid||v.userUid||v.createdByUid||"")===String(csCurrentUser.uid));
+  const currentUid=String(csCurrentUser.uid||"");const currentUsername=csCurrentUsername().toLowerCase();
+  const owned=vehicles.filter(v=>String(v.ownerUid||v.userUid||v.createdByUid||"")===currentUid || (String(v.ownerUsername||"").toLowerCase()===currentUsername && currentUsername));
   if(!owned.length){list.innerHTML='<div class="cs-user-empty">Todavía no tienes vehículos publicados desde esta cuenta.</div>';return}
   list.innerHTML=owned.map(v=>`<button type="button" class="cs-user-post" onclick="csCloseUserPanel();csOpenVehicleFromCard(${Number(v.id)})"><img src="${escapeHtml(v.img||"")}" alt=""><div><strong>${escapeHtml([v.brand,v.model,v.version,v.year].filter(Boolean).join(" "))}</strong><span>${escapeHtml(money(v.price))}</span></div></button>`).join("");
 }
@@ -985,6 +1132,9 @@ const IDB_NAME="carsStreetDB";
 const IDB_STORE="kv";
 const IDB_VEHICLES_KEY="vehicles";
 const VEHICLES_BACKUP_KEY="carsStreetVehiclesBackup";
+const CS_USER_POSTS_KEY="carsStreetUserPosts";
+const CS_SELL_DRAFT_KEY="carsStreetSellDraft";
+let csSellPublishing=false;
 function idbOpen(){
   return new Promise((resolve,reject)=>{
     if(!window.indexedDB){reject(new Error("IndexedDB no disponible"));return}
@@ -1440,10 +1590,10 @@ async function ensureCloudSeeded(){
 // página y actualiza lo que se ve, sin recargar.
 function listenToCloudVehicles(){
   if(!cloudEnabled)return;
-  cloudDb.collection(CLOUD_VEHICLES_COLLECTION).onSnapshot(snapshot=>{
+  cloudDb.collection(CLOUD_VEHICLES_COLLECTION).onSnapshot(async snapshot=>{
     const list=[];
     snapshot.forEach(doc=>list.push(doc.data()));
-    vehicles=sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(list)));
+    vehicles=await csMergeUserPostsIntoVehicles(sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(list))));
     idbSet(IDB_VEHICLES_KEY,vehicles).catch(e=>console.error(e));
     backupVehiclesToLocalStorage(vehicles);
     render();
@@ -1502,9 +1652,9 @@ async function loadVehicles(){
   // Solo si de verdad no existe ningún dato guardado (ni en IndexedDB ni en
   // el respaldo) se cargan los vehículos de ejemplo.
   if(stored===undefined||stored===null||!isValidVehicleList(stored)){
-    return sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(cloneDefaultVehicles())));
+    return await csMergeUserPostsIntoVehicles(sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(cloneDefaultVehicles()))));
   }
-  return sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(stored)));
+  return await csMergeUserPostsIntoVehicles(sortVehiclesByOrder(ensureVehicleOrder(normalizeVehicleList(stored))));
 }
 async function saveVehicles(){
   vehicles=vehicles.map(normalizeVehiclePhotos);
@@ -2689,36 +2839,7 @@ render();
   await loadAISettings();
 })();
 
-$("sellForm").onsubmit=async e=>{
-  e.preventDefault();
-  const form=e.currentTarget;
-  const fd=new FormData(form);
-  const val=n=>fd.get(n)||"";
-  const brand=$("sellBrand")?.value||"";
-  const model=$("sellModel")?.value||"";
-  const files=form.querySelector('input[type="file"]')?.files||[];
-  const photoNames=Array.from(files).map(f=>f.name).join(", ")||"No adjuntó fotografías";
-
-  const message=[
-    "🚗 *NUEVA INFORMACIÓN - VENTA DE VEHÍCULO*",
-    "",
-    `👤 *Nombre:* ${val("name")}`,
-    `📱 *Teléfono:* ${val("phone")}`,
-    `🏷️ *Marca:* ${brand}`,
-    `🚘 *Modelo:* ${model}`,
-    `📅 *Año:* ${val("year")}`,
-    `🛣️ *Kilometraje:* ${val("mileage")}`,
-    `💰 *Precio esperado:* $${Number(val("price")||0).toLocaleString("es-CO")}`,
-    `📝 *Descripción:* ${val("description")||"Sin descripción"}`,
-    `📸 *Fotografías seleccionadas:* ${photoNames}`,
-    "",
-    "📌 *Nota:* Las fotografías no pueden enviarse automáticamente dentro de WhatsApp desde una página web. El mensaje incluye los nombres de los archivos seleccionados; el cliente deberá adjuntarlas en el chat si es necesario."
-  ].join("\n");
-
-  const wa="573116169801";
-  window.open(`https://wa.me/${wa}?text=${encodeURIComponent(message)}`,"_blank");
-  showToast("WhatsApp está listo con toda la información del vehículo.");
-};
+$("sellForm").onsubmit=async e=>{e.preventDefault();if(csSellPublishing)return;if(!csCurrentUser){await csRequireSellLogin();return}await csPublishSellVehicle()};
 
 /* ================================================================
    ANIMACIÓN DE FONDO 3D (Hero) + TILT 3D EN TARJETAS + SCROLL REVEAL
