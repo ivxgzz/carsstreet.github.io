@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>document.documentElement.classList.add("ai-settings-pending");</script>
 <title>CARS STREET | Compra y venta de vehículos en Colombia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,6 +124,14 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 .searchable-field{position:relative}.search-select{position:relative}.search-select>input{padding-right:45px;cursor:pointer}.search-select>input:disabled{cursor:not-allowed;opacity:.55}.search-select-arrow{position:absolute;right:8px;top:7px;width:34px;height:34px;border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer}.search-menu{display:none;position:absolute;z-index:80;left:0;right:0;top:calc(100% + 7px);padding:10px;background:#101214;border:1px solid #3a4046;border-radius:12px;box-shadow:0 18px 45px rgba(0,0,0,.55)}.search-select.open .search-menu{display:block}.search-menu-input{width:100%!important;background:#080a0c!important;border:1px solid #454b52!important;color:#fff!important;padding:12px 13px!important;border-radius:9px!important;outline:none!important;margin-bottom:8px}.search-menu-input:focus{border-color:var(--accent)!important}.search-results{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:3px}.search-result{width:100%;border:0;background:transparent;color:#e9ecef;text-align:left;padding:10px 11px;border-radius:8px;cursor:pointer;font-size:.94rem}.search-result:hover,.search-result.active{background:#20252a}.search-result small{display:block;color:#8f969d;font-size:.72rem;margin-top:2px}.search-empty{padding:12px;color:#8f969d;font-size:.85rem}.search-hint{padding:7px 10px 9px;color:#737b83;font-size:.72rem;border-bottom:1px solid #252a2f;margin-bottom:3px}.brand-picker{position:relative}.brand-picker>select{position:absolute!important;inset:0!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;margin:0!important;padding:0!important}.brand-picker>input{width:100%;background:#080a0c;border:1px solid #30353a;color:#fff;padding:13px 45px 13px 13px;border-radius:10px;outline:none;cursor:pointer}.brand-picker>input:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(255,43,43,.12)}.brand-picker .search-select-arrow{top:7px}.brand-picker .search-menu{max-height:min(360px,55vh);overflow:hidden}.brand-picker .search-results{max-height:270px}.brand-picker.open .search-menu{animation:brandMenuIn .18s ease-out}@keyframes brandMenuIn{from{opacity:0;transform:translateY(-5px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}@media(max-width:560px){.brand-picker .search-menu{max-width:100%;max-height:60vh}.brand-picker .search-results{max-height:calc(60vh - 70px)}.brand-picker .search-result{padding:12px 11px}}
 
 /* ===== CARS STREET IA (asistente de chat) ===== */
+html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-settings-pending [onclick*="csAnalyzeVehicle"],html.ai-ai-disabled #aiFab,html.ai-ai-disabled #aiChat,html.ai-ai-disabled [onclick*="csAnalyzeVehicle"]{display:none!important}
+.ai-control-card{margin-top:18px;padding:15px 16px;background:#15181b;border:1px solid #2c3136;border-radius:14px}
+.ai-control-head{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.ai-control-title{display:flex;flex-direction:column;gap:3px}.ai-control-title strong{font-size:.96rem}.ai-control-title small{color:#9299a1;font-size:.76rem}
+.ai-control-status{display:flex;align-items:center;gap:9px;color:#cfd3d7;font-size:.78rem;font-weight:800}
+.ai-control-dot{width:8px;height:8px;border-radius:50%;background:#777;display:inline-block}.ai-control-dot.on{background:#45d483;box-shadow:0 0 8px rgba(69,212,131,.45)}
+.ai-control-switch{position:relative;width:48px;height:26px;flex:0 0 auto}.ai-control-switch input{opacity:0;width:0;height:0}.ai-control-slider{position:absolute;inset:0;background:#343a40;border-radius:999px;cursor:pointer;transition:.2s}.ai-control-slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 2px 5px rgba(0,0,0,.35)}.ai-control-switch input:checked+.ai-control-slider{background:var(--accent)}.ai-control-switch input:checked+.ai-control-slider:before{transform:translateX(22px)}
+.ai-control-note{margin:9px 0 0;color:#737b83;font-size:.75rem}
 .ai-fab{position:fixed;right:20px;bottom:20px;z-index:140;display:flex;align-items:center;gap:9px;background:linear-gradient(135deg,var(--accent),#ff6a3d);color:#fff;border:1px solid rgba(255,255,255,.25);padding:14px 18px;border-radius:999px;font-weight:900;font-size:.86rem;letter-spacing:.02em;box-shadow:0 14px 40px rgba(255,43,43,.35),0 4px 14px rgba(0,0,0,.35);animation:aiFabPulse 3.2s ease-in-out infinite;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease}
 .ai-fab:hover{transform:translateY(-3px);box-shadow:0 18px 46px rgba(255,43,43,.45),0 6px 16px rgba(0,0,0,.4)}
 .ai-fab .ai-fab-icon{font-size:1.05rem;filter:drop-shadow(0 0 6px rgba(255,255,255,.6))}
@@ -441,6 +450,7 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="adminTab('cars',this)">🚘 Publicaciones</button>
       <button class="admin-tab" onclick="adminTab('profile',this)">👤 Perfil</button>
+      <button class="admin-tab" onclick="adminTab('settings',this)">⚙️ Configuración</button>
     </div>
 
     <div class="admin-section active" id="adminCars">
@@ -492,6 +502,26 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
         </div>
         <button class="btn btn-primary" style="margin-top:15px">GUARDAR PERFIL</button>
       </form>
+    </div>
+
+    <div class="admin-section" id="adminSettings">
+      <div class="admin-head" style="margin-top:10px"><h3>Configuración general</h3></div>
+      <div class="ai-control-card">
+        <div class="ai-control-head">
+          <div class="ai-control-title">
+            <strong>🤖 IA DE CARS STREET</strong>
+            <small>Control global de inteligencia artificial</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="ai-control-status"><span class="ai-control-dot" id="aiControlDot"></span><span id="aiControlStatus">Cargando…</span></div>
+            <label class="ai-control-switch" aria-label="Activar o desactivar IA de CARS STREET">
+              <input id="aiEnabledToggle" type="checkbox" onchange="setAIEnabled(this.checked)" disabled>
+              <span class="ai-control-slider"></span>
+            </label>
+          </div>
+        </div>
+        <p class="ai-control-note">Controla el chat de IA y los análisis de IA de las publicaciones.</p>
+      </div>
     </div>
 
     <div class="admin-section" id="adminCarEditor">
@@ -1624,6 +1654,7 @@ function adminTab(tab,btn){
   document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));
   if(tab==="cars"){$("adminCars").classList.add("active"); if(btn)btn.classList.add("active");renderAdminCars()}
   if(tab==="profile"){$("adminProfile").classList.add("active"); if(btn)btn.classList.add("active");applyProfile()}
+  if(tab==="settings"){$("adminSettings").classList.add("active"); if(btn)btn.classList.add("active");renderAIAdminControl()}
   if(tab==="editor"){$("adminCarEditor").classList.add("active")}
 }
 function isAdminDownloadAuthorized(){
@@ -2196,6 +2227,106 @@ catalog.Ford=Object.fromEntries(getFordModels().map(model=>[model,getFordVersion
 
 function showToast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",4500)}
 
+// ===== CONTROL GLOBAL DE CARS STREET IA =====
+let aiEnabled=true;
+let aiSettingsLoaded=false;
+let aiSettingsUnsubscribe=null;
+
+function aiSettingsDocRef(){
+  return cloudEnabled&&cloudDb ? cloudDb.doc("settings/ai") : null;
+}
+
+function renderAIAdminControl(){
+  const toggle=$("aiEnabledToggle"),status=$("aiControlStatus"),dot=$("aiControlDot");
+  if(!toggle||!status||!dot)return;
+  toggle.checked=!!aiEnabled;
+  toggle.disabled=!adminAuthenticated||!aiSettingsLoaded;
+  status.textContent=aiSettingsLoaded?(aiEnabled?"ACTIVA":"DESACTIVADA"):"Cargando…";
+  dot.classList.toggle("on",!!aiEnabled&&aiSettingsLoaded);
+}
+
+function applyAIAvailability(enabled){
+  aiEnabled=!!enabled;
+  document.documentElement.classList.toggle("ai-settings-pending",!aiSettingsLoaded);
+  document.documentElement.classList.toggle("ai-ai-disabled",aiSettingsLoaded&&!aiEnabled);
+  const selectors=[
+    "#aiFab",
+    "#aiChat",
+    '[onclick*="csAnalyzeVehicle"]'
+  ];
+  document.querySelectorAll(selectors.join(",")).forEach(el=>{
+    if(el.id==="aiChat"){
+      if(!aiEnabled)el.classList.remove("open");
+      el.style.display=aiEnabled?"":"none";
+    }else if(el.id==="aiFab"){
+      el.classList.toggle("hidden",!aiEnabled);
+      el.style.display=aiEnabled?"":"none";
+    }else{
+      el.style.display=aiEnabled?"":"none";
+    }
+  });
+  if(!aiEnabled){
+    aiHideTyping&&aiHideTyping();
+    const input=$("aiInput"),send=$("aiSendBtn");
+    if(input)input.value="";
+    if(send)send.disabled=false;
+  }
+  renderAIAdminControl();
+}
+
+async function loadAISettings(){
+  if(!cloudEnabled||!cloudDb){
+    aiSettingsLoaded=true;
+    applyAIAvailability(true);
+    return;
+  }
+  const ref=aiSettingsDocRef();
+  if(!ref)return;
+  if(aiSettingsUnsubscribe)aiSettingsUnsubscribe();
+  try{
+    const snap=await ref.get();
+    aiEnabled=snap.exists&&typeof snap.data()?.aiEnabled==="boolean" ? !!snap.data().aiEnabled : true;
+  }catch(e){
+    console.error("No se pudo cargar la configuración global de IA:",e);
+    aiEnabled=true;
+  }
+  aiSettingsLoaded=true;
+  applyAIAvailability(aiEnabled);
+  aiSettingsUnsubscribe=ref.onSnapshot(snap=>{
+    const enabled=snap.exists&&typeof snap.data()?.aiEnabled==="boolean" ? !!snap.data().aiEnabled : true;
+    aiSettingsLoaded=true;
+    applyAIAvailability(enabled);
+  },err=>console.error("Se perdió la sincronización de la configuración global de IA:",err));
+}
+
+async function setAIEnabled(enabled){
+  if(!adminAuthenticated){
+    const toggle=$("aiEnabledToggle"); if(toggle)toggle.checked=aiEnabled;
+    showToast("Acceso restringido");
+    return;
+  }
+  if(!aiSettingsLoaded){
+    const toggle=$("aiEnabledToggle"); if(toggle)toggle.checked=aiEnabled;
+    return;
+  }
+  const next=!!enabled;
+  const previous=aiEnabled;
+  applyAIAvailability(next);
+  if(!cloudEnabled||!cloudDb){
+    showToast(next?"IA de CARS STREET activada correctamente.":"IA de CARS STREET desactivada correctamente.");
+    return;
+  }
+  try{
+    await aiSettingsDocRef().set({aiEnabled:next,updatedAt:Date.now()},{merge:true});
+    showToast(next?"IA de CARS STREET activada correctamente.":"IA de CARS STREET desactivada correctamente.");
+  }catch(e){
+    console.error("No se pudo guardar la configuración global de IA:",e);
+    applyAIAvailability(previous);
+    const toggle=$("aiEnabledToggle"); if(toggle)toggle.checked=previous;
+    showToast("❌ No se pudo guardar la configuración de IA en Firebase.");
+  }
+}
+
 $("carForm").onsubmit=saveCar;
 $("carImage").onchange=async e=>{await addCarPhotos(e.target.files);e.target.value="";};
 $("profileForm").onsubmit=async e=>{
@@ -2237,6 +2368,7 @@ render();
     listenToCloudVehicles();
     listenToCloudProfile();
   }
+  await loadAISettings();
 })();
 
 $("sellForm").onsubmit=async e=>{
@@ -2825,7 +2957,7 @@ function aiRenderCards(list){
     </article>`;
   }).join("")+"</div>";
 }
-window.aiOpenDetail=function(id){ detail(id); toggleAIChat(false); };
+window.aiOpenDetail=function(id){ if(!aiSettingsLoaded||!aiEnabled){showToast("La IA de CARS STREET está temporalmente desactivada.");return;} detail(id); toggleAIChat(false); };
 
 /* ---------- Recomendaciones ---------- */
 function recommendationReason(v,filters){
@@ -3643,6 +3775,10 @@ function aiRenderSuggestions(){
 window.aiAskSuggested=function(q){const input=$("aiInput");if(!input)return;input.value=q;sendAIMessage();};
 
 window.toggleAIChat=function(force){
+  if(!aiSettingsLoaded||!aiEnabled){
+    if(force!==false)showToast("La IA de CARS STREET está temporalmente desactivada.");
+    return;
+  }
   const panel=$("aiChat");if(!panel)return;
   const shouldOpen=force!==undefined?!!force:!panel.classList.contains("open");
   panel.classList.toggle("open",shouldOpen);
@@ -3658,6 +3794,10 @@ window.toggleAIChat=function(force){
 };
 
 window.sendAIMessage=async function(){
+  if(!aiSettingsLoaded||!aiEnabled){
+    showToast("La IA de CARS STREET está temporalmente desactivada.");
+    return;
+  }
   const input=$("aiInput");if(!input)return;
   const text=input.value.trim();if(!text)return;
   aiPushMessage("user",escapeHtml(text));input.value="";
@@ -3694,7 +3834,13 @@ window.sendAIMessage=async function(){
 
 
 window.csAnalyzeVehicle=async function(v){
+  if(!aiSettingsLoaded||!aiEnabled){
+    showToast("La IA de CARS STREET está temporalmente desactivada.");
+    return;
+  }
   if(!v)return;
+  AI.currentVehicle=v;
+  AI.lastVehicle=v;
   if(window.toggleAIChat) toggleAIChat(true);
   aiShowTyping();
   const datos=Object.entries({
