@@ -318,7 +318,6 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <!-- ===== CARS STREET: URL INDIVIDUAL Y COMPARTIR ===== -->
 <meta id="csOgTitle" property="og:title" content="CARS STREET | Compra y venta de vehículos en Colombia">
@@ -470,11 +469,9 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
     <div class="eyebrow">CARS STREET</div>
     <h2 id="csAccountTitle">Mi cuenta</h2>
     <p id="csAccountSubtitle" class="cs-account-subtitle">Inicia sesión para continuar.</p>
-    <button class="btn btn-secondary" id="csGoogleBtn" type="button" style="width:100%;margin-top:8px">CONTINUAR CON GOOGLE</button>
-      <div style="display:flex;align-items:center;gap:10px;margin:12px 0;color:#8f969d;font-size:.72rem"><span style="height:1px;flex:1;background:#30363d"></span><span>O CONTINÚA CON CORREO</span><span style="height:1px;flex:1;background:#30363d"></span></div>
-      <form id="csAuthForm">
-      <div class="field"><label>NOMBRE COMPLETO</label><input id="csAuthName" autocomplete="name" placeholder="Tu nombre"></div>
-      <div class="field"><label>CORREO ELECTRÓNICO</label><input id="csAuthEmail" type="email" autocomplete="email" required placeholder="correo@ejemplo.com"></div>
+    <form id="csAuthForm">
+      <div class="field"><label>NOMBRE DE USUARIO</label><input id="csAuthUsername" type="text" autocomplete="username" required minlength="3" maxlength="20" pattern="[A-Za-z0-9._-]{3,20}" placeholder="Ej. ivan123"></div>
+      <div class="field" id="csAuthNameField"><label>NOMBRE COMPLETO</label><input id="csAuthName" autocomplete="name" placeholder="Tu nombre"></div>
       <div class="field"><label>CONTRASEÑA</label><input id="csAuthPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Mínimo 6 caracteres"></div>
       <div class="field cs-account-photo-field" id="csAuthPhotoField"><label>FOTO DE PERFIL</label><input id="csAuthPhoto" type="file" accept="image/*"></div>
       <button class="btn btn-primary" id="csAuthSubmit" type="submit" style="width:100%;margin-top:15px">INICIAR SESIÓN</button>
@@ -729,57 +726,34 @@ const CLOUDINARY_CLOUD_NAME="exbw83cp";
 const CLOUDINARY_UPLOAD_PRESET="cars_street_uploads";
 let cloudEnabled=false;
 let cloudDb=null;
-
-/* ===== FIREBASE: UNA SOLA APP + FIRESTORE SIN BLOQUEAR AUTH ===== */
-(function csInitFirebaseCore(){
-  const configured=!!(
-    FIREBASE_CONFIG &&
-    FIREBASE_CONFIG.apiKey &&
-    FIREBASE_CONFIG.apiKey!=="TU_API_KEY" &&
-    FIREBASE_CONFIG.projectId &&
-    FIREBASE_CONFIG.projectId!=="TU_PROYECTO"
-  );
-
-  if(!configured){
-    console.warn("FIREBASE_CONFIG no está configurado completamente.");
-    return;
+try{
+  const configured=FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.apiKey!=="TU_API_KEY"&&FIREBASE_CONFIG.projectId&&FIREBASE_CONFIG.projectId!=="TU_PROYECTO";
+  if(configured&&window.firebase){
+    /* UNA SOLA APP FIREBASE: Firestore, Storage y Authentication comparten esta instancia. */
+    const firebaseApp=firebase.apps.length?firebase.apps[0]:firebase.initializeApp(FIREBASE_CONFIG);
+    cloudDb=firebaseApp.firestore();
+    cloudEnabled=true;
+    console.info("CARS STREET: Firebase inicializado correctamente.",firebaseApp.name);
+  }else if(configured&&!window.firebase){
+    console.error("CARS STREET: Firebase está configurado pero el SDK no cargó. Revisa la conexión y el orden de los scripts.");
   }
-
-  if(!window.firebase){
-    console.error("Firebase está configurado pero el SDK no cargó. Revisa la conexión o los bloqueadores del navegador.");
-    return;
-  }
-
-  try{
-    /* Nunca inicializar dos veces. Si otra parte de CARS STREET ya creó
-       la app, reutilizamos exactamente esa instancia. */
-    const app=firebase.apps&&firebase.apps.length
-      ? firebase.app()
-      : firebase.initializeApp(FIREBASE_CONFIG);
-
-    if(typeof firebase.firestore==="function"){
-      cloudDb=firebase.firestore(app);
-      cloudEnabled=true;
-    }else{
-      console.error("Firebase Firestore no está disponible.");
-    }
-  }catch(e){
-    console.error("No se pudo inicializar Firestore en CARS STREET:",e);
-    cloudDb=null;
-    cloudEnabled=false;
-  }
-})();
+}catch(e){
+  console.error("CARS STREET: error técnico al inicializar Firebase:",e);
+  cloudEnabled=false;
+}
 
 /* ================================================================
    CARS STREET — CUENTA DE USUARIO
-   Usa Firebase Authentication + Firestore cuando Firebase está activo.
-   No sustituye el acceso del administrador ni el perfil del negocio.
+   Las cuentas de CARS STREET usan username + contraseña almacenados localmente
+   con contraseña derivada (hash). Firebase queda reservado para datos/funciones cloud.
    ================================================================ */
 let csAuth=null;
 let csCurrentUser=null;
 let csAuthMode="login";
 let csAuthInitialized=false;
 const CS_USERS_COLLECTION="users";
+const CS_LOCAL_USERS_KEY="carsStreetLocalAccounts";
+const CS_LOCAL_SESSION_KEY="carsStreetLocalSession";
 const CS_DEFAULT_AVATAR="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80";
 
 function csSetAccountError(message){
@@ -802,340 +776,119 @@ function csCloseAccountMenu(){
   avatar.setAttribute("aria-expanded","false");
   menu.setAttribute("aria-hidden","true");
 }
+function csNormalizeUsername(value){return String(value||"").trim().toLowerCase()}
+function csUsernameIsValid(username){return /^[a-z0-9._-]{3,20}$/.test(username)}
+function csUsernameFromProfile(user,profile={}){return String(profile?.username||user?.displayName||"Mi cuenta").trim()||"Mi cuenta"}
 function csOpenAccountDialog(mode="login"){
-  csAuthMode=mode==="register"?"register":"login";
-  csCloseAccountMenu();
+  csAuthMode=mode==="register"?"register":"login";csCloseAccountMenu();
   const overlay=$("csAccountOverlay");if(!overlay)return;
   csAuthMode==="register"?csSetRegisterMode():csSetLoginMode();
   overlay.classList.add("open");overlay.setAttribute("aria-hidden","false");
-  setTimeout(()=>$(csAuthMode==="register"?"csAuthName":"csAuthEmail")?.focus(),50);
+  setTimeout(()=>$("csAuthUsername")?.focus(),50);
 }
-function csCloseAccountDialog(){
-  const overlay=$("csAccountOverlay");if(!overlay)return;
-  overlay.classList.remove("open");overlay.setAttribute("aria-hidden","true");csSetAccountError("");
-}
+function csCloseAccountDialog(){const overlay=$("csAccountOverlay");if(!overlay)return;overlay.classList.remove("open");overlay.setAttribute("aria-hidden","true");csSetAccountError("")}
 function csSetLoginMode(){
-  $("csAccountTitle").textContent="Iniciar sesión";
-  $("csAccountSubtitle").textContent="Accede a tu cuenta de CARS STREET.";
-  $("csAuthName").parentElement.style.display="none";
-  $("csAuthPhotoField").style.display="none";
-  $("csAuthSubmit").textContent="INICIAR SESIÓN";
-  $("csAuthModeToggle").textContent="CREAR CUENTA";
-  $("csAuthPassword").autocomplete="current-password";
-  csSetAccountError("");
+  $("csAccountTitle").textContent="Iniciar sesión";$("csAccountSubtitle").textContent="Accede a tu cuenta de CARS STREET.";
+  $("csAuthNameField").style.display="none";$("csAuthPhotoField").style.display="none";
+  $("csAuthSubmit").textContent="INICIAR SESIÓN";$("csAuthModeToggle").textContent="CREAR CUENTA";
+  $("csAuthPassword").autocomplete="current-password";$("csAuthUsername").setAttribute("placeholder","Tu nombre de usuario");csSetAccountError("");
 }
 function csSetRegisterMode(){
-  $("csAccountTitle").textContent="Crear cuenta";
-  $("csAccountSubtitle").textContent="Crea tu cuenta para gestionar tu perfil y tus publicaciones.";
-  $("csAuthName").parentElement.style.display="";
-  $("csAuthPhotoField").style.display="";
-  $("csAuthSubmit").textContent="CREAR CUENTA";
-  $("csAuthModeToggle").textContent="YA TENGO CUENTA";
-  $("csAuthPassword").autocomplete="new-password";
-  csSetAccountError("");
+  $("csAccountTitle").textContent="Crear cuenta";$("csAccountSubtitle").textContent="Crea tu cuenta para gestionar tu perfil y tus publicaciones.";
+  $("csAuthNameField").style.display="";$("csAuthPhotoField").style.display="";
+  $("csAuthSubmit").textContent="CREAR CUENTA";$("csAuthModeToggle").textContent="YA TENGO CUENTA";
+  $("csAuthPassword").autocomplete="new-password";$("csAuthUsername").setAttribute("placeholder","Ej. ivan123");csSetAccountError("");
 }
-function csToggleAuthMode(){
-  csAuthMode=csAuthMode==="login"?"register":"login";
-  csAuthMode==="register"?csSetRegisterMode():csSetLoginMode();
-}
-function csProfilePhotoForUser(user,profile){
-  return String(profile?.photo||user?.photoURL||CS_DEFAULT_AVATAR).trim()||CS_DEFAULT_AVATAR;
-}
+function csToggleAuthMode(){csAuthMode=csAuthMode==="login"?"register":"login";csAuthMode==="register"?csSetRegisterMode():csSetLoginMode()}
+function csProfilePhotoForUser(user,profile){return String(profile?.photo||user?.photoURL||CS_DEFAULT_AVATAR).trim()||CS_DEFAULT_AVATAR}
 function csApplyUserUI(user,profile={}){
   csCurrentUser=user||null;
   const img=$("navProfileImg"),fallback=$("csAccountFallback");
-  if(img&&fallback){
-    const src=csProfilePhotoForUser(user,profile);
-    img.src=src;img.style.display="block";fallback.style.display="none";
-    img.onerror=()=>{img.onerror=null;img.src=CS_DEFAULT_AVATAR;};
-  }
-  const avatar=$("csAccountAvatar");
-  if(avatar)avatar.title=user?(profile.name||user.displayName||user.email||"Mi cuenta"):"Iniciar sesión";
+  if(img&&fallback){const src=csProfilePhotoForUser(user,profile);img.src=src;img.style.display="block";fallback.style.display="none";img.onerror=()=>{img.onerror=null;img.src=CS_DEFAULT_AVATAR}}
+  const avatar=$("csAccountAvatar");if(avatar)avatar.title=user?csUsernameFromProfile(user,profile):"Iniciar sesión";
+}
+function csReadLocalAccounts(){try{const x=JSON.parse(localStorage.getItem(CS_LOCAL_USERS_KEY)||"{}");return x&&typeof x==="object"?x:{}}catch(e){console.error("CARS STREET: cuentas locales dañadas:",e);return {}}}
+function csWriteLocalAccounts(accounts){localStorage.setItem(CS_LOCAL_USERS_KEY,JSON.stringify(accounts))}
+async function csHashPassword(password){
+  const data=new TextEncoder().encode(String(password));
+  if(window.crypto?.subtle){const hash=await crypto.subtle.digest("SHA-256",data);return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,"0")).join("")}
+  // Fallback determinista si Web Crypto no está disponible; no almacena la contraseña.
+  let h=2166136261;for(let i=0;i<password.length;i++){h^=password.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(16);
 }
 async function csLoadUserProfile(user){
   if(!user)return {};
-  try{
-    if(!cloudEnabled||!cloudDb)return JSON.parse(localStorage.getItem("carsStreetUserProfile_"+user.uid)||"{}");
-    const snap=await cloudDb.collection(CS_USERS_COLLECTION).doc(user.uid).get();
-    const profile=snap.exists?(snap.data()||{}):{};
-    try{localStorage.setItem("carsStreetUserProfile_"+user.uid,JSON.stringify(profile))}catch(e){}
-    return profile;
-  }catch(e){
-    console.error("No se pudo cargar el perfil del usuario:",e);
-    try{return JSON.parse(localStorage.getItem("carsStreetUserProfile_"+user.uid)||"{}")}catch(err){return {}}
-  }
+  try{return JSON.parse(localStorage.getItem("carsStreetUserProfile_"+user.uid)||"{}")||{}}catch(e){console.error("No se pudo cargar el perfil local:",e);return {}}
 }
 async function csSaveUserProfile(user,data){
   if(!user)return;
-  const clean={name:String(data?.name||user.displayName||"").trim(),photo:String(data?.photo||"").trim(),email:user.email||""};
-  try{localStorage.setItem("carsStreetUserProfile_"+user.uid,JSON.stringify(clean))}catch(e){}
-  if(cloudEnabled&&cloudDb){
-    try{await cloudDb.collection(CS_USERS_COLLECTION).doc(user.uid).set(clean,{merge:true})}
-    catch(e){console.error("No se pudo guardar el perfil del usuario:",e)}
-  }
-  csApplyUserUI(user,clean);
+  const username=csNormalizeUsername(data?.username||user.displayName||"");
+  const clean={username,name:String(data?.name||user.displayName||username).trim(),photo:String(data?.photo||user.photoURL||"").trim()};
+  try{localStorage.setItem("carsStreetUserProfile_"+user.uid,JSON.stringify(clean))}catch(e){console.error("No se pudo guardar el perfil local:",e)}
+  user.displayName=clean.username;user.photoURL=clean.photo||"";csApplyUserUI(user,clean);
 }
-async function csWaitForFirebaseAuth(timeoutMs=10000){
-  const started=Date.now();
-  while(Date.now()-started<timeoutMs){
-    if(window.firebase && typeof window.firebase.auth==="function"){
-      try{
-        if(!firebase.apps || !firebase.apps.length){
-          firebase.initializeApp(FIREBASE_CONFIG);
-        }
-        const auth=firebase.auth();
-        if(auth && typeof auth.onAuthStateChanged==="function"){
-          return auth;
-        }
-      }catch(e){
-        console.error("Error preparando Firebase Authentication:",e);
-        /* Si el SDK existe pero todavía no está listo, damos unos milisegundos
-           para que termine de cargar antes de informar al usuario. */
-      }
-    }
-    await new Promise(resolve=>setTimeout(resolve,100));
-  }
-  return null;
-}
-
+function csMakeLocalUser(username,name,photo,uid){return {uid:uid||("cs_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,10)),displayName:username,photoURL:photo||""}}
 async function csInitAuth(){
-  if(csAuthInitialized && csAuth)return csAuth;
-
-  const auth=await csWaitForFirebaseAuth();
-  if(!auth){
-    console.error("Firebase Authentication no está disponible después de esperar al SDK.");
-    csAuthInitialized=false;
-    csAuth=null;
-    csApplyUserUI(null,{});
-    return null;
-  }
-
-  csAuth=auth;
+  if(csAuthInitialized)return;
   csAuthInitialized=true;
-
-  if(!csAuth._csCarsStreetListenerBound){
-    csAuth._csCarsStreetListenerBound=true;
-    csAuth.onAuthStateChanged(async user=>{
-      csCurrentUser=user||null;
-      if(user){
-        try{
-          const profile=await csLoadUserProfile(user);
-          csApplyUserUI(user,profile||{});
-        }catch(e){
-          console.error("No se pudo cargar el perfil después del inicio de sesión:",e);
-          csApplyUserUI(user,{});
-        }
-      }else{
-        csApplyUserUI(null,{});
-        csCloseAccountMenu();
-        csCloseAccountDialog();
-        csCloseUserPanel();
-      }
-    });
-  }
-
-  return csAuth;
-}
-
-function csValidEmail(email){
-  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(email||"").trim());
-}
-
-function csFirebaseAuthMessage(error){
-  const code=String(error?.code||"");
-  const messages={
-    "auth/invalid-email":"Correo electrónico no válido.",
-    "auth/missing-email":"Escribe tu correo electrónico.",
-    "auth/missing-password":"Escribe tu contraseña.",
-    "auth/user-not-found":"No existe una cuenta con ese correo.",
-    "auth/wrong-password":"La contraseña es incorrecta.",
-    "auth/invalid-credential":"El correo o la contraseña no son correctos.",
-    "auth/invalid-login-credentials":"El correo o la contraseña no son correctos.",
-    "auth/email-already-in-use":"Ya existe una cuenta con ese correo.",
-    "auth/weak-password":"La contraseña debe tener al menos 6 caracteres.",
-    "auth/operation-not-allowed":"El inicio de sesión por correo no está habilitado en Firebase.",
-    "auth/popup-closed-by-user":"Se cerró la ventana de Google antes de completar el inicio de sesión.",
-    "auth/popup-blocked":"El navegador bloqueó la ventana de Google. Permite ventanas emergentes para CARS STREET e inténtalo de nuevo.",
-    "auth/cancelled-popup-request":"Ya hay un inicio de sesión de Google en curso.",
-    "auth/account-exists-with-different-credential":"Ese correo ya tiene una cuenta creada con otro método de inicio de sesión.",
-    "auth/network-request-failed":"No se pudo conectar con Firebase. Comprueba tu conexión a internet.",
-    "auth/too-many-requests":"Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
-    "auth/unauthorized-domain":"Este dominio no está autorizado en Firebase Authentication.",
-    "auth/operation-not-supported-in-this-environment":"Este entorno no permite el inicio de sesión con ventana emergente de Google.",
-    "auth/internal-error":"Firebase devolvió un error interno. Revisa la consola para ver el detalle técnico."
+  // Las cuentas de CARS STREET son locales y no dependen de Firebase Authentication.
+  // Firebase sigue disponible para las demás funciones de la página (Firestore/Storage).
+  csAuth={
+    async signOut(){localStorage.removeItem(CS_LOCAL_SESSION_KEY);csCurrentUser=null;csApplyUserUI(null,{});}
   };
-  return messages[code]||"No se pudo completar la autenticación. Revisa la consola para ver el error técnico.";
+  try{
+    const uid=localStorage.getItem(CS_LOCAL_SESSION_KEY);
+    if(uid){
+      const accounts=csReadLocalAccounts();
+      const record=Object.values(accounts).find(a=>String(a?.uid)===String(uid));
+      if(record){
+        const user=csMakeLocalUser(record.username,record.name,record.photo,record.uid);
+        const profile=await csLoadUserProfile(user);csCurrentUser=user;csApplyUserUI(user,{...record,...profile});
+      }else{localStorage.removeItem(CS_LOCAL_SESSION_KEY);csApplyUserUI(null,{})}
+    }else csApplyUserUI(null,{});
+  }catch(e){console.error("CARS STREET: error al restaurar la sesión local:",e);csApplyUserUI(null,{})}
 }
-
 async function csHandleAuthSubmit(e){
-  e.preventDefault();
-  csSetAccountError("");
-
-  const auth=csAuth||await csInitAuth();
-  if(!auth){
-    csSetAccountError("No se pudo conectar con el sistema de cuentas. Comprueba que Firebase Authentication esté cargado y habilitado.");
-    return;
-  }
-
-  const email=$("csAuthEmail")?.value.trim()||"";
-  const password=$("csAuthPassword")?.value||"";
-
-  if(!csValidEmail(email)){
-    csSetAccountError("Correo electrónico no válido.");
-    $("csAuthEmail")?.focus();
-    return;
-  }
-  if(!password){
-    csSetAccountError("Escribe tu contraseña.");
-    $("csAuthPassword")?.focus();
-    return;
-  }
-  if(password.length<6){
-    csSetAccountError("La contraseña debe tener al menos 6 caracteres.");
-    $("csAuthPassword")?.focus();
-    return;
-  }
-
-  const submit=$("csAuthSubmit");
-  if(submit){
-    submit.disabled=true;
-    submit.dataset.originalText=submit.textContent;
-    submit.textContent=csAuthMode==="register"?"CREANDO CUENTA…":"INICIANDO SESIÓN…";
-  }
-
+  e.preventDefault();csSetAccountError("");
+  const form=$("csAuthForm"),submitBtn=form?.querySelector('button[type="submit"]'),originalText=submitBtn?.textContent||"";
+  if(submitBtn){submitBtn.disabled=true;submitBtn.textContent=csAuthMode==="register"?"CREANDO CUENTA...":"INICIANDO SESIÓN..."}
   try{
-    let credential;
-
+    const username=csNormalizeUsername($("csAuthUsername")?.value||"");
+    const password=$("csAuthPassword")?.value||"";
+    if(!csUsernameIsValid(username))throw {code:"cs/invalid-username",message:"El nombre de usuario debe tener entre 3 y 20 caracteres y solo puede usar letras, números, punto, guion o guion bajo."};
+    if(password.length<6)throw {code:"cs/weak-password",message:"La contraseña debe tener al menos 6 caracteres."};
+    const accounts=csReadLocalAccounts();
+    const key=username;
     if(csAuthMode==="register"){
-      const name=$("csAuthName")?.value.trim()||"";
-      if(!name){
-        csSetAccountError("Escribe tu nombre completo.");
-        $("csAuthName")?.focus();
-        return;
-      }
-
-      credential=await auth.createUserWithEmailAndPassword(email,password);
-
+      if(accounts[key])throw {code:"cs/username-exists",message:"Ese nombre de usuario ya está registrado."};
+      const name=String($("csAuthName")?.value||"").trim();
+      if(!name)throw {code:"cs/name-required",message:"Escribe tu nombre completo."};
       let photo="";
-      const file=$("csAuthPhoto")?.files?.[0];
-      if(file){
-        try{
-          photo=await readImage(file);
-        }catch(err){
-          console.error("No se pudo leer la foto de perfil:",err);
-          csSetAccountError("La cuenta se creó, pero no se pudo leer la foto de perfil.");
-        }
-      }
-
-      if(photo&&cloudEnabled){
-        try{
-          photo=await uploadImageToCloudinary(photo);
-        }catch(err){
-          console.error("No se pudo subir la foto de usuario a Cloudinary:",err);
-          /* La autenticación no falla por una foto opcional. */
-        }
-      }
-
-      try{
-        await credential.user.updateProfile({
-          displayName:name,
-          photoURL:photo||null
-        });
-      }catch(err){
-        console.error("No se pudo actualizar el perfil de Firebase:",err);
-      }
-
-      await csSaveUserProfile(credential.user,{name,photo});
-
-      /* onAuthStateChanged también actualizará la UI. */
-      csCurrentUser=credential.user;
-      csApplyUserUI(credential.user,{name,photo});
-      csCloseAccountDialog();
-      showToast("Cuenta creada correctamente.");
-    }else{
-      credential=await auth.signInWithEmailAndPassword(email,password);
-
-      const profile=await csLoadUserProfile(credential.user);
-      csCurrentUser=credential.user;
-      csApplyUserUI(credential.user,profile||{});
-      csCloseAccountDialog();
-      showToast("Sesión iniciada correctamente.");
+      try{const file=$("csAuthPhoto")?.files?.[0];if(file){photo=await readImage(file);if(cloudEnabled)try{photo=await uploadImageToCloudinary(photo)}catch(err){console.error("CARS STREET: foto no subida; cuenta válida:",err)}}}catch(err){console.error("CARS STREET: no se pudo procesar la foto:",err)}
+      const uid="cs_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,12);
+      const passwordHash=await csHashPassword(password);
+      accounts[key]={uid,username,name,photo,passwordHash,createdAt:new Date().toISOString()};
+      csWriteLocalAccounts(accounts);
+      const user=csMakeLocalUser(username,name,photo,uid);
+      await csSaveUserProfile(user,{username,name,photo});
+      localStorage.setItem(CS_LOCAL_SESSION_KEY,uid);csCurrentUser=user;csApplyUserUI(user,{username,name,photo});
+      csCloseAccountDialog();showToast("Cuenta creada correctamente.");form?.reset();return;
     }
-
-    $("csAuthForm")?.reset();
-  }catch(e){
-    console.error("CARS STREET Firebase Authentication:",e);
-    csSetAccountError(csFirebaseAuthMessage(e));
-  }finally{
-    if(submit){
-      submit.disabled=false;
-      submit.textContent=submit.dataset.originalText||(
-        csAuthMode==="register"?"CREAR CUENTA":"INICIAR SESIÓN"
-      );
-      delete submit.dataset.originalText;
-    }
-  }
+    const record=accounts[key];
+    if(!record)throw {code:"cs/user-not-found",message:"El nombre de usuario no existe."};
+    const passwordHash=await csHashPassword(password);
+    if(passwordHash!==record.passwordHash)throw {code:"cs/wrong-password",message:"El nombre de usuario o la contraseña son incorrectos."};
+    const user=csMakeLocalUser(record.username,record.name,record.photo,record.uid);
+    localStorage.setItem(CS_LOCAL_SESSION_KEY,record.uid);csCurrentUser=user;await csSaveUserProfile(user,record);csApplyUserUI(user,record);
+    csCloseAccountDialog();showToast("Sesión iniciada correctamente.");form?.reset();
+  }catch(error){
+    console.error("CARS STREET Authentication error:",error);
+    const messages={"cs/invalid-username":"El nombre de usuario debe tener entre 3 y 20 caracteres y solo puede usar letras, números, punto, guion o guion bajo.","cs/name-required":"Escribe tu nombre completo.","cs/weak-password":"La contraseña debe tener al menos 6 caracteres.","cs/username-exists":"Ese nombre de usuario ya está registrado.","cs/user-not-found":"El nombre de usuario no existe.","cs/wrong-password":"El nombre de usuario o la contraseña son incorrectos."};
+    csSetAccountError(messages[String(error?.code||"")]||String(error?.message||"No se pudo completar la operación."));
+  }finally{if(submitBtn){submitBtn.disabled=false;submitBtn.textContent=originalText}}
 }
-
-async function csGoogleSignIn(){
-  csSetAccountError("");
-
-  const auth=csAuth||await csInitAuth();
-  if(!auth){
-    csSetAccountError("No se pudo conectar con el sistema de cuentas. Comprueba que Firebase Authentication esté habilitado.");
-    return;
-  }
-
-  if(typeof firebase.auth.GoogleAuthProvider!=="function"){
-    console.error("Firebase Authentication cargó, pero GoogleAuthProvider no está disponible.");
-    csSetAccountError("El inicio de sesión con Google no está disponible en este momento.");
-    return;
-  }
-
-  const btn=$("csGoogleBtn");
-  if(btn){
-    btn.disabled=true;
-    btn.dataset.originalText=btn.textContent;
-    btn.textContent="CONECTANDO CON GOOGLE…";
-  }
-
-  try{
-    const provider=new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({prompt:"select_account"});
-
-    const credential=await auth.signInWithPopup(provider);
-    const user=credential.user;
-
-    /* Conservamos el perfil existente si ya estaba guardado y completamos
-       los datos que Google proporciona automáticamente. */
-    const profile=await csLoadUserProfile(user);
-    const merged={
-      name:profile?.name||user.displayName||user.email||"Mi cuenta",
-      photo:profile?.photo||user.photoURL||"",
-      email:user.email||""
-    };
-    await csSaveUserProfile(user,merged);
-
-    csCurrentUser=user;
-    csApplyUserUI(user,merged);
-    csCloseAccountDialog();
-    showToast("Sesión iniciada con Google correctamente.");
-  }catch(e){
-    console.error("CARS STREET — inicio de sesión con Google:",e);
-    csSetAccountError(csFirebaseAuthMessage(e));
-  }finally{
-    if(btn){
-      btn.disabled=false;
-      btn.textContent=btn.dataset.originalText||"CONTINUAR CON GOOGLE";
-      delete btn.dataset.originalText;
-    }
-  }
-}
-
 async function csLogoutUser(){
   csCloseAccountMenu();
-  if(!csAuth){csApplyUserUI(null,{});return}
-  try{await csAuth.signOut();csCloseUserPanel();showToast("Sesión cerrada correctamente.")}
+  try{localStorage.removeItem(CS_LOCAL_SESSION_KEY);csCurrentUser=null;csApplyUserUI(null,{});csCloseUserPanel();showToast("Sesión cerrada correctamente.")}
   catch(e){console.error("No se pudo cerrar la sesión:",e);showToast("No se pudo cerrar la sesión.")}
 }
 function csAccountAction(action){
@@ -1150,9 +903,9 @@ function csOpenUserProfile(){
   if(!csCurrentUser){csOpenAccountDialog("login");return}
   const key="carsStreetUserProfile_"+csCurrentUser.uid;let profile={};
   try{profile=JSON.parse(localStorage.getItem(key)||"{}")}catch(e){}
-  const name=profile.name||csCurrentUser.displayName||csCurrentUser.email||"Mi cuenta";
+  const username=csUsernameFromProfile(csCurrentUser,profile); const name=profile.name||username;
   const photo=csProfilePhotoForUser(csCurrentUser,profile);
-  $("csUserPanelName").textContent=name;$("csUserPanelEmail").textContent=csCurrentUser.email||"";$("csUserPanelPhoto").src=photo;
+  $("csUserPanelName").textContent=name;$("csUserPanelEmail").textContent=username ? "@"+username : "";$("csUserPanelPhoto").src=photo;
   $("csUserPostsList").innerHTML=`<form id="csUserProfileForm"><div class="field"><label>NOMBRE COMPLETO</label><input id="csUserProfileName" required value="${escapeHtml(name)}" autocomplete="name"></div><div class="field"><label>FOTO DE PERFIL</label><input id="csUserProfilePhotoInput" type="file" accept="image/*"></div><button class="btn btn-primary" type="submit" style="width:100%;margin-top:8px">GUARDAR PERFIL</button></form>`;
   $("csUserProfileForm").onsubmit=async e=>{
     e.preventDefault();const newName=$("csUserProfileName").value.trim();if(!newName){showToast("Escribe tu nombre.");return}
@@ -1170,7 +923,7 @@ function csCloseUserPanel(){
 async function csOpenUserPosts(){
   if(!csCurrentUser){csOpenAccountDialog("login");return}
   const panel=$("csUserPanel"),list=$("csUserPostsList");
-  $("csUserPanelName").textContent="Mis publicaciones";$("csUserPanelEmail").textContent=csCurrentUser.email||"";$("csUserPanelPhoto").src=csProfilePhotoForUser(csCurrentUser,{});
+  const postsProfile=await csLoadUserProfile(csCurrentUser); $("csUserPanelName").textContent="Mis publicaciones";$("csUserPanelEmail").textContent=csUsernameFromProfile(csCurrentUser,postsProfile) ? "@"+csUsernameFromProfile(csCurrentUser,postsProfile) : "";$("csUserPanelPhoto").src=csProfilePhotoForUser(csCurrentUser,postsProfile);
   list.innerHTML='<div class="cs-user-empty">Cargando publicaciones…</div>';panel.classList.add("open");panel.setAttribute("aria-hidden","false");
   const owned=vehicles.filter(v=>String(v.ownerUid||v.userUid||v.createdByUid||"")===String(csCurrentUser.uid));
   if(!owned.length){list.innerHTML='<div class="cs-user-empty">Todavía no tienes vehículos publicados desde esta cuenta.</div>';return}
@@ -1178,67 +931,20 @@ async function csOpenUserPosts(){
 }
 function csBindAccountUI(){
   const avatar=$("csAccountAvatar");
-  if(avatar&&!avatar.dataset.bound){
-    avatar.dataset.bound="1";
-    avatar.addEventListener("click",e=>{
-      e.stopPropagation();
-      csOpenAccountMenu();
-    });
-  }
-
+  if(avatar&&!avatar.dataset.bound){avatar.dataset.bound="1";avatar.addEventListener("click",e=>{e.stopPropagation();csOpenAccountMenu()})}
   const form=$("csAuthForm");
-  if(form&&!form.dataset.bound){
-    form.dataset.bound="1";
-    form.addEventListener("submit",csHandleAuthSubmit);
-  }
-
-  const googleBtn=$("csGoogleBtn");
-  if(googleBtn&&!googleBtn.dataset.bound){
-    googleBtn.dataset.bound="1";
-    googleBtn.addEventListener("click",e=>{
-      e.preventDefault();
-      csGoogleSignIn();
-    });
-  }
-
+  if(form&&!form.dataset.bound){form.dataset.bound="1";form.addEventListener("submit",csHandleAuthSubmit)}
   const overlay=$("csAccountOverlay");
-  if(overlay&&!overlay.dataset.bound){
-    overlay.dataset.bound="1";
-    overlay.addEventListener("click",e=>{
-      if(e.target===overlay)csCloseAccountDialog();
-    });
-  }
-
+  if(overlay&&!overlay.dataset.bound){overlay.dataset.bound="1";overlay.addEventListener("click",e=>{if(e.target===overlay)csCloseAccountDialog()})}
   const panel=$("csUserPanel");
-  if(panel&&!panel.dataset.bound){
-    panel.dataset.bound="1";
-    panel.addEventListener("click",e=>{
-      if(e.target===panel)csCloseUserPanel();
-    });
-  }
-
+  if(panel&&!panel.dataset.bound){panel.dataset.bound="1";panel.addEventListener("click",e=>{if(e.target===panel)csCloseUserPanel()})}
   if(!document.body.dataset.csAccountDocBound){
     document.body.dataset.csAccountDocBound="1";
-    document.addEventListener("click",e=>{
-      const account=$("csAccount");
-      if(account&&!account.contains(e.target))csCloseAccountMenu();
-    },{passive:true});
-    document.addEventListener("keydown",e=>{
-      if(e.key==="Escape"){
-        csCloseAccountMenu();
-        csCloseAccountDialog();
-        csCloseUserPanel();
-      }
-    });
+    document.addEventListener("click",e=>{const account=$("csAccount");if(account&&!account.contains(e.target))csCloseAccountMenu()},{passive:true});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"){csCloseAccountMenu();csCloseAccountDialog();csCloseUserPanel()}});
   }
-
-  /* Iniciamos Auth inmediatamente después de enlazar la UI.
-     csInitAuth espera al SDK si todavía no estuviera listo. */
-  csInitAuth().catch(e=>{
-    console.error("No se pudo iniciar CARS STREET Authentication:",e);
-  });
+  csInitAuth();
 }
-
 window.csOpenAccountDialog=csOpenAccountDialog;
 window.csCloseAccountDialog=csCloseAccountDialog;
 window.csToggleAuthMode=csToggleAuthMode;
@@ -4495,17 +4201,6 @@ if(document.readyState==="interactive"||document.readyState==="complete"){
 })();
 
 </script>
-<script>
-(function(){
-  function bootCarsStreetAuth(){
-    try{csBindAccountUI()}catch(e){console.error("CARS STREET: error enlazando el sistema de cuentas:",e)}
-  }
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",bootCarsStreetAuth,{once:true});
-  }else{
-    bootCarsStreetAuth();
-  }
-})();
-</script>
+<script>document.addEventListener("DOMContentLoaded",()=>{csBindAccountUI()});</script>
 </body>
 </html>
