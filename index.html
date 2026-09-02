@@ -73,7 +73,27 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 .admin-small.danger{background:#7e2020}
 .admin-small:disabled{opacity:.35;cursor:not-allowed}
 .admin-order-actions{display:flex;gap:6px}
-.admin-order-actions .admin-small{padding:8px 11px;line-height:1}
+.admin-order-actions .admin-small{padding:8px 11px;line-height:1}.admin-toolbar{margin-top:16px;padding:14px;background:#121519;border:1px solid #292e34;border-radius:14px}
+.admin-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.admin-stat{background:#1b1f24;border:1px solid #30363d;border-radius:10px;padding:8px 11px;font-size:.82rem;color:#cfd4d9}
+.admin-stat strong{color:#fff}
+.admin-tools{display:grid;grid-template-columns:1.4fr repeat(2,minmax(150px,.55fr));gap:10px}
+.admin-tools input,.admin-tools select{width:100%;background:#080a0c;border:1px solid #30353a;color:#fff;padding:11px;border-radius:9px;outline:none}
+.admin-tools input:focus,.admin-tools select:focus{border-color:var(--accent)}
+.admin-reset-all{margin-top:10px}
+.admin-item{align-items:stretch}
+.admin-item img{flex:0 0 92px;height:70px}
+.admin-item-info{display:flex;flex-direction:column;justify-content:center;gap:3px}
+.admin-item-info strong{font-size:.94rem}
+.admin-item-main{display:flex;flex-wrap:wrap;gap:6px;color:#aeb4ba;font-size:.74rem}
+.admin-item-main span{background:#1c2024;padding:3px 7px;border-radius:6px}
+.admin-item-age{color:#fff!important;background:rgba(255,43,43,.12)!important;border:1px solid rgba(255,43,43,.28)}
+.admin-item-date{color:#9299a1;font-size:.7rem}
+.admin-item-actions{align-items:center}
+.admin-list.admin-list-enhanced{grid-template-columns:1fr}
+@media(max-width:850px){.admin-tools{grid-template-columns:1fr 1fr}.admin-tools input{grid-column:1/-1}}
+@media(max-width:560px){.admin-list{grid-template-columns:1fr}.admin-item{flex-wrap:wrap}.admin-item img{flex-basis:86px;width:86px}.admin-item-actions{width:100%;justify-content:flex-start}.admin-tools{grid-template-columns:1fr}.admin-tools input{grid-column:auto}}
+
 .profile-preview{width:92px;height:92px;border-radius:50%;object-fit:cover;border:2px solid #444;background:#202328}
 .profile-row{display:flex;gap:20px;align-items:center;margin-bottom:18px}
 .admin-note{color:#9299a1;font-size:.85rem;margin-top:8px}
@@ -429,7 +449,32 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
         <button class="btn btn-secondary" onclick="resetDemoCars()">RESTAURAR DEMO</button>
       </div>
       <p class="admin-note">Puedes crear, editar y eliminar publicaciones. Las imágenes seleccionadas desde tu computador se guardan en este navegador.</p>
-      <div class="admin-list" id="adminCarList"></div>
+      <div class="admin-toolbar">
+        <div class="admin-stats" id="adminVehicleStats"></div>
+        <div class="admin-tools">
+          <input id="adminVehicleSearch" type="search" placeholder="Buscar por marca, modelo, versión, año o ID…" oninput="renderAdminCars()">
+          <select id="adminVehicleFilter" onchange="renderAdminCars()">
+            <option value="all">Todas</option>
+            <option value="Disponible">Disponibles</option>
+            <option value="Vendido">Vendidas</option>
+            <option value="Reservado">Reservadas</option>
+            <option value="featured">Destacadas</option>
+          </select>
+          <select id="adminVehicleSort" onchange="renderAdminCars()">
+            <option value="manual">Orden personalizado</option>
+            <option value="newest">Más recientes</option>
+            <option value="oldest">Más antiguas</option>
+            <option value="priceAsc">Precio menor</option>
+            <option value="priceDesc">Precio mayor</option>
+            <option value="mileageAsc">Menor kilometraje</option>
+            <option value="mileageDesc">Mayor kilometraje</option>
+            <option value="yearDesc">Año más reciente</option>
+            <option value="yearAsc">Año más antiguo</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary admin-reset-all" type="button" onclick="resetAllPublicationDates()">🔄 RESTABLECER FECHAS DE PUBLICACIÓN</button>
+      </div>
+      <div class="admin-list admin-list-enhanced" id="adminCarList"></div>
     </div>
 
     <div class="admin-section" id="adminProfile">
@@ -1736,25 +1781,150 @@ function downloadAllVehiclePhotosFromEditor(){
   return downloadAllVehiclePhotos({...v,images:editingPhotos,originalImages:editingOriginalPhotos});
 }
 
+function adminFullDate(createdAt){
+  const ts=Number(createdAt);
+  if(!ts||Number.isNaN(ts))return "Sin fecha";
+  return new Intl.DateTimeFormat("es-CO",{day:"2-digit",month:"2-digit",year:"numeric"}).format(new Date(ts));
+}
+function adminVehicleStatus(v){
+  return String(v?.status||"").trim();
+}
+function adminVehicleMatches(v,query){
+  if(!query)return true;
+  const hay=[v.brand,v.model,v.version,v.year,v.id].map(x=>normalizeSearchText(x)).join(" ");
+  return hay.includes(normalizeSearchText(query));
+}
+function adminSortVehicles(list,sort){
+  const arr=[...(list||[])];
+  const num=(x,key)=>{const n=Number(x?.[key]);return Number.isFinite(n)?n:Infinity};
+  if(sort==="newest")return arr.sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));
+  if(sort==="oldest")return arr.sort((a,b)=>(Number(a.createdAt)||0)-(Number(b.createdAt)||0));
+  if(sort==="priceAsc")return arr.sort((a,b)=>num(a,"price")-num(b,"price"));
+  if(sort==="priceDesc")return arr.sort((a,b)=>num(b,"price")-num(a,"price"));
+  if(sort==="mileageAsc")return arr.sort((a,b)=>num(a,"mileage")-num(b,"mileage"));
+  if(sort==="mileageDesc")return arr.sort((a,b)=>num(b,"mileage")-num(a,"mileage"));
+  if(sort==="yearDesc")return arr.sort((a,b)=>num(b,"year")-num(a,"year"));
+  if(sort==="yearAsc")return arr.sort((a,b)=>num(a,"year")-num(b,"year"));
+  return sortVehiclesByOrder(ensureVehicleOrder(arr));
+}
+function adminFilterVehicles(list,filter){
+  if(filter==="featured")return list.filter(v=>!!v.featured);
+  if(filter==="all"||!filter)return list;
+  return list.filter(v=>adminVehicleStatus(v).toLowerCase()===filter.toLowerCase());
+}
+function updateAdminVehicleStats(){
+  const el=$("adminVehicleStats"); if(!el)return;
+  const total=vehicles.length;
+  const available=vehicles.filter(v=>adminVehicleStatus(v).toLowerCase()==="disponible").length;
+  const sold=vehicles.filter(v=>adminVehicleStatus(v).toLowerCase()==="vendido").length;
+  const reserved=vehicles.filter(v=>adminVehicleStatus(v).toLowerCase()==="reservado").length;
+  el.innerHTML=`<span class="admin-stat"><strong>TOTAL: ${total}</strong> VEHÍCULOS</span><span class="admin-stat"><strong>${available}</strong> DISPONIBLES</span><span class="admin-stat"><strong>${sold}</strong> VENDIDOS</span><span class="admin-stat"><strong>${reserved}</strong> RESERVADOS</span>`;
+}
 function renderAdminCars(){
   const box=$("adminCarList"); if(!box)return;
-  box.innerHTML=vehicles.length?vehicles.map((v,i)=>`
-    <div class="admin-item">
-      <img src="${v.img}" alt="">
+  updateAdminVehicleStats();
+  const query=$("adminVehicleSearch")?.value||"";
+  const filter=$("adminVehicleFilter")?.value||"all";
+  const sort=$("adminVehicleSort")?.value||"manual";
+  let list=vehicles.filter(v=>adminVehicleMatches(v,query));
+  list=adminFilterVehicles(list,filter);
+  list=adminSortVehicles(list,sort);
+  const manualMode=sort==="manual"&&!query&&(filter==="all"||!filter);
+  box.innerHTML=list.length?list.map((v,i)=>{
+    const name=[v.brand,v.model,v.version].filter(Boolean).join(" ");
+    const safeName=String(name).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+    const img=String(v.img||"").replace(/"/g,"&quot;");
+    const status=adminVehicleStatus(v)||"Sin estado";
+    const age=timeAgo(v.createdAt)||"Sin fecha";
+    return `<div class="admin-item">
+      <img src="${img}" alt="${safeName}">
       <div class="admin-item-info">
-        <strong>${v.brand} ${v.model}${v.version?" · "+v.version:""} (${v.year})</strong>
-        <small>${money(v.price)} · ${v.status}</small>
+        <strong>${safeName} (${v.year||"—"})</strong>
+        <div class="admin-item-main">
+          <span>${money(Number(v.price)||0)}</span>
+          <span>${Number(v.mileage)||0} km</span>
+          <span>${String(status).replace(/&/g,"&amp;").replace(/</g,"&lt;")}</span>
+          <span>${String(v.location||"Sin ubicación").replace(/&/g,"&amp;").replace(/</g,"&lt;")}</span>
+          <span class="admin-item-age" data-created-at="${v.createdAt||""}">PUBLICADO: ${age}</span>
+        </div>
+        <div class="admin-item-date">${adminFullDate(v.createdAt)} · ID: ${String(v.id)}</div>
       </div>
       <div class="admin-item-actions">
-        <div class="admin-order-actions">
+        ${manualMode?`<div class="admin-order-actions">
           <button class="admin-small" onclick="moveCar(${v.id},-1)" ${i===0?"disabled":""} title="Subir" aria-label="Subir posición">&#9650;</button>
-          <button class="admin-small" onclick="moveCar(${v.id},1)" ${i===vehicles.length-1?"disabled":""} title="Bajar" aria-label="Bajar posición">&#9660;</button>
-        </div>
+          <button class="admin-small" onclick="moveCar(${v.id},1)" ${i===list.length-1?"disabled":""} title="Bajar" aria-label="Bajar posición">&#9660;</button>
+        </div>`:""}
         <button class="admin-small" onclick="editCar(${v.id})">Editar</button>
+        <button class="admin-small" onclick="resetPublicationDate(${v.id})">↻ Fecha</button>
         <button class="admin-small" onclick="downloadAllVehiclePhotos(vehicles.find(x=>x.id===${v.id}))">⬇ Descargar todas</button>
         <button class="admin-small danger" onclick="deleteCar(${v.id})">Eliminar</button>
       </div>
-    </div>`).join(""):`<div class="empty">No hay publicaciones. Agrega tu primer auto.</div>`;
+    </div>`;
+  }).join(""):`<div class="empty">No se encontraron publicaciones con esos criterios.</div>`;
+}
+async function saveLocalVehicleDates(){
+  let ok=true;
+  try{await idbSet(IDB_VEHICLES_KEY,vehicles)}catch(e){console.error(e);ok=false}
+  try{localStorage.setItem(VEHICLES_BACKUP_KEY,JSON.stringify(vehicles))}catch(e){console.error(e);ok=false}
+  return ok;
+}
+async function updateCloudVehicleCreatedAt(id,timestamp){
+  if(!cloudEnabled)return true;
+  try{
+    await cloudDb.collection(CLOUD_VEHICLES_COLLECTION).doc(String(id)).update({createdAt:timestamp});
+    return true;
+  }catch(e){
+    console.error("No se pudo actualizar createdAt en Firebase:",e);
+    return false;
+  }
+}
+async function resetPublicationDate(id){
+  const v=vehicles.find(x=>x.id===id); if(!v)return;
+  if(!confirm(`¿Quieres reiniciar la fecha de publicación de ${v.brand} ${v.model}?`))return;
+  const previous=Number(v.createdAt)||fallbackCreatedAt(v);
+  const timestamp=Date.now();
+  v.createdAt=timestamp;
+  const cloudOk=await updateCloudVehicleCreatedAt(id,timestamp);
+  const localOk=await saveLocalVehicleDates();
+  if(cloudEnabled&&!cloudOk){
+    v.createdAt=previous;
+    await saveLocalVehicleDates();
+    renderAdminCars();
+    showToast("❌ No se pudo actualizar la fecha en Firebase.");
+    return;
+  }
+  render();
+  renderAdminCars();
+  showToast(cloudEnabled?(localOk?"✅ Fecha reiniciada para todos los dispositivos":"⚠️ Fecha actualizada en la nube; no se pudo actualizar la copia local"):(localOk?"✅ Fecha reiniciada en este navegador":"⚠️ Fecha cambiada, pero no se pudo guardar la copia local"));
+}
+async function resetAllPublicationDates(){
+  if(!vehicles.length){showToast("No hay publicaciones para restablecer.");return}
+  if(!confirm("⚠️ RESTABLECER FECHAS\n\nEsta acción cambiará la fecha de publicación de TODOS los vehículos actuales. El contenido de los vehículos y el orden personalizado NO serán modificados.\n\n¿Continuar?"))return;
+  const timestamp=Date.now();
+  const previous=vehicles.map(v=>({id:v.id,createdAt:v.createdAt}));
+  vehicles.forEach(v=>{v.createdAt=timestamp});
+  let cloudOk=true;
+  if(cloudEnabled){
+    try{
+      const batch=cloudDb.batch();
+      vehicles.forEach(v=>batch.update(cloudDb.collection(CLOUD_VEHICLES_COLLECTION).doc(String(v.id)),{createdAt:timestamp}));
+      await batch.commit();
+    }catch(e){
+      console.error("No se pudieron restablecer las fechas en Firebase:",e);
+      cloudOk=false;
+    }
+  }
+  const localOk=await saveLocalVehicleDates();
+  if(!cloudOk){
+    previous.forEach(item=>{const v=vehicles.find(x=>x.id===item.id);if(v)v.createdAt=item.createdAt});
+    await saveLocalVehicleDates();
+    renderAdminCars();
+    showToast("❌ No se pudieron restablecer las fechas en Firebase. No se aplicó el cambio.");
+    return;
+  }
+  render();
+  renderAdminCars();
+  showToast(cloudEnabled?(localOk?"✅ Fechas restablecidas para todos los dispositivos":"⚠️ Fechas actualizadas en Firebase; no se pudo guardar la copia local"):(localOk?"✅ Fechas restablecidas en este navegador":"⚠️ Fechas cambiadas, pero no se pudo guardar la copia local"));
 }
 // Sube o baja una publicación una posición (dir=-1 sube, dir=1 baja) y
 // reasigna "order" (0,1,2...) según la nueva posición de todo el arreglo,
