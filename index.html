@@ -318,6 +318,7 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <!-- ===== CARS STREET: URL INDIVIDUAL Y COMPARTIR ===== -->
 <meta id="csOgTitle" property="og:title" content="CARS STREET | Compra y venta de vehículos en Colombia">
@@ -347,12 +348,49 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
   /* Reduce mayúsculas visuales donde funcionan mejor como etiquetas secundarias. */
   .card-brand,.ai-vcard-brand{text-transform:none}
 </style>
+<style id="csAccountStyles">
+  .cs-account{position:relative;display:flex;align-items:center}
+  .cs-account-avatar{width:40px;height:40px;padding:0;border-radius:50%;border:1px solid #3b4249;background:#111417;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.28);transition:transform .18s ease,border-color .18s ease}
+  .cs-account-avatar:hover{transform:translateY(-1px);border-color:#59616a}
+  .cs-account-avatar img{width:100%;height:100%;object-fit:cover;display:none}
+  .cs-account-avatar #csAccountFallback{font-size:19px;line-height:1}
+  .cs-account-menu{display:none;position:absolute;right:0;top:calc(100% + 10px);width:min(245px,calc(100vw - 28px));padding:8px;background:#101214;border:1px solid #343a40;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.55);z-index:120}
+  .cs-account-menu.open{display:block;animation:csAccountMenuIn .16s ease-out}
+  .cs-account-menu button{width:100%;border:0;background:transparent;color:#eef1f3;text-align:left;padding:12px 13px;border-radius:9px;font:inherit;font-weight:750;cursor:pointer}
+  .cs-account-menu button:hover,.cs-account-menu button:focus-visible{background:#20252a;outline:none}
+  .cs-account-menu button.danger{color:#ff7777}
+  .cs-account-divider{height:1px;background:#2b3035;margin:5px 4px}
+  @keyframes csAccountMenuIn{from{opacity:0;transform:translateY(-5px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .cs-account-overlay,.cs-user-panel{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:300;align-items:center;justify-content:center;padding:20px}
+  .cs-account-overlay.open,.cs-user-panel.open{display:flex}
+  .cs-account-dialog,.cs-user-panel-box{position:relative;width:min(460px,100%);max-height:min(90vh,760px);overflow:auto;background:#101214;border:1px solid #353a40;border-radius:20px;padding:28px;box-shadow:0 30px 100px rgba(0,0,0,.7)}
+  .cs-account-dialog h2,.cs-user-panel-box h2{margin:8px 0 10px}
+  .cs-account-subtitle{color:#9299a1;margin-bottom:18px}
+  .cs-account-error{display:none;color:#ff7777;background:rgba(255,43,43,.08);border:1px solid rgba(255,43,43,.2);padding:10px 12px;border-radius:9px;margin-top:12px;font-size:.86rem}
+  .cs-account-error.show{display:block}
+  .cs-account-photo-field{display:none}
+  .cs-user-panel-head{display:flex;align-items:center;gap:15px;padding:14px 0 18px;border-bottom:1px solid #292f35;margin-bottom:15px}
+  .cs-user-panel-head img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid #3b4249;background:#181b1e}
+  .cs-user-panel-head p{margin:0;color:#9299a1;word-break:break-word}
+  .cs-user-posts-list{display:flex;flex-direction:column;gap:9px}
+  .cs-user-post{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid #2c3238;border-radius:11px;background:#0b0d0f}
+  .cs-user-post img{width:66px;height:50px;object-fit:cover;border-radius:8px}
+  .cs-user-post strong{display:block;color:#fff}
+  .cs-user-post span{display:block;color:#9299a1;font-size:.78rem;margin-top:2px}
+  .cs-user-empty{color:#9299a1;padding:16px 2px}
+  @media(max-width:700px){
+    .cs-account-avatar{width:42px;height:42px}
+    .cs-account-menu{position:fixed;right:14px;top:72px;width:min(270px,calc(100vw - 28px))}
+    .cs-account-dialog,.cs-user-panel-box{padding:22px;border-radius:16px}
+  }
+  @media(prefers-reduced-motion:reduce){.cs-account-menu.open{animation:none}}
+</style>
 </head>
 <body>
 <header class="nav"><div class="container nav-inner">
 <a class="logo" href="#inicio">CARS <span>STREET</span></a>
 <nav class="links"><a href="#inicio">Inicio</a><a href="#vehiculos">Vehículos</a><a href="#vende">Vende tu carro</a><a href="#nosotros">Nosotros</a><a href="#contacto">Contacto</a></nav>
-<div class="nav-actions"><div id="navProfile" style="display:flex;align-items:center;gap:8px;font-weight:800"><img id="navProfileImg" src="" alt="Perfil" style="width:34px;height:34px;border-radius:50%;object-fit:cover;display:none"><span id="navProfileName">CARS STREET</span></div><a class="wa" target="_blank" href="https://wa.me/573116169801">WhatsApp</a></div>
+<div class="nav-actions"><a class="wa" target="_blank" href="https://wa.me/573116169801">WhatsApp</a><div class="cs-account" id="csAccount"><button type="button" class="cs-account-avatar" id="csAccountAvatar" aria-label="Cuenta" aria-haspopup="true" aria-expanded="false"><img id="navProfileImg" src="" alt="Perfil"><span id="csAccountFallback" aria-hidden="true">👤</span></button><div class="cs-account-menu" id="csAccountMenu" role="menu" aria-hidden="true"><button type="button" role="menuitem" onclick="csAccountAction('posts')">Mis publicaciones</button><button type="button" role="menuitem" onclick="csAccountAction('sell')">Vender vehículo</button><button type="button" role="menuitem" onclick="csAccountAction('profile')">Perfil</button><div class="cs-account-divider"></div><button type="button" role="menuitem" class="danger" onclick="csAccountAction('logout')">Cerrar sesión</button></div></div></div>
 <button class="menu" onclick="toggleMenu()">☰</button>
 </div></header>
 
@@ -425,6 +463,37 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
 
 <button class="admin-trigger" id="adminTrigger" onclick="requestAdminAccess()" style="display:none">⚙ ADMIN</button>
 
+
+<div class="cs-account-overlay" id="csAccountOverlay" aria-hidden="true">
+  <div class="cs-account-dialog" role="dialog" aria-modal="true" aria-labelledby="csAccountTitle">
+    <button type="button" class="modal-close cs-account-close" onclick="csCloseAccountDialog()" aria-label="Cerrar">×</button>
+    <div class="eyebrow">CARS STREET</div>
+    <h2 id="csAccountTitle">Mi cuenta</h2>
+    <p id="csAccountSubtitle" class="cs-account-subtitle">Inicia sesión para continuar.</p>
+    <form id="csAuthForm">
+      <div class="field"><label>NOMBRE COMPLETO</label><input id="csAuthName" autocomplete="name" placeholder="Tu nombre"></div>
+      <div class="field"><label>CORREO ELECTRÓNICO</label><input id="csAuthEmail" type="email" autocomplete="email" required placeholder="correo@ejemplo.com"></div>
+      <div class="field"><label>CONTRASEÑA</label><input id="csAuthPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Mínimo 6 caracteres"></div>
+      <div class="field cs-account-photo-field" id="csAuthPhotoField"><label>FOTO DE PERFIL</label><input id="csAuthPhoto" type="file" accept="image/*"></div>
+      <button class="btn btn-primary" id="csAuthSubmit" type="submit" style="width:100%;margin-top:15px">INICIAR SESIÓN</button>
+      <button class="btn btn-secondary" id="csGoogleSignIn" type="button" style="width:100%;margin-top:8px" onclick="csSignInWithGoogle()">Continuar con Google</button>
+      <button class="btn btn-secondary" id="csAuthModeToggle" type="button" style="width:100%;margin-top:8px" onclick="csToggleAuthMode()">CREAR CUENTA</button>
+      <div id="csAuthError" class="cs-account-error" role="alert"></div>
+    </form>
+  </div>
+</div>
+
+<div class="cs-user-panel" id="csUserPanel" aria-hidden="true">
+  <div class="cs-user-panel-box">
+    <button type="button" class="modal-close" onclick="csCloseUserPanel()" aria-label="Cerrar">×</button>
+    <div class="eyebrow">Mi cuenta</div>
+    <div class="cs-user-panel-head">
+      <img id="csUserPanelPhoto" src="" alt="Foto de perfil">
+      <div><h2 id="csUserPanelName">Mi cuenta</h2><p id="csUserPanelEmail"></p></div>
+    </div>
+    <div id="csUserPostsList" class="cs-user-posts-list"></div>
+  </div>
+</div>
 
 <div class="admin-login" id="adminLogin">
   <div class="admin-login-box">
@@ -672,6 +741,285 @@ try{
   console.error("No se pudo inicializar Firebase, la página seguirá funcionando en modo local:",e);
   cloudEnabled=false;
 }
+
+/* ================================================================
+   CARS STREET — CUENTA DE USUARIO
+   Usa Firebase Authentication + Firestore cuando Firebase está activo.
+   No sustituye el acceso del administrador ni el perfil del negocio.
+   ================================================================ */
+let csAuth=null;
+let csCurrentUser=null;
+let csAuthMode="login";
+let csAuthInitialized=false;
+const CS_USERS_COLLECTION="users";
+const CS_DEFAULT_AVATAR="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80";
+
+function csSetAccountError(message){
+  const el=$("csAuthError");if(!el)return;
+  el.textContent=message||"";
+  el.classList.toggle("show",!!message);
+}
+function csOpenAccountMenu(){
+  const menu=$("csAccountMenu"),avatar=$("csAccountAvatar");
+  if(!menu||!avatar)return;
+  if(!csCurrentUser){csOpenAccountDialog("login");return}
+  const open=menu.classList.toggle("open");
+  avatar.setAttribute("aria-expanded",String(open));
+  menu.setAttribute("aria-hidden",String(!open));
+}
+function csCloseAccountMenu(){
+  const menu=$("csAccountMenu"),avatar=$("csAccountAvatar");
+  if(!menu||!avatar)return;
+  menu.classList.remove("open");
+  avatar.setAttribute("aria-expanded","false");
+  menu.setAttribute("aria-hidden","true");
+}
+function csOpenAccountDialog(mode="login"){
+  csAuthMode=mode==="register"?"register":"login";
+  csCloseAccountMenu();
+  const overlay=$("csAccountOverlay");if(!overlay)return;
+  csAuthMode==="register"?csSetRegisterMode():csSetLoginMode();
+  overlay.classList.add("open");overlay.setAttribute("aria-hidden","false");
+  setTimeout(()=>$(csAuthMode==="register"?"csAuthName":"csAuthEmail")?.focus(),50);
+}
+function csCloseAccountDialog(){
+  const overlay=$("csAccountOverlay");if(!overlay)return;
+  overlay.classList.remove("open");overlay.setAttribute("aria-hidden","true");csSetAccountError("");
+}
+function csSetLoginMode(){
+  $("csAccountTitle").textContent="Iniciar sesión";
+  $("csAccountSubtitle").textContent="Accede a tu cuenta de CARS STREET.";
+  $("csAuthName").parentElement.style.display="none";
+  $("csAuthPhotoField").style.display="none";
+  $("csAuthSubmit").textContent="INICIAR SESIÓN";
+  $("csAuthModeToggle").textContent="CREAR CUENTA";
+  $("csAuthPassword").autocomplete="current-password";
+  csSetAccountError("");
+}
+function csSetRegisterMode(){
+  $("csAccountTitle").textContent="Crear cuenta";
+  $("csAccountSubtitle").textContent="Crea tu cuenta para gestionar tu perfil y tus publicaciones.";
+  $("csAuthName").parentElement.style.display="";
+  $("csAuthPhotoField").style.display="";
+  $("csAuthSubmit").textContent="CREAR CUENTA";
+  $("csAuthModeToggle").textContent="YA TENGO CUENTA";
+  $("csAuthPassword").autocomplete="new-password";
+  csSetAccountError("");
+}
+function csToggleAuthMode(){
+  csAuthMode=csAuthMode==="login"?"register":"login";
+  csAuthMode==="register"?csSetRegisterMode():csSetLoginMode();
+}
+function csProfilePhotoForUser(user,profile){
+  return String(profile?.photo||user?.photoURL||CS_DEFAULT_AVATAR).trim()||CS_DEFAULT_AVATAR;
+}
+function csApplyUserUI(user,profile={}){
+  csCurrentUser=user||null;
+  const img=$("navProfileImg"),fallback=$("csAccountFallback");
+  if(img&&fallback){
+    const src=csProfilePhotoForUser(user,profile);
+    img.src=src;img.style.display="block";fallback.style.display="none";
+    img.onerror=()=>{img.onerror=null;img.src=CS_DEFAULT_AVATAR;};
+  }
+  const avatar=$("csAccountAvatar");
+  if(avatar)avatar.title=user?(profile.name||user.displayName||user.email||"Mi cuenta"):"Iniciar sesión";
+}
+async function csLoadUserProfile(user){
+  if(!user)return {};
+  try{
+    if(!cloudEnabled||!cloudDb)return JSON.parse(localStorage.getItem("carsStreetUserProfile_"+user.uid)||"{}");
+    const snap=await cloudDb.collection(CS_USERS_COLLECTION).doc(user.uid).get();
+    const profile=snap.exists?(snap.data()||{}):{};
+    try{localStorage.setItem("carsStreetUserProfile_"+user.uid,JSON.stringify(profile))}catch(e){}
+    return profile;
+  }catch(e){
+    console.error("No se pudo cargar el perfil del usuario:",e);
+    try{return JSON.parse(localStorage.getItem("carsStreetUserProfile_"+user.uid)||"{}")}catch(err){return {}}
+  }
+}
+async function csSaveUserProfile(user,data){
+  if(!user)return;
+  const clean={name:String(data?.name||user.displayName||"").trim(),photo:String(data?.photo||"").trim(),email:user.email||""};
+  try{localStorage.setItem("carsStreetUserProfile_"+user.uid,JSON.stringify(clean))}catch(e){}
+  if(cloudEnabled&&cloudDb){
+    try{await cloudDb.collection(CS_USERS_COLLECTION).doc(user.uid).set(clean,{merge:true})}
+    catch(e){console.error("No se pudo guardar el perfil del usuario:",e)}
+  }
+  csApplyUserUI(user,clean);
+}
+async function csInitAuth(){
+  if(csAuthInitialized)return;
+  csAuthInitialized=true;
+  if(!window.firebase||!window.firebase.auth){
+    console.warn("Firebase Authentication no está disponible; la cuenta de usuario no puede iniciar sesión.");
+    csApplyUserUI(null,{});
+    return;
+  }
+  try{
+    if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
+    csAuth=firebase.auth();
+    csAuth.onAuthStateChanged(async user=>{
+      csCurrentUser=user||null;
+      if(user){
+        const profile=await csLoadUserProfile(user);
+        csApplyUserUI(user,profile);
+      }else{
+        csApplyUserUI(null,{});
+        csCloseAccountMenu();csCloseAccountDialog();csCloseUserPanel();
+      }
+    });
+  }catch(e){
+    console.error("No se pudo inicializar la cuenta de usuario:",e);
+    csApplyUserUI(null,{});
+  }
+}
+async function csSignInWithGoogle(){
+  csSetAccountError("");
+  if(!csAuth){
+    csSetAccountError("El sistema de cuentas no está disponible en este momento.");
+    return;
+  }
+  const button=$("csGoogleSignIn");
+  if(button){
+    button.disabled=true;
+    button.textContent="Conectando con Google…";
+  }
+  try{
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+    const result=await csAuth.signInWithPopup(provider);
+    const user=result.user;
+    if(!user)throw new Error("Google no devolvió un usuario autenticado.");
+    const currentProfile=await csLoadUserProfile(user);
+    const googleName=String(user.displayName||currentProfile.name||user.email||"Mi cuenta").trim();
+    const googlePhoto=String(user.photoURL||currentProfile.photo||"").trim();
+    await csSaveUserProfile(user,{name:googleName,photo:googlePhoto});
+    csCurrentUser=user;
+    csApplyUserUI(user,{name:googleName,photo:googlePhoto,email:user.email||""});
+    csCloseAccountDialog();
+    showToast("Sesión iniciada con Google.");
+  }catch(e){
+    console.error("No se pudo iniciar sesión con Google:",e);
+    const code=String(e?.code||"");
+    const messages={
+      "auth/popup-closed-by-user":"El inicio de sesión con Google fue cancelado.",
+      "auth/popup-blocked":"El navegador bloqueó la ventana de Google. Permite ventanas emergentes e inténtalo de nuevo.",
+      "auth/cancelled-popup-request":"Ya hay un inicio de sesión de Google en curso.",
+      "auth/account-exists-with-different-credential":"Ese correo ya tiene una cuenta en CARS STREET. Inicia sesión con el método original para evitar crear una cuenta duplicada.",
+      "auth/operation-not-allowed":"El inicio de sesión con Google no está habilitado en Firebase Authentication.",
+      "auth/unauthorized-domain":"Este dominio no está autorizado en Firebase Authentication."
+    };
+    csSetAccountError(messages[code]||"No se pudo iniciar sesión con Google. Inténtalo de nuevo.");
+  }finally{
+    if(button){
+      button.disabled=false;
+      button.textContent="Continuar con Google";
+    }
+  }
+}
+
+async function csHandleAuthSubmit(e){
+  e.preventDefault();csSetAccountError("");
+  if(!csAuth){csSetAccountError("El sistema de cuentas no está disponible en este momento.");return}
+  const email=$("csAuthEmail").value.trim(),password=$("csAuthPassword").value;
+  try{
+    let credential;
+    if(csAuthMode==="register"){
+      const name=$("csAuthName").value.trim();
+      if(!name){csSetAccountError("Escribe tu nombre completo.");return}
+      credential=await csAuth.createUserWithEmailAndPassword(email,password);
+      const file=$("csAuthPhoto").files?.[0];let photo="";
+      if(file)try{photo=await readImage(file)}catch(err){console.error(err)}
+      if(photo&&cloudEnabled)try{photo=await uploadImageToCloudinary(photo)}catch(err){console.error("No se pudo subir la foto de usuario:",err)}
+      await credential.user.updateProfile({displayName:name,photoURL:photo||null});
+      await csSaveUserProfile(credential.user,{name,photo});
+      csCloseAccountDialog();showToast("Cuenta creada correctamente.");
+    }else{
+      credential=await csAuth.signInWithEmailAndPassword(email,password);
+      const profile=await csLoadUserProfile(credential.user);
+      csApplyUserUI(credential.user,profile);csCloseAccountDialog();showToast("Sesión iniciada correctamente.");
+    }
+    $("csAuthForm").reset();
+  }catch(e){
+    const code=String(e?.code||"");
+    const messages={
+      "auth/invalid-email":"El correo electrónico no es válido.",
+      "auth/user-not-found":"No existe una cuenta con ese correo.",
+      "auth/wrong-password":"La contraseña es incorrecta.",
+      "auth/invalid-credential":"El correo o la contraseña no son correctos.",
+      "auth/email-already-in-use":"Ya existe una cuenta con ese correo.",
+      "auth/weak-password":"La contraseña debe tener al menos 6 caracteres.",
+      "auth/operation-not-allowed":"El inicio de sesión por correo no está habilitado en Firebase."
+    };
+    csSetAccountError(messages[code]||"No se pudo completar la operación. Inténtalo de nuevo.");
+  }
+}
+async function csLogoutUser(){
+  csCloseAccountMenu();
+  if(!csAuth){csApplyUserUI(null,{});return}
+  try{await csAuth.signOut();csCloseUserPanel();showToast("Sesión cerrada correctamente.")}
+  catch(e){console.error("No se pudo cerrar la sesión:",e);showToast("No se pudo cerrar la sesión.")}
+}
+function csAccountAction(action){
+  csCloseAccountMenu();
+  if(!csCurrentUser){csOpenAccountDialog("login");return}
+  if(action==="posts"){csOpenUserPosts();return}
+  if(action==="sell"){const target=$("vende");if(target)target.scrollIntoView({behavior:"smooth",block:"start"});return}
+  if(action==="profile"){csOpenUserProfile();return}
+  if(action==="logout"){csLogoutUser();return}
+}
+function csOpenUserProfile(){
+  if(!csCurrentUser){csOpenAccountDialog("login");return}
+  const key="carsStreetUserProfile_"+csCurrentUser.uid;let profile={};
+  try{profile=JSON.parse(localStorage.getItem(key)||"{}")}catch(e){}
+  const name=profile.name||csCurrentUser.displayName||csCurrentUser.email||"Mi cuenta";
+  const photo=csProfilePhotoForUser(csCurrentUser,profile);
+  $("csUserPanelName").textContent=name;$("csUserPanelEmail").textContent=csCurrentUser.email||"";$("csUserPanelPhoto").src=photo;
+  $("csUserPostsList").innerHTML=`<form id="csUserProfileForm"><div class="field"><label>NOMBRE COMPLETO</label><input id="csUserProfileName" required value="${escapeHtml(name)}" autocomplete="name"></div><div class="field"><label>FOTO DE PERFIL</label><input id="csUserProfilePhotoInput" type="file" accept="image/*"></div><button class="btn btn-primary" type="submit" style="width:100%;margin-top:8px">GUARDAR PERFIL</button></form>`;
+  $("csUserProfileForm").onsubmit=async e=>{
+    e.preventDefault();const newName=$("csUserProfileName").value.trim();if(!newName){showToast("Escribe tu nombre.");return}
+    let newPhoto=profile.photo||csCurrentUser.photoURL||"";const file=$("csUserProfilePhotoInput").files?.[0];
+    if(file){try{newPhoto=await readImage(file);if(cloudEnabled)try{newPhoto=await uploadImageToCloudinary(newPhoto)}catch(err){console.error(err)}}catch(err){showToast("No se pudo leer la foto.");return}}
+    try{await csCurrentUser.updateProfile({displayName:newName,photoURL:newPhoto||null})}catch(err){console.error(err)}
+    await csSaveUserProfile(csCurrentUser,{name:newName,photo:newPhoto});$("csUserPanelName").textContent=newName;$("csUserPanelPhoto").src=csProfilePhotoForUser(csCurrentUser,{name:newName,photo:newPhoto});showToast("Perfil actualizado.");
+  };
+  $("csUserPanel").classList.add("open");$("csUserPanel").setAttribute("aria-hidden","false");
+}
+function csCloseUserPanel(){
+  const panel=$("csUserPanel");if(!panel)return;
+  panel.classList.remove("open");panel.setAttribute("aria-hidden","true");
+}
+async function csOpenUserPosts(){
+  if(!csCurrentUser){csOpenAccountDialog("login");return}
+  const panel=$("csUserPanel"),list=$("csUserPostsList");
+  $("csUserPanelName").textContent="Mis publicaciones";$("csUserPanelEmail").textContent=csCurrentUser.email||"";$("csUserPanelPhoto").src=csProfilePhotoForUser(csCurrentUser,{});
+  list.innerHTML='<div class="cs-user-empty">Cargando publicaciones…</div>';panel.classList.add("open");panel.setAttribute("aria-hidden","false");
+  const owned=vehicles.filter(v=>String(v.ownerUid||v.userUid||v.createdByUid||"")===String(csCurrentUser.uid));
+  if(!owned.length){list.innerHTML='<div class="cs-user-empty">Todavía no tienes vehículos publicados desde esta cuenta.</div>';return}
+  list.innerHTML=owned.map(v=>`<button type="button" class="cs-user-post" onclick="csCloseUserPanel();csOpenVehicleFromCard(${Number(v.id)})"><img src="${escapeHtml(v.img||"")}" alt=""><div><strong>${escapeHtml([v.brand,v.model,v.version,v.year].filter(Boolean).join(" "))}</strong><span>${escapeHtml(money(v.price))}</span></div></button>`).join("");
+}
+function csBindAccountUI(){
+  const avatar=$("csAccountAvatar");
+  if(avatar&&!avatar.dataset.bound){avatar.dataset.bound="1";avatar.addEventListener("click",e=>{e.stopPropagation();csOpenAccountMenu()})}
+  const form=$("csAuthForm");
+  if(form&&!form.dataset.bound){form.dataset.bound="1";form.addEventListener("submit",csHandleAuthSubmit)}
+  const overlay=$("csAccountOverlay");
+  if(overlay&&!overlay.dataset.bound){overlay.dataset.bound="1";overlay.addEventListener("click",e=>{if(e.target===overlay)csCloseAccountDialog()})}
+  const panel=$("csUserPanel");
+  if(panel&&!panel.dataset.bound){panel.dataset.bound="1";panel.addEventListener("click",e=>{if(e.target===panel)csCloseUserPanel()})}
+  if(!document.body.dataset.csAccountDocBound){
+    document.body.dataset.csAccountDocBound="1";
+    document.addEventListener("click",e=>{const account=$("csAccount");if(account&&!account.contains(e.target))csCloseAccountMenu()},{passive:true});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"){csCloseAccountMenu();csCloseAccountDialog();csCloseUserPanel()}});
+  }
+  csInitAuth();
+}
+window.csOpenAccountDialog=csOpenAccountDialog;
+window.csCloseAccountDialog=csCloseAccountDialog;
+window.csToggleAuthMode=csToggleAuthMode;
+window.csAccountAction=csAccountAction;
+window.csCloseUserPanel=csCloseUserPanel;
+
 
 const brands=["Abarth","Acura","Alfa Romeo","Aston Martin","Audi","BAIC","Bentley","BMW","BYD","Buick","Cadillac","Changan","Chery","Chevrolet","Chrysler","Citroën","Cupra","Dacia","Dodge","Dongfeng","DS","FAW","Ferrari","Fiat","Ford","Foton","Geely","Genesis","GMC","Great Wall","Haval","Honda","Hyundai","Infiniti","Isuzu","JAC","Jaguar","Jeep","Jetour","Kia","Lamborghini","Land Rover","Lexus","Lincoln","Lotus","Maserati","Mazda","McLaren","Mercedes-Benz","MG","Mini","Mitsubishi","Nissan","Omoda","Peugeot","Porsche","RAM","Renault","Rolls-Royce","Seat","Skoda","Smart","Subaru","Suzuki","Tesla","Toyota","Volkswagen","Volvo"];
 const catalog={"Abarth": {"500": [], "595": [], "695": [], "124 Spider": [], "Punto": [], "Grande Punto": [], "Punto Evo": [], "850 TC": [], "1000 TC": [], "1000 TCR": [], "1300 OT": [], "1600 OT": [], "2000 OT": [], "2400 Coupé": [], "850 Sport Spider": [], "1000 Berlina": [], "1000 Berlina Corsa": [], "2200 Coupé": [], "2200 Sport": [], "2400 Spider": [], "Simca 1000 Rallye": [], "A112 Abarth": [], "Ritmo Abarth 125 TC": [], "Ritmo Abarth 130 TC": [], "131 Abarth Rally": [], "Stilo Abarth": [], "Seicento Sporting Abarth": [], "Cinquecento Sporting Abarth": [], "Grande Punto Abarth": [], "Punto Evo Abarth": [], "500 Abarth": [], "500C Abarth": [], "500e": [], "695 Tributo Ferrari": [], "695 Competizione": [], "695 Biposto": [], "695 Rivale": [], "695 Yamaha XSR": [], "695 Esseesse": [], "595 Competizione": [], "595 Turismo": [], "595 Pista": [], "595 Monster Energy Yamaha": [], "595 Scorpioneoro": [], "595 F595": [], "695 70° Anniversario": [], "124 Spider GT": [], "124 Spider Elaborazione": [], "124 Spider Rally": []}, "Acura": {"Integra": [], "Integra Type S": [], "ADX": [], "RDX": [], "MDX": [], "MDX Type S": []}, "Alfa Romeo": {"Giulia": [], "Stelvio": [], "Tonale": [], "Junior": [], "33 Stradale": [], "4C": [], "4C Spider": [], "8C Competizione": [], "8C Spider": [], "Brera": [], "Spider": [], "GT": [], "GTV": [], "147": [], "156": [], "159": [], "164": [], "166": [], "75": [], "90": [], "33": [], "Alfasud": [], "Alfetta": [], "Giulietta": [], "MiTo": [], "Sprint": [], "SZ": [], "RZ": []}, "Aston Martin": {"Vantage": [], "Vantage Roadster": [], "DB12": [], "DB12 Volante": [], "Vanquish": [], "DBX": [], "DBX707": [], "Valhalla": []}, "Audi": {"50": [], "60": [], "75": [], "80": [], "90": [], "100": [], "200": [], "4000": [], "5000": [], "A1": [], "A2": [], "A3": [], "A4": [], "A5": [], "A6": [], "A7": [], "A8": [], "A6 allroad": [], "A4 allroad": [], "Cabriolet": [], "Coupé": [], "Coupé GT": [], "F103": [], "Fox": [], "Front": [], "Quattro": [], "Sport Quattro": [], "V8": [], "R8": [], "TT": [], "Q2": [], "Q3": [], "Q4 e-tron": [], "Q5": [], "Q5 e-tron": [], "Q6": [], "Q6 e-tron": [], "Q7": [], "Q8": [], "Q8 e-tron": [], "Q9": [], "e-tron": [], "e-tron GT": [], "S1": [], "S2": [], "S3": [], "S4": [], "S5": [], "S6": [], "S7": [], "S8": [], "SQ2": [], "SQ5": [], "SQ6": [], "SQ7": [], "SQ8": [], "RS2 Avant": [], "RS3": [], "RS4": [], "RS5": [], "RS6": [], "RS7": [], "RS Q3": [], "RS Q8": [], "RS e-tron GT": [], "R/RS 4": []}, "BAIC": {"B30": [], "B40": [], "B60": [], "BJ30": [], "BJ40": [], "BJ60": [], "X35": [], "X55": [], "X7": [], "U5 Plus": [], "EU5": []}, "Bentley": {"Bentayga": [], "Bentayga EWB": [], "Flying Spur": [], "Continental GT": [], "Continental GTC": []}, "BMW": {"M4": [], "Serie 1": [], "Serie 2": [], "Serie 3": [], "Serie 4": [], "Serie 5": [], "Serie 7": [], "Serie 8": [], "X1": [], "X2": [], "X3": [], "X4": [], "X5": [], "X6": [], "X7": [], "XM": [], "Z4": [], "i3": [], "i4": [], "i5": [], "i7": [], "iX": [], "M2": [], "M3": [], "M5": [], "M8": [], "X3 M": [], "X4 M": [], "X5 M": [], "X6 M": [], "iX1": [], "iX2": [], "iX3": []}, "BYD": {"Seagull": [], "Dolphin": [], "Yuan Up": [], "Yuan Plus LUX EV": [], "Sealion 7": [], "Tang": [], "Song Plus EV": [], "Song Plus DM-i": [], "Shark": []}, "Buick": {"Envista": [], "Encore GX": [], "Envision": [], "Enclave": []}, "Cadillac": {"Optiq": [], "Optiq-V": [], "Lyriq": [], "Lyriq-V": [], "Vistiq": [], "XT5": [], "Escalade": [], "Escalade ESV": [], "Escalade IQ": [], "Escalade IQL": [], "Celestiq": [], "CT4": [], "CT4-V": [], "CT4-V Blackwing": [], "CT5": [], "CT5-V": [], "CT5-V Blackwing": []}, "Changan": {"Alsvin": [], "Alsvin Plus": [], "CS15 Pro": [], "CS35 Plus Turbo": [], "CS55 Plus Turbo": [], "CS75 Plus": [], "X7 Plus": [], "UNI-T": [], "UNI-K": [], "Hunter": [], "Hunter REEV": [], "Lumin": [], "EM60": [], "Energy": [], "Van": [], "Nevo Q05": []}, "Chery": {"Tiggo 4 CSH": [], "Tiggo 7 Pro MHEV": [], "Tiggo 7 CSH": [], "Tiggo 8 CSH": [], "Tiggo 9 CSH": [], "E5": [], "iCAR 03": [], "iCAR 03T REEV": []}, "Chevrolet": {"Captiva Sport": [], "Onix": [], "Onix RS": [], "Joy": [], "Joy Black": [], "Tracker": [], "Tracker RS": [], "Tracker Premier": [], "Trailblazer": [], "Equinox": [], "Equinox EV": [], "Traverse": [], "Tahoe": [], "Suburban": [], "Colorado": [], "Silverado": [], "Silverado EV": [], "Blazer": [], "Blazer EV": [], "Captiva": [], "Montana": [], "Spark EUV": [], "N400": [], "N300": [], "Tornado Van": [], "Tornado Pickup": [], "Camaro ZL1": [], "Camaro SS": []}, "Chrysler": {"Pacifica": [], "Voyager": [], "300": []}, "Citroën": {"C3": [], "C3 Aircross": [], "C4": [], "C4 X": [], "C5 Aircross": [], "C5 X": [], "Berlingo": [], "SpaceTourer": [], "ë-C3": [], "ë-C3 Aircross": [], "ë-C4": [], "ë-C4 X": [], "ë-C5 Aircross": [], "Ami": []}, "Cupra": {"Formentor": [], "Ateca": [], "Leon": [], "Leon Sportstourer": [], "Born": [], "Tavascan": [], "Terramar": []}, "Dacia": {"Sandero": [], "Sandero Stepway": [], "Logan": [], "Duster": [], "Jogger": [], "Spring": [], "Bigster": []}, "Dodge": {"Charger": [], "Durango": [], "Hornet": [], "Attitude": [], "Journey": [], "Challenger": [], "Grand Caravan": [], "Caravan": [], "Nitro": []}, "Ferrari": {"296 GTB": [], "296 GTS": [], "12Cilindri": [], "12Cilindri Spider": [], "Purosangue": [], "Roma Spider": [], "SF90 Stradale": [], "SF90 Spider": [], "849 Testarossa": [], "849 Testarossa Spider": []}, "Fiat": {"500": [], "500e": [], "500X": [], "500L": [], "Panda": [], "Pandina": [], "Grande Panda": [], "Tipo": [], "Tipo Cross": [], "Tipo Station Wagon": [], "Doblo": [], "Fiorino": [], "Ducato": [], "Scudo": [], "Ulysse": [], "Toro": [], "Strada": [], "Fastback": [], "Pulse": [], "Cronos": [], "Argo": [], "Mobi": [], "Topolino": []}, "Foton": {"Tunland G7": [], "Tunland V9": [], "Tunland V7": [], "Tunland E5": [], "View CS2": [], "View CS2L": [], "View CS7": [], "Toano": [], "Gratour V3": [], "Gratour V5": [], "Gratour V7": [], "Aumark S": [], "Aumark TX": [], "Auman EST": [], "Auman GTL": [], "Auman Galaxy": [], "eAumark": [], "eToano": [], "iBlue": []}, "Genesis": {"GV60": [], "GV70": [], "Electrified GV70": [], "GV80": [], "GV80 Coupe": [], "G70": [], "G80": [], "Electrified G80": [], "G90": []}, "GMC": {"Canyon": [], "Sierra 1500": [], "Sierra HD": [], "Hummer EV Pickup": [], "Hummer EV SUV": [], "Terrain": [], "Acadia": [], "Yukon": [], "Yukon XL": [], "Savana": []}, "Great Wall": {"Poer": [], "Poer Plus": [], "Poer KingKong": [], "Poer Sahar": [], "Wingle 5": [], "Wingle 7": [], "Wingle 9": [], "Cannon": [], "Cannon Alpha": [], "Tank 300": [], "Tank 500": [], "Tank 700": [], "Ora 03": [], "Ora 07": []}, "Honda": {"Civic": [], "Civic Hybrid": [], "Civic Type R": [], "Accord": [], "City": [], "City Hatchback": [], "HR-V": [], "CR-V": [], "Pilot": [], "Passport": [], "Prologue": [], "Odyssey": [], "Ridgeline": [], "e:Ny1": [], "WR-V": [], "BR-V": [], "ZR-V": [], "Elevate": [], "Amaze": [], "Prelude": []}, "Hyundai": {"i10": [], "Grand i10": [], "i20": [], "i20 N": [], "i30": [], "i30 N": [], "Elantra": [], "Sonata": [], "Grandeur": [], "Accent": [], "Verna": [], "Aura": [], "Exter": [], "Bayon": [], "Venue": [], "Creta": [], "Kona": [], "Kona Electric": [], "Tucson": [], "Santa Fe": [], "Palisade": [], "Ioniq 5": [], "Ioniq 6": [], "Ioniq 9": [], "Nexo": [], "Staria": [], "Staria Load": [], "Santa Cruz": [], "Porter": [], "Mighty": [], "County": [], "Universe": []}, "Isuzu": {"D-Max": [], "MU-X": [], "MU-X 4x4": [], "X-Terrain": [], "ELF": [], "N-Series": [], "F-Series": [], "Forward": [], "Giga": [], "NLR": [], "NMR": [], "NPR": [], "NQR": [], "NPS": [], "NQR 4x4": [], "NPS 4x4": []}, "JAC": {"T8": [], "T8 Pro": [], "T9": [], "T9 EV": [], "JS2": [], "JS3": [], "JS4": [], "JS6": [], "JS7": [], "E10X": [], "E30X": [], "E40X": [], "E50A": [], "E-JS1": [], "E-JS4": [], "Sunray": [], "X200": [], "X250": [], "X350": [], "X450": [], "X500": []}, "Jaguar": {"F-Pace": [], "E-Pace": [], "I-Pace": [], "F-Type": []}, "Jeep": {"Avenger": [], "Renegade": [], "Compass": [], "Cherokee": [], "Grand Cherokee": [], "Wrangler": [], "Gladiator": [], "Wagoneer": [], "Grand Wagoneer": [], "Wagoneer S": []}, "Jetour": {"X50": [], "X70": [], "X70 Plus": [], "X70 Pro": [], "X70 C-DM": [], "X90 Plus": [], "X90 Pro": [], "X90 C-DM": [], "X90 Plus C-DM": [], "Dashing": [], "X1": [], "Traveller": [], "T2": [], "T2 i-DM": [], "Shanhai L9": [], "Shanhai L7": [], "Shanhai T1": [], "X200": [], "X500": []}, "Kia": {"Picanto": [], "K3": [], "K4": [], "K5": [], "K8": [], "K9": [], "Rio": [], "Forte": [], "Cerato": [], "Soluto": [], "Stonic": [], "Sonet": [], "Seltos": [], "Sportage": [], "Sorento": [], "Telluride": [], "Carnival": [], "Carens": [], "EV3": [], "EV4": [], "EV5": [], "EV6": [], "EV9": [], "Niro": [], "Niro EV": [], "Niro Plus": [], "Soul": [], "Soul EV": [], "Ray": [], "Ray EV": [], "Mohave": [], "Tasman": []}, "Lamborghini": {"Revuelto": [], "Temerario": [], "Urus": [], "Urus S": [], "Urus SE": [], "Urus Performante": [], "Huracán Sterrato": [], "Huracán Tecnica": [], "Huracán STO": [], "Huracán EVO": [], "Huracán EVO Spyder": []}, "Land Rover": {"Range Rover": [], "Range Rover Sport": [], "Range Rover Velar": [], "Range Rover Evoque": [], "Defender": [], "Discovery": [], "Discovery Sport": []}, "Lexus": {"UX": [], "UX 300h": [], "RZ": [], "NX": [], "NX 350h": [], "NX 450h+": [], "RX": [], "RX 350h": [], "RX 450h+": [], "RX 500h": [], "TX": [], "GX": [], "LX": [], "ES": [], "ES 300h": [], "LS": [], "LC": [], "LC 500h": [], "RC": [], "RC F": []}, "Lincoln": {"Navigator": [], "Navigator L": [], "Aviator": [], "Corsair": [], "Nautilus": [], "Corsair Grand Touring": []}, "Lotus": {"Emira": [], "Emeya": [], "Eletre": [], "Evija": []}, "Maserati": {"Grecale": [], "GranTurismo": [], "GranCabrio": [], "MC20": [], "MC20 Cielo": []}, "Mazda": {"Mazda2": [], "Mazda3": [], "Mazda6": [], "CX-3": [], "CX-30": [], "CX-5": [], "CX-50": [], "CX-60": [], "CX-70": [], "CX-80": [], "CX-90": [], "MX-5": [], "MX-30": [], "BT-50": []}, "McLaren": {"750S": [], "750S Spider": [], "Artura": [], "Artura Spider": [], "GTS": [], "W1": []}, "Mercedes-Benz": {"A-Class": [], "CLA": [], "C-Class": [], "E-Class": [], "S-Class": [], "GLA": [], "GLB": [], "GLC": [], "GLE": [], "GLS": [], "G-Class": [], "CLE": [], "SL": [], "AMG GT": [], "AMG GT 4-Door": [], "EQE": [], "EQE SUV": [], "EQS": [], "EQS SUV": [], "EQA": [], "EQB": [], "EQV": [], "V-Class": [], "Vito": [], "Sprinter": [], "Citan": [], "T-Class": [], "Marco Polo": []}, "MG": {"MG3": [], "MG4": [], "MG5": [], "MG6": [], "MG7": [], "ZS": [], "ZS EV": [], "ZS Hybrid+": [], "HS": [], "HS Hybrid+": [], "RX5": [], "RX8": [], "Marvel R": [], "Cyberster": [], "Whale": [], "One": [], "GT": [], "Extender": [], "5": []}, "Mini": {"Cooper 3 Door": [], "Cooper 5 Door": [], "Cooper Convertible": [], "Aceman": [], "Countryman": [], "John Cooper Works": [], "John Cooper Works Convertible": []}, "Mitsubishi": {"Colt": [], "Mirage": [], "Attrage": [], "ASX": [], "Eclipse Cross": [], "Outlander": [], "Outlander PHEV": [], "Xpander": [], "Xpander Cross": [], "Pajero Sport": [], "Triton": [], "L200": [], "Delica D:5": [], "Delica Mini": [], "eK X": [], "eK Space": [], "eK Wagon": []}, "Nissan": {"Micra": [], "Versa": [], "Sentra": [], "Altima": [], "Maxima": [], "Kicks": [], "Juke": [], "Qashqai": [], "X-Trail": [], "Pathfinder": [], "Armada": [], "Patrol": [], "Murano": [], "Rogue": [], "Ariya": [], "Leaf": [], "Z": [], "GT-R": [], "Navara": [], "Frontier": [], "Titan": [], "Terra": [], "Serena": [], "Urvan": [], "Caravan": [], "Townstar": [], "Interstar": [], "Magnite": [], "Livina": []}, "Peugeot": {"208": [], "2008": [], "308": [], "308 SW": [], "408": [], "508": [], "3008": [], "5008": [], "Rifter": [], "Partner": [], "Expert": [], "Boxer": []}, "Porsche": {"911": [], "718 Cayman": [], "718 Boxster": [], "Taycan": [], "Panamera": [], "Macan": [], "Macan Electric": [], "Cayenne": [], "Cayenne Coupé": [], "911 GT3": [], "911 GT3 RS": [], "911 GT2 RS": [], "911 Turbo": [], "911 Turbo S": [], "718 Spyder RS": [], "718 Cayman GT4 RS": []}, "RAM": {"1500": [], "1500 REV": [], "1500 Ramcharger": [], "2500": [], "3500": [], "ProMaster": [], "ProMaster EV": [], "Rampage": []}, "Renault": {"Clio": [], "Clio E-Tech": [], "Captur": [], "Arkana": [], "Austral": [], "Espace": [], "Rafale": [], "Symbioz": [], "Megane E-Tech": [], "Scenic E-Tech": [], "Twingo": [], "Zoe": [], "Kangoo": [], "Kangoo E-Tech": [], "Trafic": [], "Trafic E-Tech": [], "Master": [], "Master E-Tech": [], "Express": [], "Express Van": [], "Oroch": [], "Duster": [], "Kardian": [], "Koleos": [], "Kwid": []}, "Seat": {"Ibiza": [], "Ibiza FR": [], "Ibiza Xcellence": [], "León": [], "León Sportstourer": [], "Arona": [], "Ateca": [], "Tarraco": [], "Mii": [], "Alhambra": [], "Toledo": []}, "Skoda": {"Fabia": [], "Scala": [], "Octavia": [], "Superb": [], "Kamiq": [], "Karoq": [], "Kodiaq": [], "Enyaq": [], "Enyaq Coupé": [], "Elroq": [], "Kushaq": [], "Slavia": [], "Kylaq": [], "Rapid": [], "Roomster": [], "Yeti": [], "Citigo": [], "Scala Monte Carlo": [], "Octavia RS": [], "Kodiaq RS": []}, "Smart": {"Fortwo": [], "Forfour": [], "#1": [], "#3": [], "#5": []}, "Subaru": {"Impreza": [], "WRX": [], "BRZ": [], "Crosstrek": [], "Forester": [], "Outback": [], "Ascent": [], "Solterra": [], "Levorg": [], "Legacy": [], "Tribeca": [], "Baja": []}, "Suzuki": {"Swift": [], "Swift Sport": [], "Dzire": [], "Baleno": [], "Celerio": [], "Alto": [], "S-Presso": [], "Ignis": [], "Fronx": [], "Vitara": [], "Grand Vitara": [], "S-Cross": [], "Jimny": [], "Jimny 5-Door": [], "Ertiga": [], "XL6": [], "Invicto": [], "Brezza": [], "Wagon R": [], "Hustler": [], "Spacia": [], "Every": [], "Carry": []}, "Tesla": {"Model 3": [], "Model Y": [], "Model S": [], "Model X": [], "Cybertruck": [], "Semi": [], "Roadster": []}, "Toyota": {"Tundra": [], "Corolla": ["XEi", "SEG", "Hybrid", "GR"], "Yaris": [], "Camry": [], "Prius": [], "GR86": [], "Supra": [], "RAV4": [], "Fortuner": [], "4Runner": [], "Land Cruiser": [], "Hilux": [], "Tacoma": [], "Highlander": [], "Sequoia": [], "Avalon": [], "Rush": [], "Aygo X": [], "Yaris Cross": [], "Corolla Cross": [], "Crown": [], "Crown Sport": [], "C-HR": [], "bZ4X": [], "Urban Cruiser": [], "Grand Highlander": [], "Land Cruiser 250": [], "Land Cruiser 300": [], "Sienna": [], "Venza": [], "Innova": [], "Avanza": [], "Proace": [], "Proace City": [], "Proace Max": [], "Hiace": [], "Granvia": [], "Alphard": [], "Vellfire": []}, "Volkswagen": {"Golf": [], "Golf GTI": [], "Golf R": [], "Polo": [], "Polo GTI": [], "Virtus": [], "Jetta": [], "Passat": [], "Arteon": [], "Lamando": [], "Taigo": [], "T-Cross": [], "T-Roc": [], "Tiguan": [], "Touareg": [], "Atlas": [], "Atlas Cross Sport": [], "Teramont": [], "ID.3": [], "ID.4": [], "ID.5": [], "ID.7": [], "ID. Buzz": [], "ID. Buzz Cargo": [], "Taos": [], "Nivus": [], "Tera": [], "Amarok": [], "Saveiro": [], "Transporter": [], "Caddy": [], "Caddy Cargo": [], "Crafter": [], "Multivan": [], "California": [], "Caravelle": [], "Touran": [], "Sharan": [], "Gol": []}, "Volvo": {"EX30": [], "EX40": [], "EX90": [], "EC40": [], "XC40": [], "XC60": [], "XC90": [], "EM90": [], "ES90": [], "S60": [], "S90": [], "V60": [], "V90": [], "V60 Cross Country": [], "V90 Cross Country": []}};
@@ -998,7 +1346,7 @@ function normalizeVehicleList(list){
   return (list||[]).map(v=>{
     const images=Array.isArray(v.images)&&v.images.length?v.images:[v.img];
     const originalImages=Array.isArray(v.originalImages)&&v.originalImages.length?v.originalImages:[...images];
-    return {...v,images,originalImages,plateDigit:v.plateDigit||"",inspection:v.inspection||"",armor:v.armor||"No blindado",engine:v.engine||"",color:v.color||"",createdAt:Number(v.createdAt)||fallbackCreatedAt(v),views:normalizeVehicleViews(v.views)};
+    return {...v,images,originalImages,plateDigit:v.plateDigit||"",inspection:v.inspection||"",armor:v.armor||"No blindado",engine:v.engine||"",color:v.color||"",createdAt:Number(v.createdAt)||fallbackCreatedAt(v),views:normalizeVehicleViews(v.views),ownerUid:String(v.ownerUid||v.userUid||v.createdByUid||"")};
   });
 }
 // Valida que lo recuperado sea realmente una lista de vehículos utilizable,
@@ -1617,14 +1965,10 @@ function applyProfile(){
   const p=getProfile();
   $("profileNameInput").value=p.name;
   $("profileNameHeading").textContent=p.name;
-  $("navProfileName").textContent=p.name;
   if(p.photo){
     $("profilePreview").src=p.photo;
-    $("navProfileImg").src=p.photo;
-    $("navProfileImg").style.display="block";
   }else{
     $("profilePreview").src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80";
-    $("navProfileImg").style.display="none";
   }
 }
 
@@ -2081,7 +2425,8 @@ async function saveCar(e){
       // El orden manual se conserva al editar; una publicación nueva se
       // agrega arriba de todo (igual que antes), pero desde "order" y no
       // desde la fecha, para no pisar el orden que el admin ya definió.
-      order:old?(Number.isFinite(old.order)?old.order:nextTopOrder()):nextTopOrder()
+      order:old?(Number.isFinite(old.order)?old.order:nextTopOrder()):nextTopOrder(),
+      ...(old&&old.ownerUid?{ownerUid:String(old.ownerUid)}:{})
     };
 
     if(!data.model||!data.year||Number.isNaN(data.price)){
@@ -3925,5 +4270,6 @@ if(document.readyState==="interactive"||document.readyState==="complete"){
 })();
 
 </script>
+<script>document.addEventListener("DOMContentLoaded",()=>{csBindAccountUI()});</script>
 </body>
 </html>
