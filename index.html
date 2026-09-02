@@ -470,13 +470,14 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
     <div class="eyebrow">CARS STREET</div>
     <h2 id="csAccountTitle">Mi cuenta</h2>
     <p id="csAccountSubtitle" class="cs-account-subtitle">Inicia sesión para continuar.</p>
-    <form id="csAuthForm">
+    <button class="btn btn-secondary" id="csGoogleBtn" type="button" style="width:100%;margin-top:8px">CONTINUAR CON GOOGLE</button>
+      <div style="display:flex;align-items:center;gap:10px;margin:12px 0;color:#8f969d;font-size:.72rem"><span style="height:1px;flex:1;background:#30363d"></span><span>O CONTINÚA CON CORREO</span><span style="height:1px;flex:1;background:#30363d"></span></div>
+      <form id="csAuthForm">
       <div class="field"><label>NOMBRE COMPLETO</label><input id="csAuthName" autocomplete="name" placeholder="Tu nombre"></div>
       <div class="field"><label>CORREO ELECTRÓNICO</label><input id="csAuthEmail" type="email" autocomplete="email" required placeholder="correo@ejemplo.com"></div>
       <div class="field"><label>CONTRASEÑA</label><input id="csAuthPassword" type="password" autocomplete="current-password" required minlength="6" placeholder="Mínimo 6 caracteres"></div>
       <div class="field cs-account-photo-field" id="csAuthPhotoField"><label>FOTO DE PERFIL</label><input id="csAuthPhoto" type="file" accept="image/*"></div>
       <button class="btn btn-primary" id="csAuthSubmit" type="submit" style="width:100%;margin-top:15px">INICIAR SESIÓN</button>
-      <button class="btn btn-secondary" id="csGoogleSignIn" type="button" style="width:100%;margin-top:8px" onclick="csSignInWithGoogle()">Continuar con Google</button>
       <button class="btn btn-secondary" id="csAuthModeToggle" type="button" style="width:100%;margin-top:8px" onclick="csToggleAuthMode()">CREAR CUENTA</button>
       <div id="csAuthError" class="cs-account-error" role="alert"></div>
     </form>
@@ -728,20 +729,46 @@ const CLOUDINARY_CLOUD_NAME="exbw83cp";
 const CLOUDINARY_UPLOAD_PRESET="cars_street_uploads";
 let cloudEnabled=false;
 let cloudDb=null;
-try{
-  const configured=FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.apiKey!=="TU_API_KEY"&&FIREBASE_CONFIG.projectId&&FIREBASE_CONFIG.projectId!=="TU_PROYECTO";
-  if(configured&&window.firebase){
-    // Una sola instancia compartida por Firestore, Storage y Authentication.
-    const firebaseApp=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE_CONFIG);
-    cloudDb=firebaseApp.firestore();
-    cloudEnabled=true;
-  }else if(configured&&!window.firebase){
-    console.error("Firebase está configurado pero el SDK no cargó (revisa tu conexión a internet).");
+
+/* ===== FIREBASE: UNA SOLA APP + FIRESTORE SIN BLOQUEAR AUTH ===== */
+(function csInitFirebaseCore(){
+  const configured=!!(
+    FIREBASE_CONFIG &&
+    FIREBASE_CONFIG.apiKey &&
+    FIREBASE_CONFIG.apiKey!=="TU_API_KEY" &&
+    FIREBASE_CONFIG.projectId &&
+    FIREBASE_CONFIG.projectId!=="TU_PROYECTO"
+  );
+
+  if(!configured){
+    console.warn("FIREBASE_CONFIG no está configurado completamente.");
+    return;
   }
-}catch(e){
-  console.error("No se pudo inicializar Firebase, la página seguirá funcionando en modo local:",e);
-  cloudEnabled=false;
-}
+
+  if(!window.firebase){
+    console.error("Firebase está configurado pero el SDK no cargó. Revisa la conexión o los bloqueadores del navegador.");
+    return;
+  }
+
+  try{
+    /* Nunca inicializar dos veces. Si otra parte de CARS STREET ya creó
+       la app, reutilizamos exactamente esa instancia. */
+    const app=firebase.apps&&firebase.apps.length
+      ? firebase.app()
+      : firebase.initializeApp(FIREBASE_CONFIG);
+
+    if(typeof firebase.firestore==="function"){
+      cloudDb=firebase.firestore(app);
+      cloudEnabled=true;
+    }else{
+      console.error("Firebase Firestore no está disponible.");
+    }
+  }catch(e){
+    console.error("No se pudo inicializar Firestore en CARS STREET:",e);
+    cloudDb=null;
+    cloudEnabled=false;
+  }
+})();
 
 /* ================================================================
    CARS STREET — CUENTA DE USUARIO
@@ -818,23 +845,12 @@ function csApplyUserUI(user,profile={}){
   csCurrentUser=user||null;
   const img=$("navProfileImg"),fallback=$("csAccountFallback");
   if(img&&fallback){
-    if(user){
-      const src=csProfilePhotoForUser(user,profile);
-      img.src=src;
-      img.style.display="block";
-      fallback.style.display="none";
-      img.onerror=()=>{img.onerror=null;img.src=CS_DEFAULT_AVATAR;};
-    }else{
-      img.removeAttribute("src");
-      img.style.display="none";
-      fallback.style.display="block";
-    }
+    const src=csProfilePhotoForUser(user,profile);
+    img.src=src;img.style.display="block";fallback.style.display="none";
+    img.onerror=()=>{img.onerror=null;img.src=CS_DEFAULT_AVATAR;};
   }
   const avatar=$("csAccountAvatar");
-  if(avatar){
-    avatar.title=user?(profile.name||user.displayName||user.email||"Mi cuenta"):"Iniciar sesión";
-    avatar.setAttribute("aria-label",user?"Abrir menú de mi cuenta":"Iniciar sesión");
-  }
+  if(avatar)avatar.title=user?(profile.name||user.displayName||user.email||"Mi cuenta"):"Iniciar sesión";
 }
 async function csLoadUserProfile(user){
   if(!user)return {};
@@ -859,143 +875,263 @@ async function csSaveUserProfile(user,data){
   }
   csApplyUserUI(user,clean);
 }
-async function csInitAuth(){
-  if(csAuthInitialized&&csAuth)return csAuth;
-  if(csAuthInitialized)return null;
-  csAuthInitialized=true;
-  if(!window.firebase||typeof window.firebase.auth!=="function"){
-    console.error("Firebase Authentication no está disponible; verifica que firebase-auth-compat.js se haya cargado.");
-    csSetAccountError("El sistema de cuentas no está disponible. Recarga la página o revisa la conexión con Firebase.");
-    csApplyUserUI(null,{});
-    return null;
-  }
-  try{
-    // Reutilizar la app creada por la sincronización de Firestore.
-    const app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE_CONFIG);
-    csAuth=app.auth();
-    try{
-      await csAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    }catch(persistenceError){
-      console.warn("No se pudo establecer persistencia LOCAL; Firebase usará su comportamiento predeterminado.",persistenceError);
-    }
-    csAuth.onAuthStateChanged(async user=>{
-      csCurrentUser=user||null;
+async function csWaitForFirebaseAuth(timeoutMs=10000){
+  const started=Date.now();
+  while(Date.now()-started<timeoutMs){
+    if(window.firebase && typeof window.firebase.auth==="function"){
       try{
-        if(user){
-          const profile=await csLoadUserProfile(user);
-          csApplyUserUI(user,profile);
-        }else{
-          csApplyUserUI(null,{});
-          csCloseAccountMenu();csCloseAccountDialog();csCloseUserPanel();
+        if(!firebase.apps || !firebase.apps.length){
+          firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        const auth=firebase.auth();
+        if(auth && typeof auth.onAuthStateChanged==="function"){
+          return auth;
         }
       }catch(e){
-        console.error("Error al actualizar la interfaz de la cuenta:",e);
-        csApplyUserUI(user||null,{});
+        console.error("Error preparando Firebase Authentication:",e);
+        /* Si el SDK existe pero todavía no está listo, damos unos milisegundos
+           para que termine de cargar antes de informar al usuario. */
       }
-    },error=>{
-      console.error("Error del listener de autenticación de Firebase:",error);
-      csSetAccountError("No se pudo comprobar la sesión. Inténtalo de nuevo.");
-    });
-    return csAuth;
-  }catch(e){
-    console.error("No se pudo inicializar la cuenta de usuario:",e);
-    csSetAccountError("No se pudo inicializar el sistema de cuentas. Revisa la configuración de Firebase Authentication.");
-    csApplyUserUI(null,{});
+    }
+    await new Promise(resolve=>setTimeout(resolve,100));
+  }
+  return null;
+}
+
+async function csInitAuth(){
+  if(csAuthInitialized && csAuth)return csAuth;
+
+  const auth=await csWaitForFirebaseAuth();
+  if(!auth){
+    console.error("Firebase Authentication no está disponible después de esperar al SDK.");
+    csAuthInitialized=false;
     csAuth=null;
+    csApplyUserUI(null,{});
     return null;
   }
+
+  csAuth=auth;
+  csAuthInitialized=true;
+
+  if(!csAuth._csCarsStreetListenerBound){
+    csAuth._csCarsStreetListenerBound=true;
+    csAuth.onAuthStateChanged(async user=>{
+      csCurrentUser=user||null;
+      if(user){
+        try{
+          const profile=await csLoadUserProfile(user);
+          csApplyUserUI(user,profile||{});
+        }catch(e){
+          console.error("No se pudo cargar el perfil después del inicio de sesión:",e);
+          csApplyUserUI(user,{});
+        }
+      }else{
+        csApplyUserUI(null,{});
+        csCloseAccountMenu();
+        csCloseAccountDialog();
+        csCloseUserPanel();
+      }
+    });
+  }
+
+  return csAuth;
 }
-async function csSignInWithGoogle(){
+
+function csValidEmail(email){
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(String(email||"").trim());
+}
+
+function csFirebaseAuthMessage(error){
+  const code=String(error?.code||"");
+  const messages={
+    "auth/invalid-email":"Correo electrónico no válido.",
+    "auth/missing-email":"Escribe tu correo electrónico.",
+    "auth/missing-password":"Escribe tu contraseña.",
+    "auth/user-not-found":"No existe una cuenta con ese correo.",
+    "auth/wrong-password":"La contraseña es incorrecta.",
+    "auth/invalid-credential":"El correo o la contraseña no son correctos.",
+    "auth/invalid-login-credentials":"El correo o la contraseña no son correctos.",
+    "auth/email-already-in-use":"Ya existe una cuenta con ese correo.",
+    "auth/weak-password":"La contraseña debe tener al menos 6 caracteres.",
+    "auth/operation-not-allowed":"El inicio de sesión por correo no está habilitado en Firebase.",
+    "auth/popup-closed-by-user":"Se cerró la ventana de Google antes de completar el inicio de sesión.",
+    "auth/popup-blocked":"El navegador bloqueó la ventana de Google. Permite ventanas emergentes para CARS STREET e inténtalo de nuevo.",
+    "auth/cancelled-popup-request":"Ya hay un inicio de sesión de Google en curso.",
+    "auth/account-exists-with-different-credential":"Ese correo ya tiene una cuenta creada con otro método de inicio de sesión.",
+    "auth/network-request-failed":"No se pudo conectar con Firebase. Comprueba tu conexión a internet.",
+    "auth/too-many-requests":"Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+    "auth/unauthorized-domain":"Este dominio no está autorizado en Firebase Authentication.",
+    "auth/operation-not-supported-in-this-environment":"Este entorno no permite el inicio de sesión con ventana emergente de Google.",
+    "auth/internal-error":"Firebase devolvió un error interno. Revisa la consola para ver el detalle técnico."
+  };
+  return messages[code]||"No se pudo completar la autenticación. Revisa la consola para ver el error técnico.";
+}
+
+async function csHandleAuthSubmit(e){
+  e.preventDefault();
   csSetAccountError("");
-  if(!csAuth)await csInitAuth();
-  if(!csAuth){
-    csSetAccountError("El sistema de cuentas no está disponible en este momento. Revisa la configuración de Firebase Authentication.");
+
+  const auth=csAuth||await csInitAuth();
+  if(!auth){
+    csSetAccountError("No se pudo conectar con el sistema de cuentas. Comprueba que Firebase Authentication esté cargado y habilitado.");
     return;
   }
-  const button=$("csGoogleSignIn");
-  if(button){
-    button.disabled=true;
-    button.textContent="Conectando con Google…";
+
+  const email=$("csAuthEmail")?.value.trim()||"";
+  const password=$("csAuthPassword")?.value||"";
+
+  if(!csValidEmail(email)){
+    csSetAccountError("Correo electrónico no válido.");
+    $("csAuthEmail")?.focus();
+    return;
   }
+  if(!password){
+    csSetAccountError("Escribe tu contraseña.");
+    $("csAuthPassword")?.focus();
+    return;
+  }
+  if(password.length<6){
+    csSetAccountError("La contraseña debe tener al menos 6 caracteres.");
+    $("csAuthPassword")?.focus();
+    return;
+  }
+
+  const submit=$("csAuthSubmit");
+  if(submit){
+    submit.disabled=true;
+    submit.dataset.originalText=submit.textContent;
+    submit.textContent=csAuthMode==="register"?"CREANDO CUENTA…":"INICIANDO SESIÓN…";
+  }
+
   try{
-    const provider=new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({prompt:"select_account"});
-    const result=await csAuth.signInWithPopup(provider);
-    const user=result.user;
-    if(!user)throw new Error("Google no devolvió un usuario autenticado.");
-    const currentProfile=await csLoadUserProfile(user);
-    const googleName=String(user.displayName||currentProfile.name||user.email||"Mi cuenta").trim();
-    const googlePhoto=String(user.photoURL||currentProfile.photo||"").trim();
-    await csSaveUserProfile(user,{name:googleName,photo:googlePhoto});
-    csCurrentUser=user;
-    csApplyUserUI(user,{name:googleName,photo:googlePhoto,email:user.email||""});
-    csCloseAccountDialog();
-    showToast("Sesión iniciada con Google.");
+    let credential;
+
+    if(csAuthMode==="register"){
+      const name=$("csAuthName")?.value.trim()||"";
+      if(!name){
+        csSetAccountError("Escribe tu nombre completo.");
+        $("csAuthName")?.focus();
+        return;
+      }
+
+      credential=await auth.createUserWithEmailAndPassword(email,password);
+
+      let photo="";
+      const file=$("csAuthPhoto")?.files?.[0];
+      if(file){
+        try{
+          photo=await readImage(file);
+        }catch(err){
+          console.error("No se pudo leer la foto de perfil:",err);
+          csSetAccountError("La cuenta se creó, pero no se pudo leer la foto de perfil.");
+        }
+      }
+
+      if(photo&&cloudEnabled){
+        try{
+          photo=await uploadImageToCloudinary(photo);
+        }catch(err){
+          console.error("No se pudo subir la foto de usuario a Cloudinary:",err);
+          /* La autenticación no falla por una foto opcional. */
+        }
+      }
+
+      try{
+        await credential.user.updateProfile({
+          displayName:name,
+          photoURL:photo||null
+        });
+      }catch(err){
+        console.error("No se pudo actualizar el perfil de Firebase:",err);
+      }
+
+      await csSaveUserProfile(credential.user,{name,photo});
+
+      /* onAuthStateChanged también actualizará la UI. */
+      csCurrentUser=credential.user;
+      csApplyUserUI(credential.user,{name,photo});
+      csCloseAccountDialog();
+      showToast("Cuenta creada correctamente.");
+    }else{
+      credential=await auth.signInWithEmailAndPassword(email,password);
+
+      const profile=await csLoadUserProfile(credential.user);
+      csCurrentUser=credential.user;
+      csApplyUserUI(credential.user,profile||{});
+      csCloseAccountDialog();
+      showToast("Sesión iniciada correctamente.");
+    }
+
+    $("csAuthForm")?.reset();
   }catch(e){
-    console.error("No se pudo iniciar sesión con Google:",e);
-    const code=String(e?.code||"");
-    const messages={
-      "auth/popup-closed-by-user":"El inicio de sesión con Google fue cancelado.",
-      "auth/popup-blocked":"El navegador bloqueó la ventana de Google. Permite ventanas emergentes e inténtalo de nuevo.",
-      "auth/cancelled-popup-request":"Ya hay un inicio de sesión de Google en curso.",
-      "auth/account-exists-with-different-credential":"Ese correo ya tiene una cuenta en CARS STREET. Inicia sesión con el método original; después podrás vincular Google desde tu cuenta sin crear otra.",
-      "auth/provider-already-linked":"Google ya está vinculado a esta cuenta.",
-      "auth/operation-not-allowed":"El inicio de sesión con Google no está habilitado en Firebase Authentication.",
-      "auth/network-request-failed":"Problema de conexión. Comprueba tu internet e inténtalo de nuevo.",
-      "auth/too-many-requests":"Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
-      "auth/unauthorized-domain":"Este dominio no está autorizado en Firebase Authentication."
-    };
-    csSetAccountError(messages[code]||"No se pudo iniciar sesión con Google. Inténtalo de nuevo.");
+    console.error("CARS STREET Firebase Authentication:",e);
+    csSetAccountError(csFirebaseAuthMessage(e));
   }finally{
-    if(button){
-      button.disabled=false;
-      button.textContent="Continuar con Google";
+    if(submit){
+      submit.disabled=false;
+      submit.textContent=submit.dataset.originalText||(
+        csAuthMode==="register"?"CREAR CUENTA":"INICIAR SESIÓN"
+      );
+      delete submit.dataset.originalText;
     }
   }
 }
 
-async function csHandleAuthSubmit(e){
-  e.preventDefault();csSetAccountError("");
-  if(!csAuth)await csInitAuth();
-  if(!csAuth){csSetAccountError("El sistema de cuentas no está disponible en este momento. Revisa la configuración de Firebase Authentication.");return}
-  const email=$("csAuthEmail").value.trim(),password=$("csAuthPassword").value;
-  if(!email){csSetAccountError("Escribe tu correo electrónico.");return}
-  if(password.length<6){csSetAccountError("La contraseña debe tener al menos 6 caracteres.");return}
+async function csGoogleSignIn(){
+  csSetAccountError("");
+
+  const auth=csAuth||await csInitAuth();
+  if(!auth){
+    csSetAccountError("No se pudo conectar con el sistema de cuentas. Comprueba que Firebase Authentication esté habilitado.");
+    return;
+  }
+
+  if(typeof firebase.auth.GoogleAuthProvider!=="function"){
+    console.error("Firebase Authentication cargó, pero GoogleAuthProvider no está disponible.");
+    csSetAccountError("El inicio de sesión con Google no está disponible en este momento.");
+    return;
+  }
+
+  const btn=$("csGoogleBtn");
+  if(btn){
+    btn.disabled=true;
+    btn.dataset.originalText=btn.textContent;
+    btn.textContent="CONECTANDO CON GOOGLE…";
+  }
+
   try{
-    let credential;
-    if(csAuthMode==="register"){
-      const name=$("csAuthName").value.trim();
-      if(!name){csSetAccountError("Escribe tu nombre completo.");return}
-      credential=await csAuth.createUserWithEmailAndPassword(email,password);
-      const file=$("csAuthPhoto").files?.[0];let photo="";
-      if(file)try{photo=await readImage(file)}catch(err){console.error(err)}
-      if(photo&&cloudEnabled)try{photo=await uploadImageToCloudinary(photo)}catch(err){console.error("No se pudo subir la foto de usuario:",err)}
-      await credential.user.updateProfile({displayName:name,photoURL:photo||null});
-      await csSaveUserProfile(credential.user,{name,photo});
-      csApplyUserUI(credential.user,{name,photo,email:credential.user.email||email});
-      csCloseAccountDialog();showToast("Cuenta creada correctamente.");
-    }else{
-      credential=await csAuth.signInWithEmailAndPassword(email,password);
-      const profile=await csLoadUserProfile(credential.user);
-      csApplyUserUI(credential.user,profile);csCloseAccountDialog();showToast("Sesión iniciada correctamente.");
-    }
-    $("csAuthForm").reset();
-  }catch(e){
-    const code=String(e?.code||"");
-    const messages={
-      "auth/invalid-email":"El correo electrónico no es válido.",
-      "auth/user-not-found":"No existe una cuenta con ese correo.",
-      "auth/wrong-password":"La contraseña es incorrecta.",
-      "auth/invalid-credential":"El correo o la contraseña no son correctos.",
-      "auth/email-already-in-use":"Ya existe una cuenta con ese correo.",
-      "auth/weak-password":"La contraseña debe tener al menos 6 caracteres.",
-      "auth/operation-not-allowed":"El inicio de sesión por correo no está habilitado en Firebase Authentication.",
-      "auth/too-many-requests":"Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
-      "auth/network-request-failed":"Problema de conexión. Comprueba tu internet e inténtalo de nuevo."
+    const provider=new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+
+    const credential=await auth.signInWithPopup(provider);
+    const user=credential.user;
+
+    /* Conservamos el perfil existente si ya estaba guardado y completamos
+       los datos que Google proporciona automáticamente. */
+    const profile=await csLoadUserProfile(user);
+    const merged={
+      name:profile?.name||user.displayName||user.email||"Mi cuenta",
+      photo:profile?.photo||user.photoURL||"",
+      email:user.email||""
     };
-    csSetAccountError(messages[code]||"No se pudo completar la operación. Inténtalo de nuevo.");
+    await csSaveUserProfile(user,merged);
+
+    csCurrentUser=user;
+    csApplyUserUI(user,merged);
+    csCloseAccountDialog();
+    showToast("Sesión iniciada con Google correctamente.");
+  }catch(e){
+    console.error("CARS STREET — inicio de sesión con Google:",e);
+    csSetAccountError(csFirebaseAuthMessage(e));
+  }finally{
+    if(btn){
+      btn.disabled=false;
+      btn.textContent=btn.dataset.originalText||"CONTINUAR CON GOOGLE";
+      delete btn.dataset.originalText;
+    }
   }
 }
+
 async function csLogoutUser(){
   csCloseAccountMenu();
   if(!csAuth){csApplyUserUI(null,{});return}
@@ -1042,20 +1178,67 @@ async function csOpenUserPosts(){
 }
 function csBindAccountUI(){
   const avatar=$("csAccountAvatar");
-  if(avatar&&!avatar.dataset.bound){avatar.dataset.bound="1";avatar.addEventListener("click",e=>{e.stopPropagation();csOpenAccountMenu()})}
+  if(avatar&&!avatar.dataset.bound){
+    avatar.dataset.bound="1";
+    avatar.addEventListener("click",e=>{
+      e.stopPropagation();
+      csOpenAccountMenu();
+    });
+  }
+
   const form=$("csAuthForm");
-  if(form&&!form.dataset.bound){form.dataset.bound="1";form.addEventListener("submit",csHandleAuthSubmit)}
+  if(form&&!form.dataset.bound){
+    form.dataset.bound="1";
+    form.addEventListener("submit",csHandleAuthSubmit);
+  }
+
+  const googleBtn=$("csGoogleBtn");
+  if(googleBtn&&!googleBtn.dataset.bound){
+    googleBtn.dataset.bound="1";
+    googleBtn.addEventListener("click",e=>{
+      e.preventDefault();
+      csGoogleSignIn();
+    });
+  }
+
   const overlay=$("csAccountOverlay");
-  if(overlay&&!overlay.dataset.bound){overlay.dataset.bound="1";overlay.addEventListener("click",e=>{if(e.target===overlay)csCloseAccountDialog()})}
+  if(overlay&&!overlay.dataset.bound){
+    overlay.dataset.bound="1";
+    overlay.addEventListener("click",e=>{
+      if(e.target===overlay)csCloseAccountDialog();
+    });
+  }
+
   const panel=$("csUserPanel");
-  if(panel&&!panel.dataset.bound){panel.dataset.bound="1";panel.addEventListener("click",e=>{if(e.target===panel)csCloseUserPanel()})}
+  if(panel&&!panel.dataset.bound){
+    panel.dataset.bound="1";
+    panel.addEventListener("click",e=>{
+      if(e.target===panel)csCloseUserPanel();
+    });
+  }
+
   if(!document.body.dataset.csAccountDocBound){
     document.body.dataset.csAccountDocBound="1";
-    document.addEventListener("click",e=>{const account=$("csAccount");if(account&&!account.contains(e.target))csCloseAccountMenu()},{passive:true});
-    document.addEventListener("keydown",e=>{if(e.key==="Escape"){csCloseAccountMenu();csCloseAccountDialog();csCloseUserPanel()}});
+    document.addEventListener("click",e=>{
+      const account=$("csAccount");
+      if(account&&!account.contains(e.target))csCloseAccountMenu();
+    },{passive:true});
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape"){
+        csCloseAccountMenu();
+        csCloseAccountDialog();
+        csCloseUserPanel();
+      }
+    });
   }
-  csInitAuth();
+
+  /* Iniciamos Auth inmediatamente después de enlazar la UI.
+     csInitAuth espera al SDK si todavía no estuviera listo. */
+  csInitAuth().catch(e=>{
+    console.error("No se pudo iniciar CARS STREET Authentication:",e);
+  });
 }
+
 window.csOpenAccountDialog=csOpenAccountDialog;
 window.csCloseAccountDialog=csCloseAccountDialog;
 window.csToggleAuthMode=csToggleAuthMode;
@@ -2468,7 +2651,7 @@ async function saveCar(e){
       // agrega arriba de todo (igual que antes), pero desde "order" y no
       // desde la fecha, para no pisar el orden que el admin ya definió.
       order:old?(Number.isFinite(old.order)?old.order:nextTopOrder()):nextTopOrder(),
-      ...(old&&old.ownerUid?{ownerUid:String(old.ownerUid)}:(csCurrentUser?{ownerUid:String(csCurrentUser.uid)}:{}))
+      ...(old&&old.ownerUid?{ownerUid:String(old.ownerUid)}:{})
     };
 
     if(!data.model||!data.year||Number.isNaN(data.price)){
@@ -4312,6 +4495,17 @@ if(document.readyState==="interactive"||document.readyState==="complete"){
 })();
 
 </script>
-<script>document.addEventListener("DOMContentLoaded",()=>{csBindAccountUI()});</script>
+<script>
+(function(){
+  function bootCarsStreetAuth(){
+    try{csBindAccountUI()}catch(e){console.error("CARS STREET: error enlazando el sistema de cuentas:",e)}
+  }
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",bootCarsStreetAuth,{once:true});
+  }else{
+    bootCarsStreetAuth();
+  }
+})();
+</script>
 </body>
 </html>
