@@ -731,8 +731,9 @@ let cloudDb=null;
 try{
   const configured=FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.apiKey!=="TU_API_KEY"&&FIREBASE_CONFIG.projectId&&FIREBASE_CONFIG.projectId!=="TU_PROYECTO";
   if(configured&&window.firebase){
-    firebase.initializeApp(FIREBASE_CONFIG);
-    cloudDb=firebase.firestore();
+    // Una sola instancia compartida por Firestore, Storage y Authentication.
+    const firebaseApp=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE_CONFIG);
+    cloudDb=firebaseApp.firestore();
     cloudEnabled=true;
   }else if(configured&&!window.firebase){
     console.error("Firebase está configurado pero el SDK no cargó (revisa tu conexión a internet).");
@@ -817,12 +818,23 @@ function csApplyUserUI(user,profile={}){
   csCurrentUser=user||null;
   const img=$("navProfileImg"),fallback=$("csAccountFallback");
   if(img&&fallback){
-    const src=csProfilePhotoForUser(user,profile);
-    img.src=src;img.style.display="block";fallback.style.display="none";
-    img.onerror=()=>{img.onerror=null;img.src=CS_DEFAULT_AVATAR;};
+    if(user){
+      const src=csProfilePhotoForUser(user,profile);
+      img.src=src;
+      img.style.display="block";
+      fallback.style.display="none";
+      img.onerror=()=>{img.onerror=null;img.src=CS_DEFAULT_AVATAR;};
+    }else{
+      img.removeAttribute("src");
+      img.style.display="none";
+      fallback.style.display="block";
+    }
   }
   const avatar=$("csAccountAvatar");
-  if(avatar)avatar.title=user?(profile.name||user.displayName||user.email||"Mi cuenta"):"Iniciar sesión";
+  if(avatar){
+    avatar.title=user?(profile.name||user.displayName||user.email||"Mi cuenta"):"Iniciar sesión";
+    avatar.setAttribute("aria-label",user?"Abrir menú de mi cuenta":"Iniciar sesión");
+  }
 }
 async function csLoadUserProfile(user){
   if(!user)return {};
@@ -848,35 +860,56 @@ async function csSaveUserProfile(user,data){
   csApplyUserUI(user,clean);
 }
 async function csInitAuth(){
-  if(csAuthInitialized)return;
+  if(csAuthInitialized&&csAuth)return csAuth;
+  if(csAuthInitialized)return null;
   csAuthInitialized=true;
-  if(!window.firebase||!window.firebase.auth){
-    console.warn("Firebase Authentication no está disponible; la cuenta de usuario no puede iniciar sesión.");
+  if(!window.firebase||typeof window.firebase.auth!=="function"){
+    console.error("Firebase Authentication no está disponible; verifica que firebase-auth-compat.js se haya cargado.");
+    csSetAccountError("El sistema de cuentas no está disponible. Recarga la página o revisa la conexión con Firebase.");
     csApplyUserUI(null,{});
-    return;
+    return null;
   }
   try{
-    if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
-    csAuth=firebase.auth();
+    // Reutilizar la app creada por la sincronización de Firestore.
+    const app=firebase.apps.length?firebase.app():firebase.initializeApp(FIREBASE_CONFIG);
+    csAuth=app.auth();
+    try{
+      await csAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    }catch(persistenceError){
+      console.warn("No se pudo establecer persistencia LOCAL; Firebase usará su comportamiento predeterminado.",persistenceError);
+    }
     csAuth.onAuthStateChanged(async user=>{
       csCurrentUser=user||null;
-      if(user){
-        const profile=await csLoadUserProfile(user);
-        csApplyUserUI(user,profile);
-      }else{
-        csApplyUserUI(null,{});
-        csCloseAccountMenu();csCloseAccountDialog();csCloseUserPanel();
+      try{
+        if(user){
+          const profile=await csLoadUserProfile(user);
+          csApplyUserUI(user,profile);
+        }else{
+          csApplyUserUI(null,{});
+          csCloseAccountMenu();csCloseAccountDialog();csCloseUserPanel();
+        }
+      }catch(e){
+        console.error("Error al actualizar la interfaz de la cuenta:",e);
+        csApplyUserUI(user||null,{});
       }
+    },error=>{
+      console.error("Error del listener de autenticación de Firebase:",error);
+      csSetAccountError("No se pudo comprobar la sesión. Inténtalo de nuevo.");
     });
+    return csAuth;
   }catch(e){
     console.error("No se pudo inicializar la cuenta de usuario:",e);
+    csSetAccountError("No se pudo inicializar el sistema de cuentas. Revisa la configuración de Firebase Authentication.");
     csApplyUserUI(null,{});
+    csAuth=null;
+    return null;
   }
 }
 async function csSignInWithGoogle(){
   csSetAccountError("");
+  if(!csAuth)await csInitAuth();
   if(!csAuth){
-    csSetAccountError("El sistema de cuentas no está disponible en este momento.");
+    csSetAccountError("El sistema de cuentas no está disponible en este momento. Revisa la configuración de Firebase Authentication.");
     return;
   }
   const button=$("csGoogleSignIn");
@@ -905,8 +938,11 @@ async function csSignInWithGoogle(){
       "auth/popup-closed-by-user":"El inicio de sesión con Google fue cancelado.",
       "auth/popup-blocked":"El navegador bloqueó la ventana de Google. Permite ventanas emergentes e inténtalo de nuevo.",
       "auth/cancelled-popup-request":"Ya hay un inicio de sesión de Google en curso.",
-      "auth/account-exists-with-different-credential":"Ese correo ya tiene una cuenta en CARS STREET. Inicia sesión con el método original para evitar crear una cuenta duplicada.",
+      "auth/account-exists-with-different-credential":"Ese correo ya tiene una cuenta en CARS STREET. Inicia sesión con el método original; después podrás vincular Google desde tu cuenta sin crear otra.",
+      "auth/provider-already-linked":"Google ya está vinculado a esta cuenta.",
       "auth/operation-not-allowed":"El inicio de sesión con Google no está habilitado en Firebase Authentication.",
+      "auth/network-request-failed":"Problema de conexión. Comprueba tu internet e inténtalo de nuevo.",
+      "auth/too-many-requests":"Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
       "auth/unauthorized-domain":"Este dominio no está autorizado en Firebase Authentication."
     };
     csSetAccountError(messages[code]||"No se pudo iniciar sesión con Google. Inténtalo de nuevo.");
@@ -920,8 +956,11 @@ async function csSignInWithGoogle(){
 
 async function csHandleAuthSubmit(e){
   e.preventDefault();csSetAccountError("");
-  if(!csAuth){csSetAccountError("El sistema de cuentas no está disponible en este momento.");return}
+  if(!csAuth)await csInitAuth();
+  if(!csAuth){csSetAccountError("El sistema de cuentas no está disponible en este momento. Revisa la configuración de Firebase Authentication.");return}
   const email=$("csAuthEmail").value.trim(),password=$("csAuthPassword").value;
+  if(!email){csSetAccountError("Escribe tu correo electrónico.");return}
+  if(password.length<6){csSetAccountError("La contraseña debe tener al menos 6 caracteres.");return}
   try{
     let credential;
     if(csAuthMode==="register"){
@@ -933,6 +972,7 @@ async function csHandleAuthSubmit(e){
       if(photo&&cloudEnabled)try{photo=await uploadImageToCloudinary(photo)}catch(err){console.error("No se pudo subir la foto de usuario:",err)}
       await credential.user.updateProfile({displayName:name,photoURL:photo||null});
       await csSaveUserProfile(credential.user,{name,photo});
+      csApplyUserUI(credential.user,{name,photo,email:credential.user.email||email});
       csCloseAccountDialog();showToast("Cuenta creada correctamente.");
     }else{
       credential=await csAuth.signInWithEmailAndPassword(email,password);
@@ -949,7 +989,9 @@ async function csHandleAuthSubmit(e){
       "auth/invalid-credential":"El correo o la contraseña no son correctos.",
       "auth/email-already-in-use":"Ya existe una cuenta con ese correo.",
       "auth/weak-password":"La contraseña debe tener al menos 6 caracteres.",
-      "auth/operation-not-allowed":"El inicio de sesión por correo no está habilitado en Firebase."
+      "auth/operation-not-allowed":"El inicio de sesión por correo no está habilitado en Firebase Authentication.",
+      "auth/too-many-requests":"Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+      "auth/network-request-failed":"Problema de conexión. Comprueba tu internet e inténtalo de nuevo."
     };
     csSetAccountError(messages[code]||"No se pudo completar la operación. Inténtalo de nuevo.");
   }
@@ -2426,7 +2468,7 @@ async function saveCar(e){
       // agrega arriba de todo (igual que antes), pero desde "order" y no
       // desde la fecha, para no pisar el orden que el admin ya definió.
       order:old?(Number.isFinite(old.order)?old.order:nextTopOrder()):nextTopOrder(),
-      ...(old&&old.ownerUid?{ownerUid:String(old.ownerUid)}:{})
+      ...(old&&old.ownerUid?{ownerUid:String(old.ownerUid)}:(csCurrentUser?{ownerUid:String(csCurrentUser.uid)}:{}))
     };
 
     if(!data.model||!data.year||Number.isNaN(data.price)){
