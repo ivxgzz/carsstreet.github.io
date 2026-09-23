@@ -223,31 +223,254 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
 @media(max-width:560px){.ai-vcard-img{width:100px}.ai-chat-messages{padding:13px}.ai-compare{font-size:.66rem}.ai-compare-head,.ai-compare-row{padding:8px 7px}}
 
 
-/* ===== CARS STREET IA — COMPACT PREMIUM CHAT ===== */
-.ai-chat{width:min(400px,94vw);height:min(640px,82vh)}
-.ai-chat-header{padding:13px 16px;gap:8px}
-.ai-chat-header-title{gap:1px}
-.ai-chat-messages{padding:12px 13px;gap:8px}
-.ai-msg{max-width:90%;padding:9px 11px;border-radius:13px;font-size:.82rem;line-height:1.38}
-.ai-msg-note{font-size:.68rem;margin-top:4px}
-.ai-typing{gap:4px;padding:9px 11px;border-radius:13px}
-.ai-typing-label{font-size:.73rem}
+/* ===== CARS STREET IA — AJUSTE VISUAL PREMIUM FINAL ===== */
+.ai-chat{
+  width:min(470px,94vw);
+  height:min(720px,86vh);
+  background:
+    radial-gradient(circle at 100% 0,rgba(255,43,43,.11),transparent 34%),
+    linear-gradient(180deg,#111418,#08090b);
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:22px;
+  box-shadow:0 35px 110px rgba(0,0,0,.72),0 0 0 1px rgba(255,43,43,.04);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+
+.ai-chat-header{
+  padding:16px 18px;
+  gap:12px;
+}
+
+.ai-chat-header-title{gap:3px}
+
+.ai-chat-header-title strong{
+  font-size:1.04rem;
+  letter-spacing:.015em;
+}
+
+.ai-chat-header-title small{
+  font-size:.72rem;
+  line-height:1.35;
+}
+
+.ai-chat-close{
+  width:34px;
+  height:34px;
+  font-size:1.15rem;
+  transition:background .2s ease,transform .2s ease;
+}
+
+.ai-chat-close:hover{
+  background:rgba(255,255,255,.14);
+  transform:scale(1.04);
+}
+
+.ai-chat-messages{
+  min-height:0;
+  padding:17px 16px;
+  gap:10px;
+  scroll-behavior:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#3a4046 transparent;
+}
+
+.ai-chat-messages::-webkit-scrollbar{width:7px}
+.ai-chat-messages::-webkit-scrollbar-track{background:transparent}
+.ai-chat-messages::-webkit-scrollbar-thumb{
+  background:#343a40;
+  border-radius:999px;
+}
+.ai-chat-messages::-webkit-scrollbar-thumb:hover{background:#4b535b}
+
+.ai-msg{
+  max-width:88%;
+  padding:10px 13px;
+  border-radius:14px;
+  font-size:.84rem;
+  line-height:1.48;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+
+.ai-msg.bot{
+  border-bottom-left-radius:5px;
+  box-shadow:0 6px 18px rgba(0,0,0,.16);
+}
+
+.ai-msg.user{
+  border-bottom-right-radius:5px;
+  box-shadow:0 7px 20px rgba(255,43,43,.15);
+}
+
+.ai-msg p{margin:.42em 0}
+.ai-msg p:first-child{margin-top:0}
+.ai-msg p:last-child{margin-bottom:0}
+
+.ai-msg ul,.ai-msg ol{
+  margin:.42em 0;
+  padding-left:1.25em;
+}
+
+.ai-msg li{margin:.14em 0}
+
+.ai-msg code{
+  overflow-wrap:anywhere;
+  font-size:.9em;
+}
+
+.ai-msg-note{
+  font-size:.68rem;
+  margin-top:5px;
+}
+
+.ai-typing{
+  gap:5px;
+  padding:10px 13px;
+  border-radius:14px;
+  border-bottom-left-radius:5px;
+}
+
+.ai-typing-label{font-size:.72rem}
 .ai-typing-dot{width:6px;height:6px}
-.ai-suggestions{gap:5px;padding:0 12px 9px}
-.ai-chip{padding:6px 9px;font-size:.70rem}
-.ai-chat-inputrow{gap:6px;padding:9px 12px}
-.ai-chat-inputrow input{padding:9px 11px;border-radius:11px;font-size:.82rem}
-.ai-send{width:40px;height:40px;min-width:40px}
-.ai-msg p{margin:.35em 0}
-.ai-msg ul,.ai-msg ol{margin:.35em 0;padding-left:1.2em}
-.ai-msg li{margin:.12em 0}
+
+.ai-chat-suggestions{
+  gap:5px;
+  padding:0 14px 10px;
+  max-height:72px;
+  overflow-y:auto;
+  scrollbar-width:none;
+}
+
+.ai-chat-suggestions::-webkit-scrollbar{display:none}
+
+.ai-chip{
+  padding:6px 9px;
+  border-radius:999px;
+  font-size:.69rem;
+  font-weight:750;
+  transition:transform .2s ease,border-color .2s ease,background .2s ease;
+}
+
+.ai-chip:hover{
+  transform:translateY(-1px);
+  background:#23272b;
+}
+
+.ai-chat-inputrow{
+  gap:8px;
+  padding:11px 14px 13px;
+  background:linear-gradient(180deg,#0d0f11,#0a0b0d);
+}
+
+.ai-chat-inputrow input{
+  min-width:0;
+  padding:11px 13px;
+  border-radius:12px;
+  font-size:.84rem;
+  line-height:1.35;
+}
+
+.ai-chat-inputrow input:focus{
+  box-shadow:0 0 0 3px rgba(255,43,43,.08);
+}
+
+.ai-send{
+  width:42px;
+  height:42px;
+  min-width:42px;
+  border-radius:12px;
+  transition:transform .2s ease,filter .2s ease,box-shadow .2s ease;
+}
+
+.ai-send:hover{
+  transform:translateY(-1px);
+  box-shadow:0 7px 18px rgba(255,43,43,.22);
+}
+
 @media(max-width:560px){
-  .ai-chat{right:8px;bottom:8px;width:calc(100vw - 16px);height:min(690px,88vh);border-radius:18px}
-  .ai-chat-messages{padding:10px;gap:7px}
-  .ai-msg{max-width:94%;padding:8px 10px;font-size:.80rem;line-height:1.36}
-  .ai-suggestions{padding:0 10px 8px;gap:4px}
-  .ai-chip{padding:6px 8px;font-size:.68rem}
-  .ai-chat-inputrow{padding:8px 10px}
+  .ai-chat{
+    right:10px;
+    bottom:10px;
+    left:auto;
+    top:auto;
+    width:calc(100vw - 20px);
+    max-width:none;
+    height:min(700px,88vh);
+    border-radius:19px;
+  }
+
+  .ai-chat-header{padding:14px 14px}
+
+  .ai-chat-header-title{
+    min-width:0;
+    padding-left:38px;
+  }
+
+  .ai-chat-header-title strong{font-size:.98rem}
+
+  .ai-chat-header-title small{
+    font-size:.68rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .ai-chat-messages{
+    padding:13px 11px;
+    gap:8px;
+  }
+
+  .ai-msg{
+    max-width:94%;
+    padding:9px 11px;
+    font-size:.81rem;
+    line-height:1.45;
+  }
+
+  .ai-chat-suggestions{
+    padding:0 10px 8px;
+    gap:4px;
+    max-height:66px;
+  }
+
+  .ai-chip{
+    padding:5px 8px;
+    font-size:.66rem;
+  }
+
+  .ai-chat-inputrow{
+    gap:6px;
+    padding:8px 10px 10px;
+  }
+
+  .ai-chat-inputrow input{
+    padding:10px 11px;
+    font-size:.80rem;
+  }
+
+  .ai-send{
+    width:40px;
+    height:40px;
+    min-width:40px;
+    border-radius:11px;
+  }
+}
+
+@media(max-width:380px){
+  .ai-chat{
+    right:7px;
+    bottom:7px;
+    width:calc(100vw - 14px);
+    height:min(680px,90vh);
+  }
+
+  .ai-msg{
+    max-width:96%;
+    font-size:.79rem;
+  }
 }
 
 /* ===== CARS STREET IA — BOTÓN FLOTANTE CON LOGO OFICIAL ===== */
