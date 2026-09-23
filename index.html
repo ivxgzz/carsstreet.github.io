@@ -3770,33 +3770,39 @@ async function askClaude(userText){
     throw new Error("CLAUDE_API_URL no está configurada");
   }
 
-  const history = (AI.claudeHistory || [])
-    .slice(-12)
-    .map(x => ({
-      role: x.role === "assistant" ? "model" : "user",
-      text: String(x.content || "").slice(0, 12000)
-    }));
+  const history = buildClaudeMessages();
 
   history.push({
-    role: "user",
-    text: String(userText).slice(0, 12000)
+    role:"user",
+    content:String(userText).slice(0,12000)
   });
+
+  const inventoryContext = buildClaudeInventoryContext();
+
+  const payload = {
+    message: String(userText).slice(0,12000),
+    history: history,
+    system: CARS_STREET_SYSTEM_PROMPT,
+    currentVehicle: inventoryContext.currentVehicle,
+    inventory: inventoryContext.vehicles
+  };
 
   const res = await fetch(CLAUDE_API_URL.replace(/\/$/,""), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
     },
-    body: JSON.stringify({
-      message: String(userText).slice(0, 12000),
-      history
-    })
+    body:JSON.stringify(payload)
   });
 
-  const data = await res.json().catch(() => ({}));
+  const data = await res.json().catch(()=>({}));
 
   if(!res.ok){
-    throw new Error(data?.error || `HTTP ${res.status}`);
+    throw new Error(
+      data?.error ||
+      data?.message ||
+      `HTTP ${res.status}`
+    );
   }
 
   const answer = String(data?.response || "").trim();
@@ -3807,6 +3813,7 @@ async function askClaude(userText){
 
   return answer;
 }
+
 
 /* ---------- UI ---------- */
 function aiPushMessage(role,html){
