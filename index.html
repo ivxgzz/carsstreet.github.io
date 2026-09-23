@@ -3099,6 +3099,20 @@ function recommendationIntent(norm){
 }
 
 function comparisonIntent(norm){
+  const availableComparison = getComparisonVehicles(norm).length >= 2;
+
+  // Las recomendaciones solo se procesan localmente
+  // cuando realmente hay vehículos de CARS STREET involucrados.
+  const recommendation =
+    recommendationIntent(norm) &&
+    (
+      availableComparison ||
+      (AI.lastResults && AI.lastResults.length >= 2) ||
+      hasReference(norm)
+    );
+
+  return availableComparison || recommendation;
+}
   return /\b(compara|comparar|comparacion|comparativa|diferencia entre|entre .+ y |cual es mejor|cual conviene|cual me recomiendas|cual recomiendas|cual comprarias|cual compraria|cual me conviene|cual vale la pena|con cual me quedo|de estos|de esas|de los que|de las que)\b/.test(norm)
     || recommendationIntent(norm);
 }
