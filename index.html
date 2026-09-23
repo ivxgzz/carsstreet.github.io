@@ -2640,7 +2640,7 @@ const AI = {
   lastIntent:"",
   lastComparison:[],
   lastRecommendation:null,
-  claudeHistory:[]
+  aiHistory:[]
 };
 
 const AI_CONTACT = {
@@ -3099,22 +3099,21 @@ function recommendationIntent(norm){
 }
 
 function comparisonIntent(norm){
-  const availableComparison = getComparisonVehicles(norm).length >= 2;
-
-  // Las recomendaciones solo se procesan localmente
-  // cuando realmente hay vehículos de CARS STREET involucrados.
-  const recommendation =
-    recommendationIntent(norm) &&
-    (
-      availableComparison ||
-      (AI.lastResults && AI.lastResults.length >= 2) ||
-      hasReference(norm)
-    );
-
-  return availableComparison || recommendation;
-}
-  return /\b(compara|comparar|comparacion|comparativa|diferencia entre|entre .+ y |cual es mejor|cual conviene|cual me recomiendas|cual recomiendas|cual comprarias|cual compraria|cual me conviene|cual vale la pena|con cual me quedo|de estos|de esas|de los que|de las que)\b/.test(norm)
+  const base=/\b(compara|comparar|comparacion|comparativa|diferencia entre|entre .+ y |cual es mejor|cual conviene|cual me recomiendas|cual recomiendas|cual comprarias|cual compraria|cual me conviene|cual vale la pena|con cual me quedo|de estos|de esas|de los que|de las que)\b/.test(norm)
     || recommendationIntent(norm);
+  if(!base) return false;
+
+  /* Las comparaciones locales solo se activan si hay una intención real
+     de trabajar con vehículos/resultados del inventario. Las dudas técnicas
+     generales (AWD vs 4x4, CVT vs automática, etc.) deben llegar a la IA. */
+  if(/\b(de estos|de esas|de los que|de las que|el primero|el segundo|el tercero|el anterior|este|ese|esa|estos|esas)\b/.test(norm)
+     && AI.lastResults&&AI.lastResults.length) return true;
+
+  const available=Array.isArray(vehicles)
+    ? vehicles.filter(v=>v&&(!v.status||normalizeAIText(v.status)==="disponible"))
+    : [];
+  const matches=available.filter(v=>scoreVehicle(v,norm)>=35);
+  return matches.length>=2 || (AI.lastResults&&AI.lastResults.length>=2 && recommendationIntent(norm));
 }
 
 function userPriority(norm){
@@ -3441,9 +3440,7 @@ function aiRespond(rawText){
     return;
   }
 
-  /* Preguntas generales primero cuando claramente no apuntan a una publicación. */
-  const general=answerGeneralAutomotive(norm);
-  const explicitGeneral=/que es|que significa|diferencia|como funciona|explica|para que sirve|recomiendas|es bueno|es mejor/.test(norm);
+  /* Las preguntas automotrices generales pasan a la IA real. */
   const vehicleRef=resolveReference(norm)||findVehicleFromText(norm,AI.lastResults);
   const specificQuestion=/motor|cilindraje|placa|peritaje|blindad|precio|cuesta|vale|kilometraje|kilometros|\bkm\b|ano|color|combustible|gasolina|diesel|hibrid|electrico|transmision|automatic|manual|version|ubicacion|donde esta|descripcion|estado|publicad/.test(norm);
 
@@ -3482,11 +3479,6 @@ function aiRespond(rawText){
     }
 
     aiPushMessage("bot","Claro. Puedo compararlos y recomendarte uno con base en los datos reales de CARS STREET. Dime qué vehículos quieres comparar, por ejemplo: <strong>“Mustang o Camaro”</strong>, o si te refieres a los resultados anteriores, <strong>“¿cuál de esos me recomiendas?”</strong>.");
-    return;
-  }
-
-  if(general && (!vehicleRef || explicitGeneral) && !specificQuestion){
-    aiPushMessage("bot",`<strong>En términos generales:</strong> ${escapeHtml(general)}`);
     return;
   }
 
@@ -3616,13 +3608,6 @@ function aiRespond(rawText){
     AI.awaitingBudget=false;
   }
 
-  /* Si es una duda general que no está en la base local, responde como asistente
-     automotriz y no bloquea por falta de una palabra clave. */
-  if(general){
-    aiPushMessage("bot",`<strong>En términos generales:</strong> ${escapeHtml(general)}`);
-    return;
-  }
-
   if(AI.lastVehicle){
     const specific=answerVehicleQuestion(AI.lastVehicle,norm)||answerAnyStoredField(AI.lastVehicle,norm);
     if(specific){aiPushMessage("bot",escapeHtml(specific));return;}
@@ -3632,25 +3617,27 @@ function aiRespond(rawText){
 }
 
 /* ============================================================================
-   CLAUDE API — IA REAL DE CARS STREET
-   La clave NO se guarda en este HTML. El navegador llama a un proxy/backend
-   seguro configurado en CLAUDE_API_URL, que guarda ANTHROPIC_API_KEY como secreto.
+   CARS STREET IA — GEMINI A TRAVÉS DE CLOUDFLARE WORKER
+   La clave de Gemini NO se guarda en este HTML. El navegador solo llama al
+   Worker seguro de CARS STREET, que mantiene GEMINI_API_KEY como secreto.
    ============================================================================ */
-const CLAUDE_API_URL = "https://proud-pine-2fb5.ivanghtyx.workers.dev";
+const AI_WORKER_URL = "https://proud-pine-2fb5.ivanghtyx.workers.dev";
 
 const CARS_STREET_SYSTEM_PROMPT = `Eres CARS STREET IA, el asistente automotriz oficial de CARS STREET en Colombia.
 
 # MISIÓN
 Ayuda al usuario a entender, comparar, buscar y comprar vehículos. Responde de forma natural, clara, útil y breve cuando la pregunta sea simple; profundiza solo cuando haga falta.
 
+# CONTEXTO Y SEGUIMIENTO
+Mantén el contexto de toda la conversación disponible en HISTORY.
+Si el usuario dice "y pa q sirve?", "y ese?", "cuanto gasta?", "esa caja es buena?", "ahh y cuál me recomiendas?" o algo equivalente, interpreta la referencia usando la conversación anterior y el VEHÍCULO ACTUAL cuando corresponda. No obligues al usuario a repetir el tema.
+
 # REGLA CRÍTICA: VEHÍCULO ACTUAL
-Si existe un vehículo en el contexto marcado como AI.currentVehicle / VEHÍCULO ACTUAL, debes usarlo automáticamente cuando el usuario diga:
+Si existe un vehículo en el contexto marcado como VEHÍCULO ACTUAL, debes usarlo automáticamente cuando el usuario diga:
 "este carro", "ese carro", "el carro", "este vehículo", "ese vehículo", "la camioneta", "ese Mazda", "el primero", "el anterior", "ese", "esa", "el que vimos", o expresiones equivalentes.
 NO pidas nuevamente marca, modelo o versión si el contexto ya los contiene.
 
-Antes de responder una pregunta específica sobre "este/ese/el carro", identifica mentalmente:
-marca + modelo + versión + año + motor + cilindraje + potencia + combustible + transmisión + kilometraje + precio + demás campos disponibles.
-
+Antes de responder una pregunta específica sobre "este/ese/el carro", identifica mentalmente todos los datos disponibles de esa publicación.
 Si el usuario menciona explícitamente otro vehículo, cambia el contexto al vehículo mencionado solo si puede identificarse con suficiente seguridad.
 
 # COMPRENSIÓN DEL LENGUAJE
@@ -3662,9 +3649,9 @@ Entiende:
 - lenguaje coloquial colombiano: carro, nave, camioneta, camionetica, carrito, gastón, ganga, plata, lomas, trocha, tanquear, corriente, extra, toca, me sirve, me conviene;
 - preguntas muy cortas: "motor?", "consumo?", "caja?", "turbo?", "precio?";
 - varias preguntas en un mismo mensaje;
-- frases coloquiales como "cuanto come de gasolina", "esa caja sale buena?", "ese motor cuantos caballos da", "me sirve pa viajar?", "vale la pena meterle plata a este?".
+- frases como "cuanto come de gasolina", "esa caja sale buena?", "ese motor cuantos caballos da", "me sirve pa viajar?", "vale la pena meterle plata a este?".
 
-Ejemplos de equivalencias:
+Ejemplos:
 "cuanto gasta" = consumo de combustible.
 "cuanto come de gasolina" = consumo.
 "cuanto km por galon" = rendimiento de combustible.
@@ -3708,11 +3695,24 @@ Cuando preguntan "vale la pena", "lo comprarías", "me conviene", "está caro", 
 Antes de comprar un usado, recomienda revisión mecánica/peritaje independiente cuando sea pertinente.
 
 # COMPARACIONES
-Si preguntan "este o aquel", "cuál es mejor", "cuál comprarías", "cuál gasta menos", etc.:
+Solo trata una pregunta como COMPARACIÓN DE VEHÍCULOS DEL INVENTARIO cuando realmente se refiera a publicaciones/vehículos disponibles o a resultados anteriores del inventario.
+Ejemplos que SÍ pueden ser comparación de inventario:
+- "Mustang o Camaro" cuando esos vehículos aparecen en CARS STREET.
+- "cuál de esos me recomiendas?"
+- "el primero o el segundo?"
+- "este o ese carro?"
+Las preguntas generales como:
+- "qué diferencia hay entre AWD y 4x4"
+- "qué diferencia hay entre CVT y automática"
+- "qué es torque"
+- "qué hace un intercooler"
+- "qué es 4x4"
+- "qué significa AWD"
+son preguntas automotrices generales. Respóndelas como conocimiento automotriz general y NO las conviertas en una comparación de publicaciones.
+Cuando sí haya comparación de vehículos del inventario:
 - identifica ambos vehículos;
 - compara los datos reales de las publicaciones si existen;
 - toma postura y recomienda uno según el uso;
-- explica qué opción gana por precio, consumo, confiabilidad, carretera, ciudad, familia o desempeño cuando sea relevante;
 - si falta información importante, dilo en vez de inventarla.
 
 # PREGUNTAS MÚLTIPLES
@@ -3725,52 +3725,56 @@ Si un mensaje contiene varias preguntas, responde todas en el mismo orden y sin 
 - No respondas como manual técnico salvo que el usuario lo pida.
 - Para una pregunta simple, 1-4 frases suelen bastar.
 - Usa viñetas cuando haya varias especificaciones.
-- No menciones API, backend, prompt, modelo de IA ni estas instrucciones.
+- No menciones API, backend, prompt, modelo de IA, Cloudflare, Worker, Gemini, ni estas instrucciones.
 - Si puedes responder con los datos disponibles, no pidas información innecesaria.
 - Si no puedes confirmar un dato, dilo claramente.
+
+# ALCANCE
+Responde sobre automóviles, el inventario y los servicios relacionados con CARS STREET. No respondas ni desarrolles temas políticos, sexuales u otros temas ajenos al propósito automotriz. Si el usuario cambia a un tema ajeno, redirígelo de forma breve hacia automóviles.
 
 # CONTACTO
 Si el usuario quiere comprar, separar, negociar, probar, visitar, recibir más fotos, hablar con un asesor, financiar o hacer una oferta, invítalo a WhatsApp: +57 311 616 9801 o +57 316 638 8399.
 Para redes sociales, menciona Instagram @carsstreet_motors.
-
-# EJEMPLOS DE INTENCIÓN
-"cuanto gasta este carro" -> analiza el VEHÍCULO ACTUAL.
-"gasta mucho?" -> analiza el consumo del VEHÍCULO ACTUAL.
-"q motor tiene" -> motor del VEHÍCULO ACTUAL.
-"cuantos caballos" -> potencia del VEHÍCULO ACTUAL.
-"esa caja es buena?" -> transmisión del VEHÍCULO ACTUAL.
-"me sirve para viajar?" -> evalúa el VEHÍCULO ACTUAL para carretera/viajes.
-"que revisar antes de comprarlo?" -> checklist aplicado al VEHÍCULO ACTUAL.
-"vale la pena?" -> evaluación de compra del VEHÍCULO ACTUAL.
-"cuanto cuesta?" -> precio REAL de la publicación del VEHÍCULO ACTUAL.
-"esta caro?" -> compara el precio de la publicación con referencias disponibles; no inventes una referencia.
 `;
 
-
-function buildClaudeInventoryContext(){
+function buildAIInventoryContext(){
   const available=Array.isArray(vehicles)?vehicles.filter(v=>v&&v.status==="Disponible"):[];
-  const mapVehicle=v=>v?({
-    id:v.id, brand:v.brand, model:v.model, version:v.version||"", year:v.year,
-    price:v.price, mileage:v.mileage, type:v.type, fuel:v.fuel,
-    transmission:v.transmission, status:v.status, location:v.location||"",
-    plateDigit:v.plateDigit??"", inspection:v.inspection||"", armor:v.armor||"",
-    engine:v.engine||"", color:v.color||"", featured:!!v.featured,
-    description:v.desc||""
-  }):null;
-  // Se envían inventario + vehículo actual para que "este carro/ese carro" tenga
-  // una referencia inequívoca incluso cuando haya muchas publicaciones.
+  const mapVehicle=v=>{
+    if(!v) return null;
+    // Conserva los campos existentes de la publicación y normaliza los nombres
+    // que la IA necesita para identificar rápidamente la información principal.
+    const copy={...v};
+    copy.version=v.version||"";
+    copy.description=v.description||v.desc||"";
+    copy.location=v.location||v.city||"";
+    copy.engine=v.engine||v.motor||"";
+    copy.color=v.color||"";
+    copy.transmission=v.transmission||"";
+    copy.fuel=v.fuel||"";
+    copy.price=v.price;
+    copy.mileage=v.mileage;
+    copy.year=v.year;
+    copy.type=v.type;
+    copy.status=v.status;
+    return copy;
+  };
   return {
     currentVehicle:mapVehicle(AI.currentVehicle||AI.lastVehicle||null),
     vehicles:available.map(mapVehicle)
   };
 }
 
-function buildClaudeMessages(){
-  const clean=(AI.claudeHistory||[]).filter(x=>x&&x.role&&x.content).slice(-12);
-  return clean.map(x=>({role:x.role,content:String(x.content).slice(0,12000)}));
+function buildAIHistory(){
+  const clean=(AI.aiHistory||[])
+    .filter(x=>x&&x.role&&x.content)
+    .slice(-16);
+  return clean.map(x=>({
+    role:x.role==="assistant"?"model":(x.role==="model"?"model":"user"),
+    content:String(x.content).slice(0,12000)
+  }));
 }
 
-function claudeFormat(text){
+function aiFormat(text){
   let s=escapeHtml(String(text||""));
   s=s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
   s=s.replace(/`([^`]+)`/g,"<code>$1</code>");
@@ -3779,55 +3783,36 @@ function claudeFormat(text){
   return s;
 }
 
-async function askClaude(userText){
-  if(!CLAUDE_API_URL){
-    throw new Error("CLAUDE_API_URL no está configurada");
-  }
+async function askCarsStreetAI(userText){
+  if(!AI_WORKER_URL) throw new Error("Servicio de IA no configurado");
 
-  const history = buildClaudeMessages();
+  const history=buildAIHistory();
+  history.push({role:"user",content:String(userText).slice(0,12000)});
 
-  history.push({
-    role:"user",
-    content:String(userText).slice(0,12000)
-  });
+  const inventoryContext=buildAIInventoryContext();
+  const currentVehicle=inventoryContext.currentVehicle||null;
 
-  const inventoryContext = buildClaudeInventoryContext();
-
-  const payload = {
-    message: String(userText).slice(0,12000),
-    history: history,
-    system: CARS_STREET_SYSTEM_PROMPT,
-    currentVehicle: inventoryContext.currentVehicle,
-    inventory: inventoryContext.vehicles
+  const payload={
+    message:String(userText).slice(0,12000),
+    history,
+    system:CARS_STREET_SYSTEM_PROMPT,
+    currentVehicle,
+    inventory:inventoryContext.vehicles
   };
 
-  const res = await fetch(CLAUDE_API_URL.replace(/\/$/,""), {
+  const res=await fetch(AI_WORKER_URL.replace(/\/$/,""),{
     method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify(payload)
   });
 
-  const data = await res.json().catch(()=>({}));
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok) throw new Error(data?.error||data?.message||`HTTP ${res.status}`);
 
-  if(!res.ok){
-    throw new Error(
-      data?.error ||
-      data?.message ||
-      `HTTP ${res.status}`
-    );
-  }
-
-  const answer = String(data?.response || "").trim();
-
-  if(!answer){
-    throw new Error("Gemini no devolvió una respuesta");
-  }
-
+  const answer=String(data?.response||"").trim();
+  if(!answer) throw new Error("La IA no devolvió una respuesta");
   return answer;
 }
-
 
 /* ---------- UI ---------- */
 function aiPushMessage(role,html){
@@ -3910,16 +3895,16 @@ window.sendAIMessage=async function(){
   aiShowTyping();
   const minimumTypingTime=new Promise(resolve=>setTimeout(resolve,2000));
   try{
-    const claudeResponse=askClaude(text);
-    const answer=await Promise.all([claudeResponse,minimumTypingTime]).then(([result])=>result);
-    AI.claudeHistory.push({role:"user",content:text});
-    AI.claudeHistory.push({role:"assistant",content:answer});
-    if(AI.claudeHistory.length>24)AI.claudeHistory=AI.claudeHistory.slice(-24);
+    const aiResponse=askCarsStreetAI(text);
+    const answer=await Promise.all([aiResponse,minimumTypingTime]).then(([result])=>result);
+    AI.aiHistory.push({role:"user",content:text});
+    AI.aiHistory.push({role:"assistant",content:answer});
+    if(AI.aiHistory.length>24)AI.aiHistory=AI.aiHistory.slice(-24);
     await minimumTypingTime;
     aiHideTyping();
-    aiPushMessage("bot",claudeFormat(answer));
+    aiPushMessage("bot",aiFormat(answer));
   }catch(err){
-    console.warn("Claude API no disponible; usando motor local de respaldo:",err);
+    console.warn("CARS STREET IA no disponible; usando motor local de respaldo:",err);
     try{
       await minimumTypingTime;
       aiRespond(text);
@@ -3928,7 +3913,7 @@ window.sendAIMessage=async function(){
       console.error("CARS STREET IA:",fallbackErr);
       await minimumTypingTime;
       aiHideTyping();
-      aiPushMessage("bot","No pude conectar con la IA en este momento. Revisa la configuración del servicio de Claude e inténtalo de nuevo.");
+      aiPushMessage("bot","No pude conectar con la IA en este momento. Inténtalo de nuevo en unos segundos.");
     }
   }finally{
     if(btn)btn.disabled=false;
@@ -3958,9 +3943,9 @@ window.csAnalyzeVehicle=async function(v){
 
   const prompt=`Analiza este vehículo de CARS STREET. Distingue claramente entre información de la publicación e información general del modelo. Incluye resumen, características, precio, mantenimiento, seguridad, puntos fuertes, aspectos a revisar y veredicto.\n\nDATOS DE LA PUBLICACIÓN:\n${datos}`;
   try{
-    const r=await askClaude(prompt);
+    const r=await askCarsStreetAI(prompt);
     aiHideTyping();
-    aiPushMessage("bot",claudeFormat(r));
+    aiPushMessage("bot",aiFormat(r));
   }catch(e){
     aiHideTyping();
     aiPushMessage("bot","🤖 Analizando este vehículo...\n\n"+datos);
