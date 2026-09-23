@@ -3622,8 +3622,7 @@ function aiRespond(rawText){
    La clave NO se guarda en este HTML. El navegador llama a un proxy/backend
    seguro configurado en CLAUDE_API_URL, que guarda ANTHROPIC_API_KEY como secreto.
    ============================================================================ */
-const CLAUDE_API_URL = "https://TU-WORKER.workers.dev";
-const CLAUDE_MODEL = "claude-sonnet-5";
+const CLAUDE_API_URL = "https://proud-pine-2fb5.ivanghtyx.workers.dev";
 
 const CARS_STREET_SYSTEM_PROMPT = `Eres CARS STREET IA, el asistente automotriz oficial de CARS STREET en Colombia.
 
@@ -3767,30 +3766,45 @@ function claudeFormat(text){
 }
 
 async function askClaude(userText){
-  if(!CLAUDE_API_URL || /TU-WORKER\.workers\.dev/i.test(CLAUDE_API_URL)){
+  if(!CLAUDE_API_URL){
     throw new Error("CLAUDE_API_URL no está configurada");
   }
-  const history=buildClaudeMessages();
-  history.push({role:"user",content:String(userText).slice(0,12000)});
-  const inventoryContext=buildClaudeInventoryContext();
-  const currentVehicle=inventoryContext.currentVehicle||null;
-  const payload={
-    model:CLAUDE_MODEL,
-    max_tokens:2200,
-    system:CARS_STREET_SYSTEM_PROMPT,
-    messages:history,
-    currentVehicle,
-    inventory:inventoryContext.vehicles
-  };
-  const res=await fetch(CLAUDE_API_URL.replace(/\/$/,""),{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(payload)
+
+  const history = (AI.claudeHistory || [])
+    .slice(-12)
+    .map(x => ({
+      role: x.role === "assistant" ? "model" : "user",
+      text: String(x.content || "").slice(0, 12000)
+    }));
+
+  history.push({
+    role: "user",
+    text: String(userText).slice(0, 12000)
   });
-  const data=await res.json().catch(()=>({}));
-  if(!res.ok) throw new Error(data?.error||data?.message||`HTTP ${res.status}`);
-  const answer=String(data?.text||data?.content?.[0]?.text||"").trim();
-  if(!answer) throw new Error("Claude no devolvió una respuesta");
+
+  const res = await fetch(CLAUDE_API_URL.replace(/\/$/,""), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message: String(userText).slice(0, 12000),
+      history
+    })
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if(!res.ok){
+    throw new Error(data?.error || `HTTP ${res.status}`);
+  }
+
+  const answer = String(data?.response || "").trim();
+
+  if(!answer){
+    throw new Error("Gemini no devolvió una respuesta");
+  }
+
   return answer;
 }
 
