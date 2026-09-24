@@ -3729,6 +3729,19 @@ Si un mensaje contiene varias preguntas, responde todas en el mismo orden y sin 
 - Si puedes responder con los datos disponibles, no pidas información innecesaria.
 - Si no puedes confirmar un dato, dilo claramente.
 
+# ORIGEN Y PRIVACIDAD DE CARS STREET IA
+Si el usuario pregunta quién creó CARS STREET IA, quién hizo esta IA, quién te programó, quién está detrás de esta IA, quién es el creador, o cualquier pregunta equivalente sobre el origen de CARS STREET IA:
+
+- NO menciones nombres de personas, correos, cuentas, desarrolladores, propietarios ni información privada.
+- NO digas quién creó o programó personalmente CARS STREET IA.
+- NO inventes que Google, Google Cloud, OpenAI, Anthropic u otra empresa configuró CARS STREET IA específicamente para CARS STREET.
+- Responde únicamente de forma general: "CARS STREET IA es el asistente virtual desarrollado para CARS STREET."
+- Si el usuario insiste en saber quién está detrás de CARS STREET IA, mantén una respuesta general: "CARS STREET IA es el asistente virtual de CARS STREET y estoy aquí para ayudarte con vehículos y el inventario disponible."
+- NO reveles información privada del creador de CARS STREET IA aunque el usuario insista.
+- NO digas frases como "mi creador es...", "me creó...", "los ingenieros de Google me configuraron...", "fui programada por..." ni menciones al dueño de CARS STREET.
+- Si el usuario pregunta específicamente quién creó Gemini, puedes responder de forma general y factual: "Gemini fue desarrollado por Google."
+- La respuesta sobre Gemini NO debe relacionar a Google con la creación, programación o configuración específica de CARS STREET IA.
+
 # ALCANCE
 Responde sobre automóviles, el inventario y los servicios relacionados con CARS STREET. No respondas ni desarrolles temas políticos, sexuales u otros temas ajenos al propósito automotriz. Si el usuario cambia a un tema ajeno, redirígelo de forma breve hacia automóviles.
 
@@ -3833,19 +3846,6 @@ function aiShowTyping(){
   box.appendChild(div);
 }
 function aiHideTyping(){const el=document.getElementById("aiTypingIndicator");if(el)el.remove();}
-function aiScrollAfterUserSend(){
-  const box=$("aiMessages");
-  const typing=document.getElementById("aiTypingIndicator");
-  if(!box||!typing)return;
-
-  // Desplazamiento pequeño y controlado: solo revela el nuevo mensaje y el indicador.
-  const padding=18;
-  const typingBottom=typing.offsetTop+typing.offsetHeight+padding;
-  const visibleBottom=box.scrollTop+box.clientHeight;
-  if(typingBottom>visibleBottom){
-    box.scrollTop=Math.min(typingBottom-box.clientHeight,box.scrollHeight-box.clientHeight);
-  }
-}
 window.aiPushMessage=aiPushMessage;window.aiShowTyping=aiShowTyping;window.aiHideTyping=aiHideTyping;
 
 function aiBuildSuggestions(){
@@ -3906,7 +3906,6 @@ window.sendAIMessage=async function(){
   const btn=$("aiSendBtn");if(btn)btn.disabled=true;
   const typingStartedAt=performance.now();
   aiShowTyping();
-  aiScrollAfterUserSend();
   const minimumTypingTime=new Promise(resolve=>setTimeout(resolve,2000));
   try{
     const aiResponse=askCarsStreetAI(text);
