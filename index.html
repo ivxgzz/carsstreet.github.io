@@ -58,7 +58,27 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 .admin-box{width:min(1050px,100%);max-height:94vh;overflow:auto;background:#0f1113;border:1px solid #353a40;border-radius:22px;padding:24px;box-shadow:0 30px 100px rgba(0,0,0,.55)}
 .admin-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:20px}
 .admin-head h2{font-size:clamp(1.5rem,4vw,2.5rem)}
-.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;position:sticky;top:0;z-index:3;background:#0f1113;padding:8px 0;border-bottom:1px solid #292e33}
+.admin-tab{flex:0 1 auto;min-height:42px;white-space:nowrap}
+.admin-dashboard{display:grid;gap:16px}
+.admin-dashboard-card{background:#171a1d;border:1px solid #2c3136;border-radius:14px;padding:20px}
+.admin-dashboard-card h3{margin:0 0 8px}
+.admin-dashboard-card p{margin:0;color:#b9c0c7}
+.admin-setting-card{background:#171a1d;border:1px solid #2c3136;border-radius:14px;padding:18px;margin-top:14px}
+.admin-setting-row{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.admin-setting-row strong{display:block}
+.admin-setting-row small{display:block;color:#aeb5bd;margin-top:5px}
+.admin-setting-toggle{position:relative;display:inline-flex;align-items:center;gap:10px;font-weight:900;white-space:nowrap}
+.admin-setting-toggle input{width:20px;height:20px;accent-color:var(--accent)}
+.admin-section-note{color:#aeb5bd;margin:0 0 16px}
+@media(max-width:680px){
+  .admin-box{padding:16px}
+  .admin-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .admin-tab{width:100%;font-size:.78rem;padding:10px 8px}
+  .admin-setting-row{align-items:flex-start;flex-direction:column}
+  .admin-tools{width:100%}
+}
+
 .admin-tab{background:#1b1e22;color:#fff;padding:10px 14px;border-radius:10px;font-weight:800}
 .admin-tab.active{background:var(--accent)}
 .admin-section{display:none}
@@ -73,7 +93,7 @@ section{padding:90px 0}.section-head{display:flex;align-items:end;justify-conten
 .admin-small{padding:8px 10px;border-radius:8px;background:#272b30;color:#fff;font-weight:800}
 .admin-small.danger{background:#7e2020}
 .admin-small:disabled{opacity:.35;cursor:not-allowed}
-.admin-order-actions{display:flex;gap:6px}
+.admin-order-actions{display:flex;gap:6px;align-items:center}.admin-position-field{display:flex;flex-direction:column;gap:3px;align-items:flex-start;font-size:.65rem;font-weight:900;color:#cfd4d9}.admin-position-field input{width:54px;min-width:54px;background:#080a0c;border:1px solid #30353a;color:#fff;padding:7px 5px;border-radius:7px;text-align:center;font:inherit;font-size:.8rem;outline:none}.admin-position-field input:focus{border-color:var(--accent)}
 .admin-order-actions .admin-small{padding:8px 11px;line-height:1}.admin-toolbar{margin-top:16px;padding:14px;background:#121519;border:1px solid #292e34;border-radius:14px}
 .admin-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .admin-stat{background:#1b1f24;border:1px solid #30363d;border-radius:10px;padding:8px 11px;font-size:.82rem;color:#cfd4d9}
@@ -318,163 +338,24 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
   }
 }
 
-/* ===== CARS STREET IA — AJUSTE VISUAL FINAL ===== */
-.ai-chat{
-  background:linear-gradient(180deg,#111418 0%,#0b0d0f 100%);
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:20px;
-  box-shadow:0 28px 85px rgba(0,0,0,.68),0 0 0 1px rgba(255,43,43,.025);
-}
-.ai-chat-header{
-  justify-content:center;
-  padding:15px 16px;
-  min-height:64px;
-  background:#101316;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.ai-chat-header-title{
-  padding-left:0;
-  align-items:center;
-  text-align:center;
-  gap:3px;
-}
-.ai-chat-header-title:before{content:none!important;display:none!important;}
-.ai-chat-header-title strong{
-  font-size:1rem;
-  letter-spacing:.025em;
-  line-height:1.15;
-}
-.ai-chat-header-title small{
-  font-size:.70rem;
-  font-weight:600;
-  color:#7f878f;
-}
-.ai-chat-header-title small:before{content:none!important;display:none!important;}
-.ai-chat-close{
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
-  width:30px;
-  height:30px;
-  background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.08);
-  color:#cfd3d7;
-}
-.ai-chat-close:hover{
-  background:rgba(255,255,255,.09);
-  border-color:rgba(255,255,255,.14);
-}
-.ai-chat-messages{
-  padding:16px 15px;
-  gap:10px;
-  scroll-behavior:auto;
-  background:linear-gradient(180deg,rgba(255,255,255,.008),transparent 18%);
-}
-.ai-msg{
-  max-width:88%;
-  padding:10px 12px;
-  border-radius:13px;
-  font-size:.82rem;
-  line-height:1.48;
-  box-shadow:none;
-}
-.ai-msg.bot{
-  background:#171a1e;
-  border:1px solid #272c31;
-  border-bottom-left-radius:5px;
-}
-.ai-msg.user{
-  background:#20252a;
-  color:#f4f5f6;
-  border:1px solid #30363c;
-  border-bottom-right-radius:5px;
-  box-shadow:none;
-  font-weight:600;
-}
-.ai-msg p{margin:.55em 0;}
-.ai-msg p:first-child{margin-top:0;}
-.ai-msg p:last-child{margin-bottom:0;}
-.ai-msg ul,.ai-msg ol{margin:.5em 0;padding-left:1.25em;}
-.ai-msg li{margin:.2em 0;}
-.ai-typing{
-  padding:9px 11px;
-  gap:4px;
-  background:#171a1e;
-  border:1px solid #272c31;
-  border-radius:12px;
-  border-bottom-left-radius:5px;
-  box-shadow:none;
-}
-.ai-typing-label{
-  color:#858c93;
-  font-size:.70rem;
-  font-weight:800;
-  letter-spacing:.035em;
-  margin-right:4px;
-}
-.ai-typing-dot{
-  width:5px;
-  height:5px;
-  background:#a3a8ad;
-}
-.ai-chat-suggestions{
-  display:none!important;
-}
-.ai-chat-inputrow{
-  gap:8px;
-  padding:11px 12px;
-  background:#0d0f11;
-  border-top:1px solid rgba(255,255,255,.08);
-}
-.ai-chat-inputrow input{
-  min-width:0;
-  height:42px;
-  background:#111417;
-  border:1px solid #2b3035;
-  color:#f5f5f5;
-  padding:10px 13px;
-  border-radius:11px;
-  font-size:.82rem;
-  box-shadow:none;
-}
-.ai-chat-inputrow input::placeholder{color:#70777e;}
-.ai-chat-inputrow input:focus{
-  border-color:rgba(255,43,43,.62);
-  box-shadow:0 0 0 2px rgba(255,43,43,.07);
-}
-.ai-send{
-  width:40px;
-  min-width:40px;
-  height:40px;
-  border-radius:10px;
-  background:#e31d24;
-  color:#fff;
-  border:1px solid rgba(255,255,255,.10);
-  font-size:1rem;
-  box-shadow:0 5px 15px rgba(227,29,36,.18);
-}
-.ai-send:hover{filter:brightness(1.08);transform:translateY(-1px);}
-.ai-send:active{transform:translateY(0);}
-@media(max-width:560px){
-  .ai-chat{
-    right:8px;
-    bottom:8px;
-    left:8px;
-    top:auto;
-    width:auto;
-    height:min(690px,88vh);
-    max-height:calc(100vh - 16px);
-    border-radius:18px;
-  }
-  .ai-chat-header{min-height:60px;padding:13px 48px 13px 16px;}
-  .ai-chat-messages{padding:12px 10px;gap:8px;}
-  .ai-msg{max-width:94%;font-size:.80rem;line-height:1.46;padding:9px 10px;}
-  .ai-chat-inputrow{padding:8px 9px;}
-  .ai-chat-inputrow input{height:40px;padding:9px 11px;}
-  .ai-send{width:40px;min-width:40px;height:40px;}
-}
-
+/* ===== CARS STREET: TRANSICION CONTINUA HERO -> ENCUENTRA TU VEHICULO ===== */
+.hero{position:relative;overflow:hidden;background:#070809;}
+.hero::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:260px;z-index:2;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,9,0) 0%,rgba(7,8,9,.18) 35%,rgba(7,8,9,.68) 72%,#070809 100%);}
+#vehiculos{position:relative;overflow:hidden;background:
+ radial-gradient(900px 420px at 18% 0%,rgba(255,43,43,.12),transparent 65%),
+ linear-gradient(to bottom,#070809 0%,#08090a 48%,#090a0b 100%);}
+#vehiculos::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+ linear-gradient(to bottom,rgba(7,8,9,.08),rgba(7,8,9,.22) 35%,rgba(7,8,9,.05) 100%),
+ radial-gradient(700px 260px at 82% 4%,rgba(255,255,255,.035),transparent 70%);}
+#vehiculos::after{content:"";position:absolute;top:0;left:0;right:0;height:150px;pointer-events:none;background:linear-gradient(to bottom,rgba(7,8,9,.95),rgba(7,8,9,.48) 35%,transparent);}
+#vehiculos > *{position:relative;z-index:3;}
+#vehiculos .section-head{position:relative;z-index:4;}
+#vehiculos .search-panel{background:linear-gradient(145deg,rgba(18,20,22,.84),rgba(10,11,12,.78));border-color:rgba(255,255,255,.10);box-shadow:0 25px 70px rgba(0,0,0,.34),0 -20px 55px rgba(255,43,43,.035);backdrop-filter:blur(18px);}
+#vehiculos .vehicle-card{background:linear-gradient(145deg,rgba(19,21,23,.96),rgba(9,10,11,.96));}
+/* funde el final del bloque con la siguiente sección */
+#vehiculos + section{position:relative;}
+#vehiculos + section::before{content:"";position:absolute;top:-90px;left:0;right:0;height:130px;pointer-events:none;background:linear-gradient(to bottom,transparent,#070809);z-index:0;}
+@media(max-width:700px){.hero::after{height:190px}#vehiculos::after{height:110px}}
 </style>
 <!-- ===== FIREBASE (para que las publicaciones se vean para TODOS los visitantes) =====
      Ver instrucciones de configuración dentro de <script>, buscar "FIREBASE_CONFIG". -->
@@ -537,6 +418,693 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
   background-size: cover;
 }
 </style>
+<style id="cars-street-ai-chat-polish">
+#aiChat{background:radial-gradient(ellipse at 92% 4%,rgba(180,24,31,.12),transparent 34%),linear-gradient(135deg,rgba(255,255,255,.018) 25%,transparent 25%) 0 0/22px 22px,linear-gradient(315deg,rgba(255,255,255,.012) 25%,transparent 25%) 0 0/22px 22px,linear-gradient(180deg,#101316 0%,#0a0c0e 100%);border-color:rgba(255,255,255,.14)}
+#aiChat .ai-chat-header{background:linear-gradient(135deg,rgba(255,43,43,.10),rgba(255,255,255,.025) 46%,rgba(0,0,0,.30));border-bottom-color:rgba(255,255,255,.12)}
+#aiChat .ai-chat-header-title strong{letter-spacing:.035em}
+#aiChat .ai-chat-header-title small{display:none}
+#aiChat .ai-chat-messages{position:relative;isolation:isolate;background:radial-gradient(ellipse at 12% 88%,rgba(255,43,43,.045),transparent 38%),repeating-linear-gradient(135deg,rgba(255,255,255,.014) 0 1px,transparent 1px 34px),linear-gradient(180deg,rgba(7,9,11,.38),rgba(12,14,17,.78));padding:15px 14px;gap:10px;overscroll-behavior:contain}
+#aiChat .ai-chat-messages:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(90deg,transparent 0 12%,rgba(255,255,255,.025) 12.1%,transparent 12.2% 87%,rgba(255,43,43,.035) 87.1%,transparent 87.2%),linear-gradient(180deg,transparent 0 22%,rgba(255,255,255,.018) 22.1%,transparent 22.2% 76%,rgba(255,43,43,.022) 76.1%,transparent 76.2%);opacity:.75}
+#aiChat .ai-msg{border-radius:14px;padding:10px 12px;box-shadow:0 6px 18px rgba(0,0,0,.16)}
+#aiChat .ai-msg.bot{background:linear-gradient(145deg,rgba(28,32,36,.96),rgba(17,20,23,.96));border-color:rgba(255,255,255,.10)}
+#aiChat .ai-msg.user{background:linear-gradient(135deg,#e9252b,#b9151c);box-shadow:0 7px 20px rgba(0,0,0,.22),0 0 0 1px rgba(255,255,255,.045)}
+#aiChat .ai-typing{background:linear-gradient(145deg,rgba(28,32,36,.98),rgba(16,19,22,.98));border-color:rgba(255,255,255,.10);box-shadow:0 6px 18px rgba(0,0,0,.16)}
+#aiChat .ai-chat-inputrow{background:linear-gradient(180deg,#0d1012,#090b0d);border-top-color:rgba(255,255,255,.12);padding:10px 12px}
+#aiChat .ai-chat-inputrow input{background:#080a0c;border-color:rgba(255,255,255,.14);border-radius:12px;padding:10px 12px}
+#aiChat .ai-chat-inputrow input:focus{border-color:rgba(255,43,43,.78);box-shadow:0 0 0 3px rgba(255,43,43,.08)}
+#aiChat .ai-send{border-radius:12px;box-shadow:0 5px 14px rgba(255,43,43,.16)}
+@media(max-width:560px){#aiChat .ai-chat-messages{padding:12px 10px;gap:8px}#aiChat .ai-msg{max-width:94%;padding:9px 10px}#aiChat .ai-chat-inputrow{padding:9px 10px}}
+@media(prefers-reduced-motion:reduce){#aiChat .ai-chat-messages{scroll-behavior:auto}}
+</style>
+
+
+<style id="cars-street-ai-chat-minimal-typing">
+/* Cambios visuales exclusivos de CARS STREET IA */
+#aiChat #aiSuggestions,
+#aiChat .ai-chat-suggestions {
+  display: none !important;
+}
+
+/* Indicador mínimo: únicamente tres puntos blancos */
+#aiChat .ai-typing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 44px;
+  min-height: 28px;
+  padding: 9px 12px;
+}
+
+#aiChat .ai-typing-label {
+  display: none !important;
+}
+
+#aiChat .ai-typing-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  margin: 0;
+  border-radius: 50%;
+  background: #fff;
+  opacity: .72;
+  transform: translateY(0);
+  animation: carsStreetAiDotBounce .75s ease-in-out infinite;
+}
+
+#aiChat .ai-typing-dot:nth-of-type(1) {
+  animation-delay: 0ms;
+}
+
+#aiChat .ai-typing-dot:nth-of-type(2) {
+  animation-delay: 120ms;
+}
+
+#aiChat .ai-typing-dot:nth-of-type(3) {
+  animation-delay: 240ms;
+}
+
+@keyframes carsStreetAiDotBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: .72;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #aiChat .ai-typing-dot {
+    animation-duration: 1.2s;
+  }
+}
+</style>
+
+
+<style id="cars-street-ai-executive-interface">
+/* =========================================================
+   CARS STREET IA — acabado ejecutivo exclusivo del chat
+   Solo estilos visuales; no modifica la lógica existente.
+   ========================================================= */
+
+#aiChat {
+  --cs-ai-black: #050607;
+  --cs-ai-carbon: #0a0c0e;
+  --cs-ai-graphite: #111416;
+  --cs-ai-line: rgba(255,255,255,.045);
+  --cs-ai-red: rgba(160, 24, 30, .20);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), transparent 22%),
+    linear-gradient(135deg, rgba(255,255,255,.018), transparent 42%),
+    #080a0c;
+  border-color: rgba(255,255,255,.09);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.48),
+    inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+#aiChat .ai-chat-messages {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+  background:
+    radial-gradient(ellipse at 94% 4%, rgba(151, 22, 28, .095), transparent 29%),
+    radial-gradient(ellipse at 8% 96%, rgba(255,255,255,.028), transparent 34%),
+    linear-gradient(135deg, transparent 0 46%, rgba(255,255,255,.018) 46.1%, transparent 46.35%),
+    repeating-linear-gradient(135deg, transparent 0 38px, rgba(255,255,255,.012) 38px 39px, transparent 39px 86px),
+    linear-gradient(180deg, #07090b 0%, #0b0e10 52%, #07090b 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+#aiChat .ai-chat-messages::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: .42;
+  background:
+    linear-gradient(90deg, transparent 0 14%, rgba(255,255,255,.018) 14.05%, transparent 14.2%),
+    linear-gradient(90deg, transparent 0 76%, rgba(255,255,255,.014) 76.05%, transparent 76.2%),
+    linear-gradient(180deg, transparent 0 22%, rgba(255,255,255,.016) 22.1%, transparent 22.25%),
+    linear-gradient(180deg, transparent 0 78%, rgba(150,25,31,.035) 78.1%, transparent 78.3%);
+}
+
+#aiChat .ai-chat-messages::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 12px;
+  width: 1px;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,.045) 28%, rgba(155,28,34,.12) 62%, transparent);
+  opacity: .5;
+}
+
+#aiChat .ai-msg {
+  position: relative;
+  box-shadow: 0 4px 18px rgba(0,0,0,.12);
+}
+
+#aiChat .ai-msg.bot {
+  background: linear-gradient(145deg, rgba(25,29,32,.94), rgba(15,18,20,.96));
+  border-color: rgba(255,255,255,.075);
+}
+
+#aiChat .ai-msg.user {
+  background: linear-gradient(145deg, rgba(38,42,46,.96), rgba(23,26,29,.98));
+  border-color: rgba(255,255,255,.09);
+}
+
+#aiChat .ai-typing {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  min-height: 0;
+  width: fit-content;
+  margin: 3px 0 8px 2px;
+  padding: 3px 0;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+#aiChat .ai-typing-label {
+  display: none !important;
+}
+
+#aiChat .ai-typing-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  border-radius: 50%;
+  background: #fff;
+  opacity: .72;
+  transform: translateY(0);
+  animation: carsStreetAiExecutiveBounce .75s ease-in-out infinite;
+}
+
+#aiChat .ai-typing-dot:nth-of-type(1) { animation-delay: 0ms; }
+#aiChat .ai-typing-dot:nth-of-type(2) { animation-delay: 120ms; }
+#aiChat .ai-typing-dot:nth-of-type(3) { animation-delay: 240ms; }
+
+@keyframes carsStreetAiExecutiveBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: .72;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+#aiChat .ai-chat-inputrow {
+  background: linear-gradient(180deg, rgba(8,10,12,.88), rgba(5,6,7,.98));
+  border-top-color: rgba(255,255,255,.07);
+}
+
+#aiChat #aiInput {
+  background: rgba(17,20,23,.92);
+  border-color: rgba(255,255,255,.09);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+#aiChat #aiInput:focus {
+  border-color: rgba(170,32,39,.48);
+  box-shadow: 0 0 0 2px rgba(150,25,31,.08), inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+@media (max-width: 600px) {
+  #aiChat .ai-chat-messages {
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(151,22,28,.07), transparent 32%),
+      repeating-linear-gradient(135deg, transparent 0 42px, rgba(255,255,255,.009) 42px 43px, transparent 43px 92px),
+      linear-gradient(180deg, #07090b, #0b0e10 52%, #07090b);
+  }
+
+  #aiChat .ai-typing {
+    margin-left: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #aiChat .ai-typing-dot {
+    animation-duration: 1.2s;
+  }
+}
+</style>
+
+
+<style id="cars-street-ai-opening-premium">
+/* =========================================================
+   CARS STREET IA — apertura visual premium
+   Cambios limitados al panel del chat.
+   ========================================================= */
+
+/* Fondo final: negro profundo y sobrio */
+#aiChat {
+  background: #030405 !important;
+  border-color: rgba(255,255,255,.085);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,.54),
+    inset 0 1px 0 rgba(255,255,255,.035);
+  overflow: hidden;
+}
+
+/* El panel conserva su estado estable después de la apertura */
+#aiChat::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-115%) skewX(-16deg);
+  background:
+    linear-gradient(
+      105deg,
+      transparent 0%,
+      rgba(155,18,27,0) 35%,
+      rgba(155,18,27,.16) 45%,
+      rgba(255,255,255,.22) 49%,
+      rgba(155,18,27,.10) 53%,
+      transparent 64%
+    );
+}
+
+/* Aura roja/blanca breve al abrir */
+#aiChat.cs-ai-opening::before {
+  animation: carsStreetAiOpeningSweep .82s cubic-bezier(.22,.75,.22,1) both;
+}
+
+#aiChat.cs-ai-opening {
+  animation: carsStreetAiOpeningPanel .72s cubic-bezier(.22,.75,.22,1) both;
+}
+
+@keyframes carsStreetAiOpeningPanel {
+  0% {
+    opacity: .72;
+    transform: translateY(10px) scale(.985);
+    filter: brightness(.78);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: brightness(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes carsStreetAiOpeningSweep {
+  0% {
+    opacity: 0;
+    transform: translateX(-115%) skewX(-16deg);
+  }
+  18% {
+    opacity: .82;
+  }
+  65% {
+    opacity: .42;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(115%) skewX(-16deg);
+  }
+}
+
+/* Fondo de conversación completamente negro */
+#aiChat .ai-chat-messages {
+  background:
+    radial-gradient(
+      ellipse at 94% 0%,
+      rgba(130,16,24,.045),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      #020303 0%,
+      #050607 52%,
+      #020303 100%
+    ) !important;
+}
+
+/* Elimina patrones visuales notorios del fondo */
+#aiChat .ai-chat-messages::before {
+  opacity: .08 !important;
+}
+
+#aiChat .ai-chat-messages::after {
+  opacity: .18 !important;
+}
+
+/* Mensajes discretos sobre negro */
+#aiChat .ai-msg.bot {
+  background: #0b0d0f !important;
+  border-color: rgba(255,255,255,.055) !important;
+}
+
+#aiChat .ai-msg.user {
+  background: #111315 !important;
+  border-color: rgba(255,255,255,.065) !important;
+}
+
+/* Tres puntos: fuera de burbujas, sin cápsula ni fondo */
+#aiChat .ai-typing {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 3px 0 !important;
+  margin: 3px 0 8px 2px !important;
+}
+
+/* Acento rojo discreto en el encabezado */
+#aiChat .ai-chat-header {
+  border-bottom-color: rgba(145,20,28,.22);
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,.018);
+}
+
+/* Campo de entrada sobrio */
+#aiChat .ai-chat-inputrow {
+  background: #030405 !important;
+  border-top-color: rgba(255,255,255,.065) !important;
+}
+
+#aiChat #aiInput {
+  background: #090b0d !important;
+  border-color: rgba(255,255,255,.075);
+}
+
+/* Apertura más discreta en pantallas pequeñas */
+@media (max-width: 600px) {
+  #aiChat.cs-ai-opening {
+    animation-duration: .68s;
+  }
+
+  #aiChat.cs-ai-opening::before {
+    animation-duration: .68s;
+    opacity: .7;
+  }
+}
+
+/* Respeto por usuarios que reducen el movimiento */
+@media (prefers-reduced-motion: reduce) {
+  #aiChat.cs-ai-opening,
+  #aiChat.cs-ai-opening::before {
+    animation-duration: .01ms;
+  }
+}
+</style>
+
+
+<style id="cars-street-ai-red-white-aura">
+/* =========================================================
+   CARS STREET IA — aura orgánica de apertura
+   Solo visual. No modifica la lógica funcional del chat.
+   ========================================================= */
+
+/* Panel estable y fondo final negro profundo */
+#aiChat {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #010202 !important;
+}
+
+/* Capa de aura difusa, sin líneas ni bordes duros */
+#aiChat::before {
+  content: "";
+  position: absolute;
+  inset: -24%;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 46%;
+  filter: blur(28px);
+  transform: scale(.78) rotate(-8deg);
+  background:
+    radial-gradient(
+      ellipse at 25% 36%,
+      rgba(190, 24, 38, .42) 0%,
+      rgba(150, 17, 29, .22) 18%,
+      transparent 46%
+    ),
+    radial-gradient(
+      ellipse at 76% 62%,
+      rgba(255,255,255,.24) 0%,
+      rgba(218, 218, 218, .09) 15%,
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse at 56% 88%,
+      rgba(145, 18, 30, .30) 0%,
+      transparent 42%
+    );
+}
+
+/* Segunda capa: nube más amplia y suave */
+#aiChat::after {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: 50%;
+  filter: blur(42px);
+  transform: scale(.68) rotate(12deg);
+  background:
+    radial-gradient(
+      ellipse at 70% 22%,
+      rgba(156, 20, 33, .28) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 20% 76%,
+      rgba(255,255,255,.13) 0%,
+      transparent 34%
+    ),
+    radial-gradient(
+      ellipse at 48% 48%,
+      rgba(125, 14, 27, .22) 0%,
+      transparent 50%
+    );
+}
+
+/* Activación única al abrir */
+#aiChat.cs-ai-opening {
+  animation:
+    carsStreetAiAuraPanel
+    1.85s
+    cubic-bezier(.22,.72,.22,1)
+    both;
+}
+
+#aiChat.cs-ai-opening::before {
+  animation:
+    carsStreetAiAuraCloudOne
+    1.9s
+    cubic-bezier(.22,.72,.22,1)
+    both;
+}
+
+#aiChat.cs-ai-opening::after {
+  animation:
+    carsStreetAiAuraCloudTwo
+    1.75s
+    cubic-bezier(.22,.72,.22,1)
+    both;
+}
+
+/* Entrada y estabilización del panel */
+@keyframes carsStreetAiAuraPanel {
+  0% {
+    opacity: .62;
+    transform: translateY(9px) scale(.982);
+    filter: brightness(.76);
+  }
+
+  32% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: brightness(1.07);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* Primera nube: expansión y deformación orgánica */
+@keyframes carsStreetAiAuraCloudOne {
+  0% {
+    opacity: 0;
+    transform: scale(.58) rotate(-18deg);
+  }
+
+  18% {
+    opacity: .95;
+  }
+
+  48% {
+    opacity: .72;
+    transform: scale(1.02) rotate(7deg);
+  }
+
+  72% {
+    opacity: .34;
+    transform: scale(1.16) rotate(-5deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.32) rotate(12deg);
+  }
+}
+
+/* Segunda nube: movimiento complementario desfasado */
+@keyframes carsStreetAiAuraCloudTwo {
+  0% {
+    opacity: 0;
+    transform: scale(.62) rotate(18deg);
+  }
+
+  24% {
+    opacity: .72;
+  }
+
+  52% {
+    opacity: .48;
+    transform: scale(1.04) rotate(-8deg);
+  }
+
+  78% {
+    opacity: .20;
+    transform: scale(1.18) rotate(5deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.34) rotate(-12deg);
+  }
+}
+
+/* El fondo final permanece negro */
+#aiChat .ai-chat-messages {
+  background:
+    linear-gradient(
+      180deg,
+      #000101 0%,
+      #030404 52%,
+      #000101 100%
+    ) !important;
+}
+
+/* No se recuperan patrones ni texturas visibles */
+#aiChat .ai-chat-messages::before,
+#aiChat .ai-chat-messages::after {
+  opacity: 0 !important;
+}
+
+/* El indicador actual de tres puntos no se altera */
+#aiChat .ai-typing {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Aura más discreta en dispositivos pequeños */
+@media (max-width: 600px) {
+  #aiChat.cs-ai-opening::before {
+    filter: blur(34px);
+    opacity: .82;
+  }
+
+  #aiChat.cs-ai-opening::after {
+    filter: blur(46px);
+    opacity: .72;
+  }
+}
+
+/* Accesibilidad: reduce el movimiento si el sistema lo solicita */
+@media (prefers-reduced-motion: reduce) {
+  #aiChat.cs-ai-opening,
+  #aiChat.cs-ai-opening::before,
+  #aiChat.cs-ai-opening::after {
+    animation-duration: .01ms;
+  }
+}
+</style>
+
+
+<style id="cars-street-ai-original-chat-side">
+/* Restauración estricta de la posición original del chat:
+   no cambia el lado ni la ubicación del panel. */
+#aiChat.ai-chat{
+  right:20px !important;
+  left:auto !important;
+  bottom:20px !important;
+  top:auto !important;
+}
+
+/* Conserva la adaptación original para pantallas pequeñas. */
+@media (max-width:600px){
+  #aiChat.ai-chat{
+    right:8px !important;
+    left:auto !important;
+    bottom:8px !important;
+    top:auto !important;
+    width:calc(100vw - 16px) !important;
+    height:min(690px,88vh) !important;
+  }
+}
+</style>
+
+
+<style id="cars-street-ai-no-page-jump">
+/* Corrección exclusiva del panel existente: permanece flotante,
+   fuera del flujo normal y no provoca navegación ni desplazamiento. */
+#aiChat.ai-chat{
+  position:fixed !important;
+  left:auto !important;
+  top:auto !important;
+  right:20px !important;
+  bottom:20px !important;
+  display:none;
+  contain:layout paint;
+}
+#aiChat.ai-chat.open{
+  display:flex;
+}
+#aiFab{
+  position:fixed !important;
+  z-index:151 !important;
+}
+@media (max-width:600px){
+  #aiChat.ai-chat{
+    right:8px !important;
+    bottom:8px !important;
+    width:calc(100vw - 16px) !important;
+    height:min(690px,88vh) !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <header class="nav"><div class="container nav-inner">
@@ -637,16 +1205,30 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
       <div style="display:flex;gap:8px"><button class="admin-small" onclick="logoutAdmin()">Cerrar sesión</button><button class="modal-close" onclick="closeAdmin()">Cerrar</button></div>
     </div>
 
-    <div class="admin-tabs">
-      <button class="admin-tab active" onclick="adminTab('cars',this)">🚘 Publicaciones</button>
-      <button class="admin-tab" onclick="adminTab('profile',this)">👤 Perfil</button>
-      <button class="admin-tab" onclick="adminTab('settings',this)">⚙️ Configuración</button>
+    <div class="admin-tabs" role="tablist" aria-label="Secciones administrativas">
+      <button class="admin-tab active" type="button" onclick="adminTab('home',this)">⌂ INICIO</button>
+      <button class="admin-tab" type="button" onclick="adminTab('cars',this)">🚘 PUBLICACIONES</button>
+      <button class="admin-tab" type="button" onclick="adminTab('profile',this)">👤 PERFIL</button>
+      <button class="admin-tab" type="button" onclick="adminTab('settings',this)">⚙️ AJUSTES</button>
     </div>
 
-    <div class="admin-section active" id="adminCars">
+    <div class="admin-section active" id="adminHome">
+      <div class="admin-dashboard">
+        <div class="admin-dashboard-card">
+          <div class="eyebrow">Inicio</div>
+          <h3>Panel administrativo</h3>
+          <p>Selecciona una sección en la barra superior para administrar CARS STREET.</p>
+        </div>
+        <div class="admin-dashboard-card">
+          <h3 id="adminHomeSummary">Resumen administrativo</h3>
+          <p id="adminHomeSummaryText">Consulta las publicaciones desde la sección PUBLICACIONES.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-section" id="adminCars">
       <div class="buttons" style="margin-top:0">
         <button class="btn btn-primary" onclick="newCar()">+ AGREGAR AUTO</button>
-        <button class="btn btn-secondary" onclick="resetDemoCars()">RESTAURAR DEMO</button>
       </div>
       <p class="admin-note">Puedes crear, editar y eliminar publicaciones. Las imágenes seleccionadas desde tu computador se guardan en este navegador.</p>
       <div class="admin-toolbar">
@@ -696,6 +1278,27 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
 
     <div class="admin-section" id="adminSettings">
       <div class="admin-head" style="margin-top:10px"><h3>Configuración general</h3></div>
+      <div class="admin-setting-card">
+        <div class="admin-setting-row">
+          <div>
+            <strong>RESTAURAR DEMO</strong>
+            <small>Restablece la demostración usando la función existente.</small>
+          </div>
+          <button class="btn btn-secondary" type="button" onclick="resetDemoCars()">RESTAURAR DEMO</button>
+        </div>
+      </div>
+      <div class="admin-setting-card">
+        <div class="admin-setting-row">
+          <div>
+            <strong>SECCIÓN “VENDE TU CARRO”</strong>
+            <small>Controla únicamente la visibilidad de la sección pública y conserva su formulario.</small>
+          </div>
+          <label class="admin-setting-toggle">
+            <input id="sellSectionVisibilityToggle" type="checkbox" checked onchange="setSellSectionVisibility(this.checked)">
+            <span id="sellSectionVisibilityStatus">ACTIVADA</span>
+          </label>
+        </div>
+      </div>
       <div class="ai-control-card">
         <div class="ai-control-head">
           <div class="ai-control-title">
@@ -760,7 +1363,7 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
 <div class="modal" id="modal"><div class="modal-box"><button class="modal-close" onclick="closeModal()">Cerrar</button><div id="modalContent"></div></div></div><div class="lightbox" id="lightbox"><button type="button" class="lightbox-close" onclick="closeLightbox()" aria-label="Cerrar">&times;</button><button type="button" class="detail-arrow detail-arrow-left" onclick="lightboxNav(-1)" aria-label="Foto anterior">&#10094;</button><img id="lightboxImg" src="" alt="Foto del vehículo" decoding="async"><button type="button" class="detail-arrow detail-arrow-right" onclick="lightboxNav(1)" aria-label="Foto siguiente">&#10095;</button></div><div class="toast" id="toast"></div>
 
 <!-- ===== CARS STREET IA (widget de chat) ===== -->
-<button class="ai-fab" id="aiFab" onclick="toggleAIChat()" aria-label="Abrir CARS STREET IA" title="CARS STREET IA">
+<button type="button" class="ai-fab" id="aiFab" onclick="toggleAIChat(); return false;" aria-label="Abrir CARS STREET IA" title="CARS STREET IA">
   <span class="ai-fab-icon" aria-hidden="true"></span>
   <span class="ai-fab-label">CARS STREET <strong>IA</strong></span>
 </button>
@@ -768,14 +1371,14 @@ html.ai-settings-pending #aiFab,html.ai-settings-pending #aiChat,html.ai-setting
   <div class="ai-chat-header">
     <div class="ai-chat-header-title">
       <strong>CARS <span>STREET</span> IA</strong>
-      <small>Tu asistente para encontrar el vehículo ideal</small>
+      
     </div>
     <button class="ai-chat-close" onclick="toggleAIChat(false)" aria-label="Cerrar chat">×</button>
   </div>
   <div class="ai-chat-messages" id="aiMessages"></div>
   <div class="ai-chat-suggestions" id="aiSuggestions"></div>
   <div class="ai-chat-inputrow">
-    <input id="aiInput" type="text" placeholder="Ej: busco una SUV automática de 40 millones" autocomplete="off" maxlength="220">
+    <input id="aiInput" type="text" placeholder="Pregúntame algo..." autocomplete="off" maxlength="220">
     <button class="ai-send" id="aiSendBtn" onclick="sendAIMessage()" aria-label="Enviar mensaje">➤</button>
   </div>
 </div>
@@ -1872,15 +2475,30 @@ document.addEventListener("keydown",e=>{
   }
 });
 
-function openAdmin(){if(!adminAuthenticated){requestAdminAccess();return}applyProfile();renderAdminCars();$("adminPanel").classList.add("open")}
+function openAdmin(){
+  if(!adminAuthenticated){requestAdminAccess();return}
+  applyProfile();
+  loadSellSectionVisibility();
+  adminTab("home",document.querySelectorAll(".admin-tab")[0]);
+  $("adminPanel").classList.add("open");
+}
 function closeAdmin(){$("adminPanel").classList.remove("open")}
+function updateAdminHomeSummary(){
+  const total=Array.isArray(vehicles)?vehicles.length:0;
+  const el=$("adminHomeSummaryText");
+  if(el)el.textContent="Publicaciones registradas: "+total+". Entra en PUBLICACIONES para ver y administrar las tarjetas.";
+}
 function adminTab(tab,btn){
   document.querySelectorAll(".admin-section").forEach(x=>x.classList.remove("active"));
   document.querySelectorAll(".admin-tab").forEach(x=>x.classList.remove("active"));
-  if(tab==="cars"){$("adminCars").classList.add("active"); if(btn)btn.classList.add("active");renderAdminCars()}
-  if(tab==="profile"){$("adminProfile").classList.add("active"); if(btn)btn.classList.add("active");applyProfile()}
-  if(tab==="settings"){$("adminSettings").classList.add("active"); if(btn)btn.classList.add("active");renderAIAdminControl()}
-  if(tab==="editor"){$("adminCarEditor").classList.add("active")}
+  const sectionMap={home:"adminHome",cars:"adminCars",profile:"adminProfile",settings:"adminSettings",editor:"adminCarEditor"};
+  const section=$(sectionMap[tab]||"adminHome");
+  if(section)section.classList.add("active");
+  if(btn)btn.classList.add("active");
+  if(tab==="home")updateAdminHomeSummary();
+  if(tab==="cars")renderAdminCars();
+  if(tab==="profile")applyProfile();
+  if(tab==="settings"){renderAIAdminControl();renderSellSectionVisibilityControl();}
 }
 function isAdminDownloadAuthorized(){
   return adminAuthenticated===true && sessionStorage.getItem("carsStreetAdminAuth")==="1";
@@ -2107,10 +2725,9 @@ function renderAdminCars(){
         <div class="admin-item-date">${adminFullDate(v.createdAt)} · ID: ${String(v.id)}</div>
       </div>
       <div class="admin-item-actions">
-        ${manualMode?`<div class="admin-order-actions">
-          <button class="admin-small" onclick="moveCar(${v.id},-1)" ${i===0?"disabled":""} title="Subir" aria-label="Subir posición">&#9650;</button>
-          <button class="admin-small" onclick="moveCar(${v.id},1)" ${i===list.length-1?"disabled":""} title="Bajar" aria-label="Bajar posición">&#9660;</button>
-        </div>`:""}
+        <label class="admin-position-field">POSICIÓN
+          <input type="number" min="1" step="1" inputmode="numeric" value="${Math.max(1,(Number(v.order)||0)+1)}" aria-label="Posición de ${safeName}" onchange="setCarPosition(${v.id},this.value)">
+        </label>
         <button class="admin-small" onclick="editCar(${v.id})">Editar</button>
         <button class="admin-small" onclick="resetPublicationDate(${v.id})">↻ Fecha</button>
         <button class="admin-small" onclick="downloadAllVehiclePhotos(vehicles.find(x=>x.id===${v.id}))">⬇ Descargar todas</button>
@@ -2183,27 +2800,34 @@ async function resetAllPublicationDates(){
   renderAdminCars();
   showToast(cloudEnabled?(localOk?"✅ Fechas restablecidas para todos los dispositivos":"⚠️ Fechas actualizadas en Firebase; no se pudo guardar la copia local"):(localOk?"✅ Fechas restablecidas en este navegador":"⚠️ Fechas cambiadas, pero no se pudo guardar la copia local"));
 }
-// Sube o baja una publicación una posición (dir=-1 sube, dir=1 baja) y
-// reasigna "order" (0,1,2...) según la nueva posición de todo el arreglo,
-// para que el orden manual quede guardado y sincronizado.
-async function moveCar(id,dir){
-  const idx=vehicles.findIndex(x=>x.id===id);
-  if(idx===-1)return;
-  const newIdx=idx+dir;
-  if(newIdx<0||newIdx>=vehicles.length)return;
+// Cambia la posición desde el campo numérico del panel administrativo.
+// La posición visible es 1-based; el valor persistido "order" sigue siendo 0-based.
+async function setCarPosition(id,requestedPosition){
+  const currentIndex=vehicles.findIndex(x=>x.id===id);
+  if(currentIndex===-1)return;
+  const parsed=Number(requestedPosition);
+  if(!Number.isInteger(parsed)||parsed<1){
+    renderAdminCars();
+    showToast("La posición debe ser un entero positivo.");
+    return;
+  }
   const arr=[...vehicles];
-  [arr[idx],arr[newIdx]]=[arr[newIdx],arr[idx]];
+  const [selected]=arr.splice(currentIndex,1);
+  const targetIndex=Math.min(parsed-1,arr.length);
+  arr.splice(targetIndex,0,selected);
   arr.forEach((v,i)=>{v.order=i;});
   vehicles=arr;
+  render();
+  renderAdminCars();
   if(cloudEnabled){
     const ok=await replaceAllCloudVehicles(vehicles);
-    // El listener en tiempo real actualizará "vehicles" para todos en un instante.
     await saveVehicles();
     if(!ok)showToast("No se pudo guardar el nuevo orden en la nube; se cambió solo en este navegador");
   }else{
     await saveVehicles();
   }
 }
+
 function setupCarBrands(){
   $("carBrand").innerHTML=brands.map(b=>`<option>${b}</option>`).join("");
 }
@@ -2459,6 +3083,67 @@ catalog.Ford=Object.fromEntries(getFordModels().map(model=>[model,getFordVersion
 
 
 function showToast(msg){$("toast").textContent=msg;$("toast").style.display="block";setTimeout(()=>$("toast").style.display="none",4500)}
+
+// ===== VISIBILIDAD DE LA SECCIÓN PÚBLICA "VENDE TU CARRO" =====
+let sellSectionEnabled=true;
+let sellSectionSettingsLoaded=false;
+
+function sellSectionSettingsDocRef(){
+  return cloudEnabled&&cloudDb ? cloudDb.doc("settings/public") : null;
+}
+function applySellSectionVisibility(enabled){
+  sellSectionEnabled=!!enabled;
+  const section=$("vende");
+  if(section){
+    section.hidden=!sellSectionEnabled;
+    section.setAttribute("aria-hidden",String(!sellSectionEnabled));
+  }
+  renderSellSectionVisibilityControl();
+}
+function renderSellSectionVisibilityControl(){
+  const toggle=$("sellSectionVisibilityToggle");
+  const status=$("sellSectionVisibilityStatus");
+  if(toggle)toggle.checked=!!sellSectionEnabled;
+  if(status)status.textContent=sellSectionEnabled?"ACTIVADA":"DESACTIVADA";
+}
+async function loadSellSectionVisibility(){
+  if(sellSectionSettingsLoaded){renderSellSectionVisibilityControl();return;}
+  let enabled=true;
+  try{
+    const local=localStorage.getItem("carsStreetSellSectionEnabled");
+    if(local!==null)enabled=local!=="false";
+  }catch(e){}
+  if(cloudEnabled&&cloudDb){
+    try{
+      const ref=sellSectionSettingsDocRef();
+      const snap=await ref.get();
+      if(snap.exists&&typeof snap.data()?.sellSectionEnabled==="boolean"){
+        enabled=!!snap.data().sellSectionEnabled;
+      }
+    }catch(e){console.error("No se pudo cargar la visibilidad de Vende tu carro:",e);}
+  }
+  sellSectionSettingsLoaded=true;
+  applySellSectionVisibility(enabled);
+}
+async function setSellSectionVisibility(enabled){
+  if(!adminAuthenticated){renderSellSectionVisibilityControl();return;}
+  const next=!!enabled;
+  const previous=sellSectionEnabled;
+  applySellSectionVisibility(next);
+  try{localStorage.setItem("carsStreetSellSectionEnabled",String(next));}catch(e){}
+  if(cloudEnabled&&cloudDb){
+    try{
+      await sellSectionSettingsDocRef().set({sellSectionEnabled:next,updatedAt:Date.now()},{merge:true});
+      showToast(next?"La sección Vende tu carro está activada.":"La sección Vende tu carro está desactivada.");
+    }catch(e){
+      applySellSectionVisibility(previous);
+      console.error("No se pudo guardar la visibilidad de Vende tu carro:",e);
+      showToast("No se pudo guardar el ajuste en la nube.");
+    }
+  }else{
+    showToast(next?"La sección Vende tu carro está activada.":"La sección Vende tu carro está desactivada.");
+  }
+}
 
 // ===== CONTROL GLOBAL DE CARS STREET IA =====
 let aiEnabled=true;
@@ -4006,7 +4691,7 @@ function aiShowTyping(){
   aiHideTyping();
   const div=document.createElement("div");
   div.className="ai-typing";div.id="aiTypingIndicator";
-  div.innerHTML='<span class="ai-typing-label">CARS STREET IA</span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
+  div.innerHTML='<span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>';
   box.appendChild(div);
 }
 function aiHideTyping(){const el=document.getElementById("aiTypingIndicator");if(el)el.remove();}
@@ -4050,27 +4735,29 @@ window.toggleAIChat=function(force){
   panel.classList.toggle("open",shouldOpen);
   const fab=$("aiFab");if(fab)fab.classList.toggle("hidden",shouldOpen);
   if(shouldOpen){
+    panel.classList.remove("cs-ai-opening");
+    void panel.offsetWidth;
+    panel.classList.add("cs-ai-opening");
+    setTimeout(()=>panel.classList.remove("cs-ai-opening"),1900);
     if(!AI.greeted){
       AI.greeted=true;
-      aiPushMessage("bot",'¡Hola! 👋 Soy <strong>CARS STREET IA</strong>, el asistente virtual oficial de CARS STREET. Conozco las publicaciones disponibles y puedo ayudarte a encontrar vehículos según presupuesto, marca, modelo, año, tipo, combustible, transmisión y uso, además de resolver dudas generales de automóviles.');
+      aiPushMessage("bot",'¡Hola! 👋 Pregúntame lo que quieras sobre automóviles o sobre nuestro inventario.');
       aiRenderSuggestions();
     }
-    setTimeout(()=>{const inp=$("aiInput");if(inp)inp.focus();},120);
+    setTimeout(()=>{const inp=$("aiInput");if(inp){try{inp.focus({preventScroll:true});}catch(e){inp.focus();}}},120);
   }
 };
 
-function aiSmallSendScroll(){
-  const box=$("aiMessages");
-  if(!box)return;
-  requestAnimationFrame(()=>{
-    const maxScroll=Math.max(0,box.scrollHeight-box.clientHeight);
-    const current=box.scrollTop;
-    const smallStep=86;
-    box.scrollTop=Math.min(maxScroll,current+smallStep);
-  });
-}
+function aiNudgeAfterUserSend(){
+    const box=$("aiMessages");
+    if(!box)return;
+    const remaining=box.scrollHeight-box.clientHeight-box.scrollTop;
+    const nudge=Math.min(140,Math.max(0,remaining));
+    if(nudge<=0)return;
+    box.scrollBy({top:nudge,behavior:"smooth"});
+  }
 
-window.sendAIMessage=async function(){
+  window.sendAIMessage=async function(){
   if(!aiSettingsLoaded||!aiEnabled){
     showToast("La IA de CARS STREET está temporalmente desactivada.");
     return;
@@ -4081,7 +4768,7 @@ window.sendAIMessage=async function(){
   const btn=$("aiSendBtn");if(btn)btn.disabled=true;
   const typingStartedAt=performance.now();
   aiShowTyping();
-  aiSmallSendScroll();
+  aiNudgeAfterUserSend();
   const minimumTypingTime=new Promise(resolve=>setTimeout(resolve,2000));
   try{
     const aiResponse=askCarsStreetAI(text);
@@ -4141,6 +4828,7 @@ window.csAnalyzeVehicle=async function(v){
   }
 };
 
+loadSellSectionVisibility();
 document.addEventListener("DOMContentLoaded",()=>{
   const input=$("aiInput");
   if(input&&!input._aiWired){
@@ -4163,3 +4851,4 @@ if(document.readyState==="interactive"||document.readyState==="complete"){
 </script>
 </body>
 </html>
+  
